@@ -47,8 +47,5 @@ export async function GET(req: Request): Promise<Response> {
   }
 
   const coordinates = resolveCityCoordinates(parsed.data);
-  return NextResponse.json(
-    { ok: true, city: parsed.data, coordinates },
-    { status: STATUS_OK },
-  );
+  return NextResponse.json({ ok: true, city: parsed.data, coordinates }, { status: STATUS_OK });
 }

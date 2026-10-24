@@ -33,6 +33,27 @@ function renderRow(label: string, value: string, isOk?: boolean) {
   );
 }
 
+function renderAuditRows(metadata: AuditMetadata) {
+  return (
+    <div className="bg-white p-3 rounded-xl border border-stone-200 divide-y divide-stone-100">
+      {renderRow('Agent Version', metadata.agentVersion)}
+      {renderRow('Model', metadata.model)}
+      {renderRow('Core Prompt Version', metadata.promptVersions.core)}
+      {renderRow('Extras Prompt Version', metadata.promptVersions.extras)}
+      {renderRow(
+        'Post-Parse Guardrails',
+        metadata.guardrailsPassed ? 'PASSED (0 leaks)' : 'FAILED',
+        metadata.guardrailsPassed,
+      )}
+      {renderRow(
+        'Zod Schema Conformance',
+        metadata.schemaValidated ? 'STRICT PASS' : 'FAILED',
+        metadata.schemaValidated,
+      )}
+    </div>
+  );
+}
+
 export function AuditPanel({ metadata, onClose }: AuditPanelProps): React.JSX.Element {
   return (
     <div
@@ -44,7 +65,9 @@ export function AuditPanel({ metadata, onClose }: AuditPanelProps): React.JSX.El
       <div className="flex items-center justify-between">
         <div>
           <h4 className="font-bold text-stone-900 text-xs">GenAI Provenance & Audit</h4>
-          <p className="text-[11px] text-stone-500">Every plan output is schema-constrained and guardrail-verified.</p>
+          <p className="text-[11px] text-stone-500">
+            Every plan output is schema-constrained and guardrail-verified.
+          </p>
         </div>
         {onClose && (
           <button
@@ -57,15 +80,7 @@ export function AuditPanel({ metadata, onClose }: AuditPanelProps): React.JSX.El
           </button>
         )}
       </div>
-
-      <div className="bg-white p-3 rounded-xl border border-stone-200 divide-y divide-stone-100">
-        {renderRow('Agent Version', metadata.agentVersion)}
-        {renderRow('Model', metadata.model)}
-        {renderRow('Core Prompt Version', metadata.promptVersions.core)}
-        {renderRow('Extras Prompt Version', metadata.promptVersions.extras)}
-        {renderRow('Post-Parse Guardrails', metadata.guardrailsPassed ? 'PASSED (0 leaks)' : 'FAILED', metadata.guardrailsPassed)}
-        {renderRow('Zod Schema Conformance', metadata.schemaValidated ? 'STRICT PASS' : 'FAILED', metadata.schemaValidated)}
-      </div>
+      {renderAuditRows(metadata)}
     </div>
   );
 }

@@ -19,7 +19,4 @@ Format: date | decision | why | alternative rejected
 2026-10-24 | Two-tier resilience modeling: pure offline CPM re-planning for disruption simulation paired with month-specific seasonal risk exposure ranking (AC25, AC26) | Gives deterministic before/after schedule impact, buffer collapse warning, and ghost path tracking in under 5ms without server roundtrips | Complex Monte Carlo stochastic simulation on every slider move (high CPU, UI lag) or qualitative static text warnings
 2026-10-24 | Immutable living plan history with dirty-set change propagation and instant single-click undo/revert (AC3, AC4, AC11) | Isolates re-calculation strictly to affected nodes (drivers: guests, budget, date, city), eliminates unintended side-effects on unrelated tasks, and provides total user control | Monolithic global plan regeneration via LLM on every parameter change (expensive, slow, loses user customization)
 2026-10-24 | Dynamic code-splitting with Next.js dynamic imports for heavy SVG canvas and simulation drawers | Achieves First Load JS of 117 kB (well under the 170 kB budget) and delivers instant sub-second initial paint on low-end mobile devices | Bundling all workspace dialogs and SVG canvas into the critical path bundle (bloats initial JS > 250 kB)
-
-
-
-
+2026-10-24 | Modular component decomposition (`ContactLinks.tsx`, `AppModals.tsx`, `initialPlan.ts`) | Strictly adheres to file <= 250 lines and function <= 40 lines architectural limits while preserving clean single-responsibility boundaries | Mega-components combining dialog presentation, communication link generation, and state orchestration

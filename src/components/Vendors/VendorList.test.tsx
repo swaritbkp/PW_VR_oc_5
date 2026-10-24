@@ -74,11 +74,7 @@ describe('VendorList Component (AC20, AC21, AC27)', () => {
 
   it('passes accessibility audits with axe', async () => {
     const { container } = render(
-      <VendorList
-        vendors={sampleVendors}
-        selectedNeed="caterer"
-        city="Chandigarh"
-      />,
+      <VendorList vendors={sampleVendors} selectedNeed="caterer" city="Chandigarh" />,
     );
 
     const results = await axe(container, {

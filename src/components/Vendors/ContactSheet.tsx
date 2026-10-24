@@ -4,13 +4,12 @@ import React, { useMemo, useState } from 'react';
 import type { EventType } from '@/lib/plan/types';
 import {
   buildEnquiry,
-  mapsDirectionsUrl,
   normalisePhoneIN,
-  telLink,
   whatsAppLink,
   type EnquiryLanguage,
 } from '@/lib/vendors/contact';
 import type { Vendor, VendorStatus } from '@/lib/vendors/types';
+import { ContactLinks } from './ContactLinks';
 
 export interface ContactSheetProps {
   readonly vendor: Vendor;
@@ -47,49 +46,6 @@ function renderLanguages(current: EnquiryLanguage, onChange: (lang: EnquiryLangu
         </button>
       ))}
     </div>
-  );
-}
-
-function renderCommunicationLinks(
-  phoneObj: ReturnType<typeof normalisePhoneIN>,
-  waUrl: string | null,
-) {
-  const disabledCls = 'py-2 px-3 text-xs rounded-lg bg-stone-100 text-stone-400';
-  return (
-    <>
-      {phoneObj ? (
-        <a href={telLink(phoneObj)} className="flex items-center justify-center gap-2 py-2 px-3 text-xs font-semibold rounded-lg bg-emerald-700 text-white hover:bg-emerald-800 transition-colors">
-          Call ({phoneObj.kind})
-        </a>
-      ) : (
-        <button disabled className={disabledCls}>No Phone Listed</button>
-      )}
-      {waUrl ? (
-        <a href={waUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 py-2 px-3 text-xs font-semibold rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors">
-          WhatsApp (wa.me)
-        </a>
-      ) : (
-        <button disabled className={disabledCls}>No Mobile for WA</button>
-      )}
-    </>
-  );
-}
-
-function renderNavigationLinks(vendor: Vendor) {
-  const directionsUrl = mapsDirectionsUrl(vendor.name, vendor.placeId);
-  return (
-    <>
-      <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="py-2 px-3 text-center text-xs font-medium rounded-lg border border-stone-200 text-stone-700 hover:bg-stone-50 transition-colors">
-        Directions
-      </a>
-      {vendor.website ? (
-        <a href={vendor.website} target="_blank" rel="noopener noreferrer" className="py-2 px-3 text-center text-xs font-medium rounded-lg border border-stone-200 text-stone-700 hover:bg-stone-50 transition-colors">
-          Website
-        </a>
-      ) : (
-        <button disabled className="py-2 px-3 text-xs rounded-lg bg-stone-100 text-stone-400">No Website</button>
-      )}
-    </>
   );
 }
 
@@ -154,7 +110,14 @@ export function ContactSheet({
     [vendor.phone],
   );
   const enquiry = useMemo(
-    () => buildEnquiry({ eventType, date: eventDate, city, guests, language: lang }),
+    () =>
+      buildEnquiry({
+        eventType,
+        date: eventDate,
+        city,
+        guests,
+        language: lang,
+      }),
     [eventType, eventDate, city, guests, lang],
   );
   const waUrl = useMemo(
@@ -196,10 +159,7 @@ export function ContactSheet({
 
         <div>
           <h4 className="text-xs font-semibold text-stone-700 mb-2">Direct Actions</h4>
-          <div className="grid grid-cols-2 gap-2">
-            {renderCommunicationLinks(phoneObj, waUrl)}
-            {renderNavigationLinks(vendor)}
-          </div>
+          <ContactLinks vendor={vendor} phoneObj={phoneObj} waUrl={waUrl} />
         </div>
 
         <div>

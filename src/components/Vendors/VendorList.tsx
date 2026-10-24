@@ -17,10 +17,7 @@ export interface VendorListProps {
   readonly onManualAdd?: (vendor: Vendor) => void;
 }
 
-function handleManualSubmit(
-  e: React.FormEvent<HTMLFormElement>,
-  onAdd: (vendor: Vendor) => void,
-) {
+function handleManualSubmit(e: React.FormEvent<HTMLFormElement>, onAdd: (vendor: Vendor) => void) {
   e.preventDefault();
   const form = e.currentTarget;
   const name = (form.elements.namedItem('vName') as HTMLInputElement).value;
@@ -36,12 +33,9 @@ function handleManualSubmit(
   });
 }
 
-function renderManualAddForm(onAdd: (vendor: Vendor) => void, onCancel: () => void) {
+function renderFormInputs() {
   return (
-    <form
-      onSubmit={(e) => handleManualSubmit(e, onAdd)}
-      className="p-3 bg-stone-50 rounded-lg border border-stone-200 space-y-2 text-xs"
-    >
+    <>
       <h5 className="font-semibold text-stone-800">Add Custom Vendor</h5>
       <input
         name="vName"
@@ -59,11 +53,29 @@ function renderManualAddForm(onAdd: (vendor: Vendor) => void, onCancel: () => vo
         placeholder="Address or Area"
         className="w-full p-2 border border-stone-200 rounded"
       />
+    </>
+  );
+}
+
+function renderManualAddForm(onAdd: (vendor: Vendor) => void, onCancel: () => void) {
+  return (
+    <form
+      onSubmit={(e) => handleManualSubmit(e, onAdd)}
+      className="p-3 bg-stone-50 rounded-lg border border-stone-200 space-y-2 text-xs"
+    >
+      {renderFormInputs()}
       <div className="flex gap-2">
-        <button type="submit" className="flex-1 py-1.5 bg-amber-800 text-white font-semibold rounded">
+        <button
+          type="submit"
+          className="flex-1 py-1.5 bg-amber-800 text-white font-semibold rounded"
+        >
           Save Vendor
         </button>
-        <button type="button" onClick={onCancel} className="py-1.5 px-3 bg-stone-200 text-stone-700 rounded">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="py-1.5 px-3 bg-stone-200 text-stone-700 rounded"
+        >
           Cancel
         </button>
       </div>
@@ -157,8 +169,7 @@ export function VendorList({
         <span className="text-[11px] text-stone-400 font-medium">Powered by Google</span>
       </div>
 
-      {fallback &&
-        renderFallbackBanner(fallback, showManualForm, setShowManualForm, onManualAdd)}
+      {fallback && renderFallbackBanner(fallback, showManualForm, setShowManualForm, onManualAdd)}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {vendors.map((vendor) => (

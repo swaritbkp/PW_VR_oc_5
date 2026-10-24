@@ -53,11 +53,7 @@ function renderVersionItem(
   );
 }
 
-export function VersionsPanel({
-  store,
-  onRestore,
-  onUndo,
-}: VersionsPanelProps): React.JSX.Element {
+export function VersionsPanel({ store, onRestore, onUndo }: VersionsPanelProps): React.JSX.Element {
   const undoAvailable = canUndo(store);
 
   return (

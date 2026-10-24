@@ -9,10 +9,7 @@ import {
   normalisePlacesResponse,
 } from '@/lib/vendors/places';
 import { rankVendors } from '@/lib/vendors/rank';
-import {
-  VendorSearchRequestSchema,
-  type VendorSearchRequest,
-} from '@/lib/vendors/schemas';
+import { VendorSearchRequestSchema, type VendorSearchRequest } from '@/lib/vendors/schemas';
 import type { LatLng } from '@/lib/vendors/types';
 import { checkRateLimit } from '@/server/security/rateLimit';
 
@@ -121,7 +118,9 @@ async function executeSearch(input: VendorSearchRequest, query: string, center: 
   );
 }
 
-async function parseSearchBody(req: Request): Promise<
+async function parseSearchBody(
+  req: Request,
+): Promise<
   | { ok: true; input: VendorSearchRequest }
   | { ok: false; status: number; message: string; details?: unknown }
 > {

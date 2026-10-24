@@ -15,15 +15,19 @@ export interface RiskRegisterProps {
 
 function renderScoreGauge(score: number) {
   const color =
-    score >= 80 ? 'text-emerald-700 bg-emerald-50 border-emerald-200' :
-    score >= 50 ? 'text-amber-700 bg-amber-50 border-amber-200' :
-    'text-red-700 bg-red-50 border-red-200';
+    score >= 80
+      ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+      : score >= 50
+        ? 'text-amber-700 bg-amber-50 border-amber-200'
+        : 'text-red-700 bg-red-50 border-red-200';
 
   return (
     <div className={`p-4 rounded-xl border flex items-center justify-between ${color}`}>
       <div>
         <h4 className="font-bold text-xs">Plan B Resilience Score</h4>
-        <p className="text-[11px] opacity-80">Share of coverable risk exposure secured with backups.</p>
+        <p className="text-[11px] opacity-80">
+          Share of coverable risk exposure secured with backups.
+        </p>
       </div>
       <div className="text-2xl font-black font-mono" data-testid="resilience-score-gauge">
         {score}%
@@ -54,6 +58,22 @@ function renderRiskStatusBadge(risk: RankedRisk) {
   );
 }
 
+function renderExposureStats(risk: RankedRisk) {
+  return (
+    <div className="flex items-center gap-4 text-[11px] text-stone-600">
+      <span>
+        Likelihood: <strong>{risk.likelihood}/5</strong>
+      </span>
+      <span>
+        Impact: <strong>{risk.scenario.impact}/5</strong>
+      </span>
+      <span>
+        Exposure: <strong className="font-mono text-stone-900">{risk.exposure}</strong>
+      </span>
+    </div>
+  );
+}
+
 function renderRiskCard(risk: RankedRisk, onSelect?: (r: RankedRisk) => void) {
   return (
     <div
@@ -72,11 +92,7 @@ function renderRiskCard(risk: RankedRisk, onSelect?: (r: RankedRisk) => void) {
         {renderRiskStatusBadge(risk)}
       </div>
 
-      <div className="flex items-center gap-4 text-[11px] text-stone-600">
-        <span>Likelihood: <strong>{risk.likelihood}/5</strong></span>
-        <span>Impact: <strong>{risk.scenario.impact}/5</strong></span>
-        <span>Exposure: <strong className="font-mono text-stone-900">{risk.exposure}</strong></span>
-      </div>
+      {renderExposureStats(risk)}
 
       <p className="text-xs text-stone-600 bg-stone-50 p-2 rounded-lg border border-stone-100">
         <strong>Mitigation:</strong> {risk.scenario.backupPlan}
@@ -107,9 +123,7 @@ export function RiskRegister({ context, onSelectRisk }: RiskRegisterProps): Reac
         <h4 className="font-bold text-stone-900 text-xs">
           Ranked Risk Register ({risks.length} Scenarios Evaluated)
         </h4>
-        <div className="space-y-2">
-          {risks.map((risk) => renderRiskCard(risk, onSelectRisk))}
-        </div>
+        <div className="space-y-2">{risks.map((risk) => renderRiskCard(risk, onSelectRisk))}</div>
       </div>
     </div>
   );

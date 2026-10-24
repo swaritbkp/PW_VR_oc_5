@@ -2,10 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { formatInr } from '@/lib/format';
-import {
-  propagate,
-  type PlanState,
-} from '@/lib/plan/propagate';
+import { propagate, type PlanState } from '@/lib/plan/propagate';
 import type { VersionStore } from '@/lib/plan/versions';
 import { DiffChips } from './DiffChips';
 import { VersionsPanel } from './VersionsPanel';
@@ -108,7 +105,9 @@ export function WhatIfDrawer({
         <div className="flex items-start justify-between">
           <div>
             <h3 className="font-bold text-stone-900 text-base">Living Plan Dynamics</h3>
-            <p className="text-xs text-stone-500">Explore what-if scenarios with dirty-set propagation.</p>
+            <p className="text-xs text-stone-500">
+              Explore what-if scenarios with dirty-set propagation.
+            </p>
           </div>
           <button
             type="button"
@@ -125,7 +124,9 @@ export function WhatIfDrawer({
             type="button"
             onClick={() => setActiveTab('whatif')}
             className={`flex-1 py-1.5 text-xs font-semibold rounded-lg ${
-              activeTab === 'whatif' ? 'bg-amber-800 text-white' : 'text-stone-600 hover:bg-stone-100'
+              activeTab === 'whatif'
+                ? 'bg-amber-800 text-white'
+                : 'text-stone-600 hover:bg-stone-100'
             }`}
           >
             What-If Simulator
@@ -134,7 +135,9 @@ export function WhatIfDrawer({
             type="button"
             onClick={() => setActiveTab('history')}
             className={`flex-1 py-1.5 text-xs font-semibold rounded-lg ${
-              activeTab === 'history' ? 'bg-amber-800 text-white' : 'text-stone-600 hover:bg-stone-100'
+              activeTab === 'history'
+                ? 'bg-amber-800 text-white'
+                : 'text-stone-600 hover:bg-stone-100'
             }`}
           >
             Revision History

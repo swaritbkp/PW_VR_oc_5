@@ -18,7 +18,8 @@ const CONFIGS: Record<
 > = {
   'no-plan': {
     title: 'No Active Celebration Plan',
-    message: 'Select a culturally authentic starting template or enter custom intake to begin your living plan.',
+    message:
+      'Select a culturally authentic starting template or enter custom intake to begin your living plan.',
     icon: '✨',
     defaultAction: 'Browse Templates',
   },
@@ -30,7 +31,8 @@ const CONFIGS: Record<
   },
   'all-done': {
     title: 'Celebration Ready!',
-    message: 'Every milestone and booking task is complete. Review your timeline or share with family.',
+    message:
+      'Every milestone and booking task is complete. Review your timeline or share with family.',
     icon: '🎉',
     defaultAction: 'Share Summary',
   },

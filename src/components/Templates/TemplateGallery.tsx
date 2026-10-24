@@ -10,7 +10,21 @@ export interface TemplateGalleryProps {
   readonly initialEventType?: EventType;
 }
 
-const MONTH_NAMES = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTH_NAMES = [
+  '',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
 function renderBadge(outdoor: boolean) {
   return outdoor ? (
@@ -34,10 +48,27 @@ function renderBestMonths(months: readonly number[]) {
   );
 }
 
-function renderTemplateCard(
-  template: EventTemplate,
-  onSelect: (t: EventTemplate) => void,
-) {
+function renderTemplateMetrics(template: EventTemplate) {
+  return (
+    <div className="pt-2 border-t border-stone-100 space-y-1 text-xs">
+      <div className="flex justify-between text-stone-600">
+        <span>Guests:</span>
+        <span className="font-semibold text-stone-800">
+          {template.guests.min}–{template.guests.max} ({template.guests.typical} typ.)
+        </span>
+      </div>
+      <div className="flex justify-between text-stone-600">
+        <span>Budget:</span>
+        <span className="font-semibold text-stone-800">
+          {formatInr(template.budgetInr.typical)}
+        </span>
+      </div>
+      {renderBestMonths(template.bestMonths)}
+    </div>
+  );
+}
+
+function renderTemplateCard(template: EventTemplate, onSelect: (t: EventTemplate) => void) {
   return (
     <div
       key={template.id}
@@ -56,21 +87,7 @@ function renderTemplateCard(
           {renderBadge(template.outdoor)}
         </div>
         <p className="text-xs text-stone-600 line-clamp-2">{template.tagline}</p>
-        <div className="pt-2 border-t border-stone-100 space-y-1 text-xs">
-          <div className="flex justify-between text-stone-600">
-            <span>Guests:</span>
-            <span className="font-semibold text-stone-800">
-              {template.guests.min}–{template.guests.max} ({template.guests.typical} typ.)
-            </span>
-          </div>
-          <div className="flex justify-between text-stone-600">
-            <span>Budget:</span>
-            <span className="font-semibold text-stone-800">
-              {formatInr(template.budgetInr.typical)}
-            </span>
-          </div>
-          {renderBestMonths(template.bestMonths)}
-        </div>
+        {renderTemplateMetrics(template)}
       </div>
 
       <button

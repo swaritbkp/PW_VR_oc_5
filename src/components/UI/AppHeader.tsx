@@ -11,16 +11,31 @@ export interface AppHeaderProps {
 function renderNavActions(
   onOpen: (modal: 'templates' | 'whatif' | 'disruption' | 'share' | 'audit') => void,
 ) {
-  const btnCls = 'py-1.5 px-3 text-xs font-semibold rounded-lg bg-stone-100 text-stone-800 hover:bg-stone-200';
+  const btnCls =
+    'py-1.5 px-3 text-xs font-semibold rounded-lg bg-stone-100 text-stone-800 hover:bg-stone-200';
   return (
     <nav aria-label="Planning actions" className="flex flex-wrap items-center gap-2">
-      <button type="button" onClick={() => onOpen('templates')} className={btnCls}>Templates</button>
-      <button type="button" onClick={() => onOpen('whatif')} className={btnCls}>What-If Sliders</button>
-      <button type="button" onClick={() => onOpen('disruption')} className="py-1.5 px-3 text-xs font-semibold rounded-lg bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100">
+      <button type="button" onClick={() => onOpen('templates')} className={btnCls}>
+        Templates
+      </button>
+      <button type="button" onClick={() => onOpen('whatif')} className={btnCls}>
+        What-If Sliders
+      </button>
+      <button
+        type="button"
+        onClick={() => onOpen('disruption')}
+        className="py-1.5 px-3 text-xs font-semibold rounded-lg bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100"
+      >
         Simulate Disruption
       </button>
-      <button type="button" onClick={() => onOpen('share')} className={btnCls}>Share & Export</button>
-      <button type="button" onClick={() => onOpen('audit')} className="py-1.5 px-3 text-xs font-semibold rounded-lg bg-stone-100 text-stone-600 hover:bg-stone-200">
+      <button type="button" onClick={() => onOpen('share')} className={btnCls}>
+        Share & Export
+      </button>
+      <button
+        type="button"
+        onClick={() => onOpen('audit')}
+        className="py-1.5 px-3 text-xs font-semibold rounded-lg bg-stone-100 text-stone-600 hover:bg-stone-200"
+      >
         Audit
       </button>
     </nav>

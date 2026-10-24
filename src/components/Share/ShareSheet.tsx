@@ -3,10 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { buildIcs, type IcsEvent } from '@/lib/ics';
 import type { PlanState } from '@/lib/plan/propagate';
-import {
-  buildWhatsAppSummary,
-  type SupportedLanguage,
-} from '@/lib/plan/whatsapp';
+import { buildWhatsAppSummary, type SupportedLanguage } from '@/lib/plan/whatsapp';
 
 export interface ShareSheetProps {
   readonly plan: PlanState;
@@ -28,10 +25,7 @@ function generateIcsContent(plan: PlanState): string {
   });
 }
 
-function renderLanguages(
-  current: SupportedLanguage,
-  onChange: (l: SupportedLanguage) => void,
-) {
+function renderLanguages(current: SupportedLanguage, onChange: (l: SupportedLanguage) => void) {
   const langs = [
     { code: 'en' as const, label: 'English' },
     { code: 'hi' as const, label: 'हिंदी' },
@@ -91,7 +85,9 @@ export function ShareSheet({ plan, onClose }: ShareSheetProps): React.JSX.Elemen
         <div className="flex items-start justify-between">
           <div>
             <h3 className="font-bold text-stone-900 text-base">Share Living Plan</h3>
-            <p className="text-xs text-stone-500">Export schedule to WhatsApp, iCalendar, or PDF.</p>
+            <p className="text-xs text-stone-500">
+              Export schedule to WhatsApp, iCalendar, or PDF.
+            </p>
           </div>
           <button
             type="button"

@@ -9,9 +9,7 @@ export interface DiffChipsProps {
 
 export function DiffChips({ diffs, dirtyIds }: DiffChipsProps): React.JSX.Element {
   if (diffs.length === 0 && (!dirtyIds || dirtyIds.length === 0)) {
-    return (
-      <div className="text-xs text-stone-400 italic">No modifications detected.</div>
-    );
+    return <div className="text-xs text-stone-400 italic">No modifications detected.</div>;
   }
 
   return (
@@ -31,8 +29,7 @@ export function DiffChips({ diffs, dirtyIds }: DiffChipsProps): React.JSX.Elemen
 
       {dirtyIds && dirtyIds.length > 0 && (
         <div className="text-[11px] text-stone-500">
-          <strong className="text-stone-700">Affected nodes:</strong>{' '}
-          {dirtyIds.join(', ')}
+          <strong className="text-stone-700">Affected nodes:</strong> {dirtyIds.join(', ')}
         </div>
       )}
     </div>

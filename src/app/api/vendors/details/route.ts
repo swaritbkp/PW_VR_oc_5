@@ -1,9 +1,5 @@
 import { NextResponse } from 'next/server';
-import {
-  DETAILS_FIELD_MASK,
-  PLACES_DETAILS_URL,
-  normaliseDetails,
-} from '@/lib/vendors/places';
+import { DETAILS_FIELD_MASK, PLACES_DETAILS_URL, normaliseDetails } from '@/lib/vendors/places';
 import { VendorDetailsRequestSchema } from '@/lib/vendors/schemas';
 import { checkRateLimit } from '@/server/security/rateLimit';
 

@@ -16,10 +16,7 @@ interface PinCoordinate {
   readonly y: number;
 }
 
-function calculatePins(
-  center: LatLng,
-  vendors: readonly Vendor[],
-): readonly PinCoordinate[] {
+function calculatePins(center: LatLng, vendors: readonly Vendor[]): readonly PinCoordinate[] {
   const SCALE = 2500;
   return vendors.map((v) => {
     const dx = (v.location.lng - center.lng) * SCALE;
@@ -30,11 +27,7 @@ function calculatePins(
   });
 }
 
-function renderPin(
-  pin: PinCoordinate,
-  isSelected: boolean,
-  onSelect?: (v: Vendor) => void,
-) {
+function renderPin(pin: PinCoordinate, isSelected: boolean, onSelect?: (v: Vendor) => void) {
   return (
     <g
       key={pin.vendor.placeId}
@@ -81,11 +74,7 @@ export function VendorMap({
       aria-label="Vendor location map"
       className="relative w-full h-80 rounded-xl border border-stone-200 bg-stone-100 overflow-hidden flex flex-col justify-between"
     >
-      <svg
-        viewBox="0 0 400 300"
-        className="w-full h-full"
-        aria-hidden="true"
-      >
+      <svg viewBox="0 0 400 300" className="w-full h-full" aria-hidden="true">
         <rect width="400" height="300" fill="#f5f5f4" />
         <circle cx="200" cy="150" r="10" fill="#d97706" opacity="0.3" />
         <circle cx="200" cy="150" r="4" fill="#b45309" />
@@ -93,9 +82,7 @@ export function VendorMap({
           Event Location
         </text>
 
-        {pins.map((pin) =>
-          renderPin(pin, pin.vendor.placeId === selectedPlaceId, onSelectVendor),
-        )}
+        {pins.map((pin) => renderPin(pin, pin.vendor.placeId === selectedPlaceId, onSelectVendor))}
       </svg>
 
       <div className="absolute bottom-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] text-stone-500 font-medium shadow-sm">

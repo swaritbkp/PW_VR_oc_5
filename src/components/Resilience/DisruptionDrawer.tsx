@@ -61,15 +61,50 @@ function renderDiffsList(diffs: DisruptionResult['diffs']) {
   if (diffs.length === 0) return null;
   return (
     <div>
-      <h4 className="font-semibold text-stone-700 text-xs mb-1.5">Slipped Tasks ({diffs.length})</h4>
+      <h4 className="font-semibold text-stone-700 text-xs mb-1.5">
+        Slipped Tasks ({diffs.length})
+      </h4>
       <div className="max-h-32 overflow-y-auto space-y-1">
         {diffs.map((d, idx) => (
-          <div key={`${d.taskId}-${d.field}-${idx}`} className="text-[11px] p-1.5 bg-stone-100 rounded flex justify-between">
-            <span className="font-mono text-stone-800">{d.taskId} ({d.field})</span>
-            <span className="text-red-700 font-semibold">{String(d.before)} &rarr; {String(d.after)}</span>
+          <div
+            key={`${d.taskId}-${d.field}-${idx}`}
+            className="text-[11px] p-1.5 bg-stone-100 rounded flex justify-between"
+          >
+            <span className="font-mono text-stone-800">
+              {d.taskId} ({d.field})
+            </span>
+            <span className="text-red-700 font-semibold">
+              {String(d.before)} &rarr; {String(d.after)}
+            </span>
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function renderAssessmentTable(res: DisruptionResult) {
+  return (
+    <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-1">
+      <h4 className="font-bold text-stone-800 text-xs mb-2">Schedule Impact Assessment</h4>
+      {renderComparisonRow(
+        'Project Duration',
+        `${res.before.durationDays.toFixed(1)} days`,
+        `${res.after.durationDays.toFixed(1)} days`,
+        res.deltaDays > 0,
+      )}
+      {renderComparisonRow(
+        'Buffer Slack',
+        `${res.before.bufferDays.toFixed(1)} days`,
+        `${res.after.bufferDays.toFixed(1)} days`,
+        res.after.bufferDays < 0,
+      )}
+      {renderComparisonRow(
+        'P(On-Time)',
+        `${(res.before.probability * 100).toFixed(0)}%`,
+        `${(res.after.probability * 100).toFixed(0)}%`,
+        res.after.probability < 0.8,
+      )}
     </div>
   );
 }
@@ -78,11 +113,7 @@ function renderSimulationResults(res: DisruptionResult, scenario: DisruptionScen
   return (
     <div className="space-y-4 pt-3">
       <div
-        className={`p-3 rounded-xl border text-xs ${
-          res.covered
-            ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
-            : 'bg-amber-50 border-amber-200 text-amber-900'
-        }`}
+        className={`p-3 rounded-xl border text-xs ${res.covered ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-amber-50 border-amber-200 text-amber-900'}`}
       >
         <div className="font-bold mb-0.5">
           {res.covered ? '✓ Plan B Active (Covered)' : '⚠ No Plan B Held (Uncovered)'}
@@ -91,18 +122,15 @@ function renderSimulationResults(res: DisruptionResult, scenario: DisruptionScen
       </div>
 
       {res.eventAtRisk && (
-        <div role="alert" className="p-3 bg-red-100 border border-red-300 text-red-900 rounded-xl text-xs font-bold">
+        <div
+          role="alert"
+          className="p-3 bg-red-100 border border-red-300 text-red-900 rounded-xl text-xs font-bold"
+        >
           🚨 EVENT AT RISK: Schedule buffer collapsed below zero!
         </div>
       )}
 
-      <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-1">
-        <h4 className="font-bold text-stone-800 text-xs mb-2">Schedule Impact Assessment</h4>
-        {renderComparisonRow('Project Duration', `${res.before.durationDays.toFixed(1)} days`, `${res.after.durationDays.toFixed(1)} days`, res.deltaDays > 0)}
-        {renderComparisonRow('Buffer Slack', `${res.before.bufferDays.toFixed(1)} days`, `${res.after.bufferDays.toFixed(1)} days`, res.after.bufferDays < 0)}
-        {renderComparisonRow('P(On-Time)', `${(res.before.probability * 100).toFixed(0)}%`, `${(res.after.probability * 100).toFixed(0)}%`, res.after.probability < 0.8)}
-      </div>
-
+      {renderAssessmentTable(res)}
       {renderDiffsList(res.diffs)}
     </div>
   );
@@ -118,7 +146,10 @@ export function DisruptionDrawer({
   const [selectedScenario, setSelectedScenario] = useState<DisruptionScenario>(DISRUPTIONS[0]);
 
   const simResult = useMemo(() => {
-    const res = simulateDisruption(tasks, selectedScenario, { availableDays, backedUp: backedUpNeeds });
+    const res = simulateDisruption(tasks, selectedScenario, {
+      availableDays,
+      backedUp: backedUpNeeds,
+    });
     return res.ok ? res.value : null;
   }, [tasks, selectedScenario, availableDays, backedUpNeeds]);
 
@@ -132,7 +163,9 @@ export function DisruptionDrawer({
         <div className="flex items-start justify-between">
           <div>
             <h3 className="font-bold text-stone-900 text-base">Disruption Simulator</h3>
-            <p className="text-xs text-stone-500">Test graph resilience against real-world incidents.</p>
+            <p className="text-xs text-stone-500">
+              Test graph resilience against real-world incidents.
+            </p>
           </div>
           <button
             type="button"
