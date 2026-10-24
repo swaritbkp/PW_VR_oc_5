@@ -78,6 +78,29 @@ export function undoVersion(store: VersionStore): { store: VersionStore; plan: P
   };
 }
 
+/**
+ * Convenience helper to undo to the parent version store.
+ *
+ * @param store - Current version store
+ * @returns Updated version store pointing to the parent version
+ */
+export function undo(store: VersionStore): VersionStore {
+  return undoVersion(store).store;
+}
+
+/**
+ * Restores a specific version snapshot by its identifier.
+ *
+ * @param store - Current version store
+ * @param versionId - ID of version to restore
+ * @returns Updated version store pointing to the requested version
+ */
+export function restoreVersion(store: VersionStore, versionId: string): VersionStore {
+  const target = store.versions.find((v) => v.id === versionId);
+  if (!target) return store;
+  return { ...store, currentId: versionId };
+}
+
 /** Returns the current plan snapshot referenced by the active pointer. */
 export function currentPlan(store: VersionStore): PlanState {
   const current = store.versions.find((v) => v.id === store.currentId);

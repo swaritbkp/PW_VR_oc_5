@@ -20,7 +20,7 @@ describe('ShareSheet Component (AC14)', () => {
     tasks: [
       {
         id: 'W01',
-        title: 'Book Wedding Venue',
+        name: 'Book Wedding Venue',
         category: 'venue',
         optimistic: 3,
         mostLikely: 5,

@@ -16,9 +16,9 @@ export interface ShareSheetProps {
 function generateIcsContent(plan: PlanState): string {
   const events: IcsEvent[] = plan.tasks.map((t) => ({
     uid: `task_${t.id}_${plan.id}@jashn.ai`,
-    title: t.title,
+    title: t.name,
     date: plan.intake.date,
-    description: `Task: ${t.title}. Category: ${t.category}. Why: ${t.why}`,
+    description: `Task: ${t.name}. Category: ${t.category}. Why: ${t.why}`,
     remindDaysBefore: [1, 3],
   }));
 

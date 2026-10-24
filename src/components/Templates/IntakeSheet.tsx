@@ -152,6 +152,11 @@ export function IntakeSheet({
       </div>
 
       <div>
+        <label htmlFor="style-input" className="block text-xs font-semibold text-stone-700 mb-1">Theme & Style Notes</label>
+        <input id="style-input" value={style} onChange={(e) => setStyle(e.target.value)} placeholder="e.g. Traditional rustic courtyard with marigold" className="w-full p-2 text-xs border border-stone-200 rounded-lg" />
+      </div>
+
+      <div>
         <label htmlFor="nn-input" className="block text-xs font-semibold text-stone-700 mb-1">Non-Negotiables (comma separated, max 5)</label>
         <input id="nn-input" value={rawNn} onChange={(e) => setRawNn(e.target.value)} placeholder="e.g. Pure vegetarian menu, Live dhol at entry, Drone photography" className="w-full p-2 text-xs border border-stone-200 rounded-lg" />
       </div>

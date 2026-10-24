@@ -57,7 +57,7 @@ function renderComparisonRow(label: string, beforeVal: string, afterVal: string,
   );
 }
 
-function renderDiffsList(diffs: readonly ReturnType<typeof simulateDisruption> extends { ok: true; value: infer V } ? V extends { diffs: infer D } ? D : never : never) {
+function renderDiffsList(diffs: DisruptionResult['diffs']) {
   if (diffs.length === 0) return null;
   return (
     <div>

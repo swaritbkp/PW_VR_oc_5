@@ -4,7 +4,6 @@ import React, { useMemo, useState } from 'react';
 import { formatInr } from '@/lib/format';
 import {
   propagate,
-  type PlanChange,
   type PlanState,
 } from '@/lib/plan/propagate';
 import type { VersionStore } from '@/lib/plan/versions';

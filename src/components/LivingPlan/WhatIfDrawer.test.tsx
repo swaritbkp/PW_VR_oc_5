@@ -21,7 +21,7 @@ describe('WhatIfDrawer Component (AC3, AC4, AC11)', () => {
     tasks: [
       {
         id: 'W01',
-        title: 'Book Venue',
+        name: 'Book Venue',
         category: 'venue',
         optimistic: 5,
         mostLikely: 7,
@@ -32,7 +32,7 @@ describe('WhatIfDrawer Component (AC3, AC4, AC11)', () => {
       },
       {
         id: 'W02',
-        title: 'Catering Tasting',
+        name: 'Catering Tasting',
         category: 'food',
         optimistic: 3,
         mostLikely: 5,
