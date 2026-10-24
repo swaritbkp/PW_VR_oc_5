@@ -2,7 +2,9 @@
 name: jashn-all
 description: Runs the entire Jashn build pipeline end to end, resuming from docs/STATE.json. Use when the user wants the whole app built, or inside /goal.
 ---
+
 # Jashn autopilot
+
 Run the full pipeline without asking questions. Start with `python scripts/gate.py status` and resume.
 Order: /jashn-discover, /jashn-design, /jashn-build M0 to M7 (graph, vendors, templates and resilience included),
 /jashn-assets (non-blocking), /jashn-evals, /jashn-harden, /jashn-verify, /jashn-deploy, /jashn-submit.

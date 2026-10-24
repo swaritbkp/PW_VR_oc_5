@@ -1,7 +1,9 @@
 ---
 trigger: always_on
 ---
+
 # Core rules
+
 - Simplest scalable solution first. One idea per module, small pure functions, explicit types.
 - TypeScript strict. No `any` without a comment. No dead code, commented-out code or TODO left behind.
 - Names read like the domain: computeSchedule, layoutEventGraph, simulateDisruption, rankVendors.

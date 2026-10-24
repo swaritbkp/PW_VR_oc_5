@@ -1,8 +1,10 @@
 ---
 trigger: model_decision
-description: "Apply when writing or changing Gemini calls, prompts, schemas, guardrails, evals or template adaptation."
+description: 'Apply when writing or changing Gemini calls, prompts, schemas, guardrails, evals or template adaptation.'
 ---
+
 # GenAI contract
+
 - Official Google GenAI SDK, JSON response schema, temperature <= 0.4, 30 s timeout, one repair retry.
 - The model adapts a chosen template: tasks with three-point estimates and dependencies, cost RANGES with a basis,
   ideas, risks, assumptions. Never totals, dates, floats, critical flags or vendor facts.

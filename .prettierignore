@@ -1,0 +1,8 @@
+seed/
+.next/
+coverage/
+node_modules/
+dist/
+build/
+assets/generated/
+*.log

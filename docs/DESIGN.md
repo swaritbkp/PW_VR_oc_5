@@ -12,19 +12,19 @@ Every color pair satisfies WCAG AA contrast (minimum 4.5:1 for normal text, 3:0:
 
 ### Semantic Tokens
 
-| Token | Semantic Role | Light Mode Hex | Dark Mode Hex | Light Contrast | Dark Contrast |
-|---|---|---|---|---|---|
-| `canvas-bg` | Page & canvas background | `#FAF9F6` (Warm Pearl) | `#121417` (Deep Slate) | Base surface | Base surface |
-| `surface-card` | Panels, cards, inspector | `#FFFFFF` (Pure White) | `#1C2024` (Charcoal) | 1.1:1 on bg | 1.2:1 on bg |
-| `border-subtle` | Dividers, grid lines, calendar ticks | `#E2E8F0` (Slate 200) | `#2A323D` (Slate 800) | 1.3:1 graphic | 1.4:1 graphic |
-| `text-primary` | Headings, node titles, primary numbers | `#1E293B` (Slate 900) | `#F8FAFC` (Slate 50) | 13.5:1 (AAA) | 15.8:1 (AAA) |
-| `text-secondary`| Meta text, float days, lead times | `#64748B` (Slate 500) | `#94A3B8` (Slate 400) | 4.6:1 (AA) | 5.2:1 (AA) |
-| `brand` | Primary CTAs, active highlights | `#9A3412` (Burnt Sienna) | `#FB923C` (Warm Amber) | 6.8:1 (AA) | 8.5:1 (AA) |
-| `critical` | Critical Ribbon, zero-float nodes | `#DC2626` (Crimson Ribbon) | `#F87171` (Light Coral) | 5.1:1 (AA) | 7.2:1 (AA) |
-| `buffer` | Float tails, flexible schedule paths | `#2563EB` (Royal Blue) | `#60A5FA` (Sky Blue) | 5.8:1 (AA) | 6.9:1 (AA) |
-| `done` | Completed tasks, booked vendors | `#059669` (Emerald) | `#34D399` (Mint) | 4.8:1 (AA) | 9.1:1 (AA) |
-| `at-risk` | Sentinel alerts, schedule crunch, delays | `#D97706` (Marigold Ochre) | `#FBBF24` (Sun Amber) | 4.7:1 (AA) | 11.2:1 (AA) |
-| `backup` | Dashed border ring, Plan B nodes | `#7C3AED` (Royal Indigo) | `#A78BFA` (Lavender) | 6.2:1 (AA) | 7.8:1 (AA) |
+| Token            | Semantic Role                            | Light Mode Hex             | Dark Mode Hex           | Light Contrast | Dark Contrast |
+| ---------------- | ---------------------------------------- | -------------------------- | ----------------------- | -------------- | ------------- |
+| `canvas-bg`      | Page & canvas background                 | `#FAF9F6` (Warm Pearl)     | `#121417` (Deep Slate)  | Base surface   | Base surface  |
+| `surface-card`   | Panels, cards, inspector                 | `#FFFFFF` (Pure White)     | `#1C2024` (Charcoal)    | 1.1:1 on bg    | 1.2:1 on bg   |
+| `border-subtle`  | Dividers, grid lines, calendar ticks     | `#E2E8F0` (Slate 200)      | `#2A323D` (Slate 800)   | 1.3:1 graphic  | 1.4:1 graphic |
+| `text-primary`   | Headings, node titles, primary numbers   | `#1E293B` (Slate 900)      | `#F8FAFC` (Slate 50)    | 13.5:1 (AAA)   | 15.8:1 (AAA)  |
+| `text-secondary` | Meta text, float days, lead times        | `#64748B` (Slate 500)      | `#94A3B8` (Slate 400)   | 4.6:1 (AA)     | 5.2:1 (AA)    |
+| `brand`          | Primary CTAs, active highlights          | `#9A3412` (Burnt Sienna)   | `#FB923C` (Warm Amber)  | 6.8:1 (AA)     | 8.5:1 (AA)    |
+| `critical`       | Critical Ribbon, zero-float nodes        | `#DC2626` (Crimson Ribbon) | `#F87171` (Light Coral) | 5.1:1 (AA)     | 7.2:1 (AA)    |
+| `buffer`         | Float tails, flexible schedule paths     | `#2563EB` (Royal Blue)     | `#60A5FA` (Sky Blue)    | 5.8:1 (AA)     | 6.9:1 (AA)    |
+| `done`           | Completed tasks, booked vendors          | `#059669` (Emerald)        | `#34D399` (Mint)        | 4.8:1 (AA)     | 9.1:1 (AA)    |
+| `at-risk`        | Sentinel alerts, schedule crunch, delays | `#D97706` (Marigold Ochre) | `#FBBF24` (Sun Amber)   | 4.7:1 (AA)     | 11.2:1 (AA)   |
+| `backup`         | Dashed border ring, Plan B nodes         | `#7C3AED` (Royal Indigo)   | `#A78BFA` (Lavender)    | 6.2:1 (AA)     | 7.8:1 (AA)    |
 
 ---
 
@@ -33,6 +33,7 @@ Every color pair satisfies WCAG AA contrast (minimum 4.5:1 for normal text, 3:0:
 Typography balances editorial grace with numerical precision. The type stack supports English, Hindi (Devanagari script), and Punjabi (Gurmukhi script) with unified metrics and optical readability.
 
 ### Typeface Stack
+
 1. **Body & Interface Sans**: `Noto Sans` (Google Font via `next/font/google` with subsets `latin`, `devanagari`, `gurmukhi`).
    - Clean, neutral, high x-height, and complete native glyph coverage for multilingual event descriptions and vendor notes.
 2. **Display & Heading Serif**: `Rozha One` / `Noto Serif Devanagari` & `Noto Serif Gurmukhi`.
@@ -41,6 +42,7 @@ Typography balances editorial grace with numerical precision. The type stack sup
    - Guarantees strict column alignment for budget ledgers, CPM float days, countdowns, and probability gauges.
 
 ### Scale & Hierarchy
+
 - **Display 1 (Event Title)**: 28px / 1.75rem | Bold (700) | Line-height 1.2
 - **Heading 2 (Lanes & Drawers)**: 18px / 1.125rem | Semi-Bold (600) | Line-height 1.3
 - **Heading 3 (Node Titles & Cards)**: 14px / 0.875rem | Medium (500) | Line-height 1.4
@@ -213,22 +215,22 @@ The user interface revolves around five primary views, designed mobile-first fro
 A rigorous design critique was conducted against generic starter templates and common design defaults:
 
 1. **Rejected Generic Aesthetic**:
-   - *Default*: Cream parchment background, serif italic headers, and clichéd terracotta accents typical of generic wedding invitation websites.
-   - *Critique*: Impractical for readability under sunlight, illegible for complex tabular scheduling, and feels like a greeting card rather than an actionable tool.
-   - *Adopted*: Warm Pearl (`#FAF9F6`) and Deep Slate (`#121417`) background paired with purposeful Burnt Sienna and Marigold Ochre accents, providing modern editorial dignity.
+   - _Default_: Cream parchment background, serif italic headers, and clichéd terracotta accents typical of generic wedding invitation websites.
+   - _Critique_: Impractical for readability under sunlight, illegible for complex tabular scheduling, and feels like a greeting card rather than an actionable tool.
+   - _Adopted_: Warm Pearl (`#FAF9F6`) and Deep Slate (`#121417`) background paired with purposeful Burnt Sienna and Marigold Ochre accents, providing modern editorial dignity.
 2. **Rejected Dashboard Dark Mode Cliche**:
-   - *Default*: Pitch black background with glowing cyan and neon purple accents.
-   - *Critique*: Looks like a crypto exchange or cyber security tool, completely alien to family event planners and stressful to read.
-   - *Adopted*: Soft Charcoal surfaces (`#1C2024`) with warm amber, coral, and lavender accents that retain celebratory warmth even in dark mode.
+   - _Default_: Pitch black background with glowing cyan and neon purple accents.
+   - _Critique_: Looks like a crypto exchange or cyber security tool, completely alien to family event planners and stressful to read.
+   - _Adopted_: Soft Charcoal surfaces (`#1C2024`) with warm amber, coral, and lavender accents that retain celebratory warmth even in dark mode.
 3. **Rejected SaaS Card Container Clutter**:
-   - *Default*: Boxing every piece of information into identical white rounded cards with heavy drop shadows.
-   - *Critique*: Wastes screen real estate and creates visual noise that distracts from the temporal relationships between tasks.
-   - *Adopted*: Canvas-first layout with clean horizontal category lanes, subtle grid ticks, and floating collapsible sheets.
+   - _Default_: Boxing every piece of information into identical white rounded cards with heavy drop shadows.
+   - _Critique_: Wastes screen real estate and creates visual noise that distracts from the temporal relationships between tasks.
+   - _Adopted_: Canvas-first layout with clean horizontal category lanes, subtle grid ticks, and floating collapsible sheets.
 4. **Rejected ALL-CAPS Eyebrows**:
-   - *Default*: Small tracked uppercase labels like `CRITICAL PATH` or `DAYS REMAINING` above every single heading.
-   - *Critique*: Poor legibility, especially when translated into Devanagari or Gurmukhi scripts where uppercase does not exist.
-   - *Adopted*: Clean sentence-case copy across all headers, badges, and tooltips.
+   - _Default_: Small tracked uppercase labels like `CRITICAL PATH` or `DAYS REMAINING` above every single heading.
+   - _Critique_: Poor legibility, especially when translated into Devanagari or Gurmukhi scripts where uppercase does not exist.
+   - _Adopted_: Clean sentence-case copy across all headers, badges, and tooltips.
 5. **Rejected Mobile Canvas Panning Traps**:
-   - *Default*: Forcing users on 360px phones to pinch-zoom and scroll a large desktop SVG canvas.
-   - *Critique*: High cognitive friction, missed dependencies, and frustrating touch navigation.
-   - *Adopted*: Automatic transition below 480px to a structured vertical timeline list, while retaining a 1-tap toggle to view the full graph if desired.
+   - _Default_: Forcing users on 360px phones to pinch-zoom and scroll a large desktop SVG canvas.
+   - _Critique_: High cognitive friction, missed dependencies, and frustrating touch navigation.
+   - _Adopted_: Automatic transition below 480px to a structured vertical timeline list, while retaining a 1-tap toggle to view the full graph if desired.

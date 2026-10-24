@@ -2,7 +2,9 @@
 name: ref-event-domain
 description: Reference: India-centric event knowledge, budget bands, vendor questions. Not a command; use when generating or sanity-checking plans.
 ---
+
 # Event domain (heuristics, not market data)
+
 Budget share bands (% before 8-10% contingency). Wedding: venue 10-15, catering 28-38, decor 8-12, photo/video 6-10, attire/jewellery 10-15 (optional),
 music 3-6, makeup 2-4, invitations 2-4, travel/stay 4-8, rituals 2-3. Kids birthday: venue+food 45-55, decor 10-15, cake 5-8, entertainment 10-15,
 gifts 6-10, photos 3-5. Community: food 25-35, decor 15-20, sound/stage 10-15, activities 10-15, permits/security/cleanup 8-12, promo 3-5.

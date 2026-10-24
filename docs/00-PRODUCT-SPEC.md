@@ -1,30 +1,36 @@
 # Jashn - Product Spec v3 (Challenge 5: Celebration & Event Planner)
 
 ## Brief
+
 A GenAI planning assistant for weddings, birthdays and community events: budgets, timelines, vendor
 checklists, personalised ideas. Deployed and functional. Scored on Code Quality, Security, Efficiency,
 Testing, Accessibility and Problem Statement Alignment.
 
 ## The friction
+
 Planning is hard because everything is coupled and uncertain. Guests move food, venue and gifts. The date
 cannot move but vendors slip. Season, weather and city change what is possible. Families coordinate on
 WhatsApp with no single source of truth, and nobody has a Plan B until something breaks.
 
 ## One line
+
 Jashn is a living Event Graph: pick a contemporary template, set the date and place, and work on one visual
 graph that knows the calendar, finds real vendors nearby, and shows what happens if something goes wrong.
 
 ## The main artifact: the Event Graph
+
 Everything the user does happens on one canvas (see docs/08). Nodes are tasks, positioned by calendar date and
 grouped in lanes. The critical chain is a bold ribbon to the event-day marker. Each node shows its dates, its
 float, its status, its chosen vendor and a Plan B badge. Select a node to see vendors near the event on a map,
 contact them, hold backups, and simulate disruptions.
 
 ## Why PERT and CPM
+
 An event is a project with a fixed deadline, dependencies and uncertain durations. CPM gives the critical path
 and float. PERT gives P(ready on time). Monte Carlo gives P50/P80/P90. Season multiplies booking lead times.
 
 ## Wedge
+
 1. One date-aware, location-aware graph as the workspace, with critical path, float and P(ready).
 2. Real vendors near the event for every need, on a map and list, selectable and contactable in one tap.
 3. Resilience built in: Plan B vendors, a risk register by season, a disruption simulator, a resilience score.
@@ -34,10 +40,12 @@ and float. PERT gives P(ready on time). Monte Carlo gives P50/P80/P90. Season mu
 7. India fit: INR, lakh formatting, north-India seasons and festivals, WhatsApp, English/Hindi/Punjabi.
 
 ## Personas
+
 Priya (Chandigarh, sister's wedding, 300 guests, INR 25L). Rohan (Ludhiana, son's 5th birthday, 40 guests,
 INR 40k, two weeks out). Mrs Kaur (Mohali RWA secretary, society Lohri, 150 residents, INR 60k pooled).
 
 ## MVP scope
+
 1. Template gallery (12) with Flow art and a Start blank option. Intake: type, template, city, date, guests,
    budget, style notes, up to 5 non-negotiables, language.
 2. Event Graph workspace (docs/08) with node inspector, date and location context, backup badges.
@@ -48,13 +56,16 @@ INR 40k, two weeks out). Mrs Kaur (Mohali RWA secretary, society Lohri, 150 resi
 7. Share: WhatsApp summary, print view, .ics with reminders. Audit panel.
 
 ## Non-goals (state in README as deliberate scoping)
+
 Payments, in-app booking, collaboration, native app, runtime image generation, scraping.
 
 ## Stretch (locked until the final gate is green)
+
 Day-of run sheet, RSVP counter, shareable read-only link, Firestore sync, crash-cost optimiser, live weather
 forecast for events within 14 days, earned-value health score.
 
 ## Acceptance criteria (every AC must appear in at least one test name)
+
 - AC1 Totals reconcile to the budget within INR 1, else a visible over/under banner with the gap.
 - AC2 No fabricated facts: vendors only from Places results; costs show a basis and are labelled estimates.
 - AC3 Rebalance touches only nodes whose drivers changed; diff shown; undo restores the previous plan exactly.

@@ -2,10 +2,7 @@
   "mcpServers": {
     "gflow": {
       "command": "gflow",
-      "args": [
-        "mcp",
-        "run"
-      ],
+      "args": ["mcp", "run"],
       "timeoutSeconds": 600,
       "disabled": true
     }

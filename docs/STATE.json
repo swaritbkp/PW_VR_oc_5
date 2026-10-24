@@ -1,8 +1,5 @@
 {
   "phase": "build",
-  "passed": [
-    "discover",
-    "design"
-  ],
+  "passed": ["discover", "design"],
   "updated": "2026-10-24T16:05:44+00:00"
 }

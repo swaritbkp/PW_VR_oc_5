@@ -1,4 +1,5 @@
 # Prompt for Google Stitch (if connected)
+
 Design a mobile-first web app called Jashn for planning weddings, birthdays and community events in India.
 Home screen: the Event Graph workspace. A calendar-based graph where tasks are nodes positioned by date in lanes (planning, venue, food, decor, media,
 entertainment, invites, logistics, event day). The critical chain is a bold continuous ribbon to an event-day marker; tasks with spare time have soft tails;

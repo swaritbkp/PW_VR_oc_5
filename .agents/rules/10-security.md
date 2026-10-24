@@ -1,7 +1,9 @@
 ---
 trigger: always_on
 ---
+
 # Security rules
+
 - Server-only: GEMINI_API_KEY, GOOGLE_PLACES_API_KEY. The only public key is NEXT_PUBLIC_MAPS_BROWSER_KEY, restricted
   by HTTP referrer and to the Maps JavaScript API. No other NEXT_PUBLIC key, secret or token.
 - zod-validate requests, model output, Places responses and localStorage. Reject, never coerce silently.

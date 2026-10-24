@@ -1,0 +1,172 @@
+import { scaleForBudget, scaleForGuests, type BudgetLine } from '../budget/engine';
+import { daysBetween } from '../dates';
+import type { Schedule } from '../schedule/types';
+import type { Driver, PlanTask } from './types';
+import type { IntakeInput } from './schemas';
+
+export interface PlanState {
+  readonly id: string;
+  readonly intake: IntakeInput;
+  readonly tasks: readonly PlanTask[];
+  readonly budgetLines: readonly BudgetLine[];
+  readonly targetDays: number;
+}
+
+export type PlanChange =
+  | { readonly kind: 'guests'; readonly guests: number }
+  | { readonly kind: 'budget'; readonly budgetInr: number }
+  | { readonly kind: 'date'; readonly date: string }
+  | { readonly kind: 'city'; readonly city: string };
+
+export interface PropagateResult {
+  readonly plan: PlanState;
+  readonly dirtyIds: readonly string[];
+  readonly diff: readonly string[];
+}
+
+export interface CrunchOption {
+  readonly taskId: string;
+  readonly taskName: string;
+  readonly action: 'drop' | 'compress' | 'parallelise';
+  readonly daysSaved: number;
+  readonly reason: string;
+}
+
+export interface CrunchAnalysis {
+  readonly shortfallDays: number;
+  readonly isCrunch: boolean;
+  readonly options: readonly CrunchOption[];
+}
+
+function updateTasksForDriver(
+  tasks: readonly PlanTask[],
+  driver: Driver,
+  scaleFactor: number,
+): { tasks: readonly PlanTask[]; dirtyIds: string[] } {
+  const dirtyIds: string[] = [];
+  const updated = tasks.map((t) => {
+    if (!t.drivers.includes(driver)) return t;
+    dirtyIds.push(t.id);
+    if (scaleFactor === 1) return t;
+    return {
+      ...t,
+      optimistic: Math.round(t.optimistic * scaleFactor),
+      mostLikely: Math.round(t.mostLikely * scaleFactor),
+      pessimistic: Math.round(t.pessimistic * scaleFactor),
+    };
+  });
+  return { tasks: updated, dirtyIds };
+}
+
+function handleGuests(plan: PlanState, guests: number): PropagateResult {
+  const diff = [`Guests changed from ${plan.intake.guests} to ${guests}`];
+  const bLines = scaleForGuests(plan.budgetLines, guests, plan.intake.guests);
+  const dirtyIds: string[] = [];
+  for (const b of bLines) {
+    if (b.drivers.includes('guests')) dirtyIds.push(b.id);
+  }
+  const tResult = updateTasksForDriver(plan.tasks, 'guests', 1);
+  dirtyIds.push(...tResult.dirtyIds);
+  return {
+    plan: {
+      ...plan,
+      intake: { ...plan.intake, guests },
+      budgetLines: bLines,
+      tasks: tResult.tasks,
+    },
+    dirtyIds,
+    diff,
+  };
+}
+
+function handleBudget(plan: PlanState, budgetInr: number): PropagateResult {
+  const diff = [`Budget changed to ₹${budgetInr}`];
+  const currentSpend = plan.budgetLines.reduce((sum, b) => sum + b.rateInr, 0);
+  const scaled = scaleForBudget(plan.budgetLines, budgetInr, currentSpend);
+  diff.push(...scaled.cuts);
+  const dirtyIds: string[] = [];
+  for (const b of scaled.lines) {
+    if (b.drivers.includes('budget') && !b.locked) dirtyIds.push(b.id);
+  }
+  return {
+    plan: { ...plan, intake: { ...plan.intake, budgetInr }, budgetLines: scaled.lines },
+    dirtyIds,
+    diff,
+  };
+}
+
+function handleDateOrCity(
+  plan: PlanState,
+  change: { kind: 'date'; date: string } | { kind: 'city'; city: string },
+): PropagateResult {
+  if (change.kind === 'date') {
+    const today = new Date().toISOString().slice(0, 10);
+    const targetDays = Math.max(1, daysBetween(today, change.date) ?? 1);
+    const diff = [`Date moved to ${change.date} (${targetDays} days remaining)`];
+    const tResult = updateTasksForDriver(plan.tasks, 'date', 1);
+    return {
+      plan: {
+        ...plan,
+        intake: { ...plan.intake, date: change.date },
+        targetDays,
+        tasks: tResult.tasks,
+      },
+      dirtyIds: tResult.dirtyIds,
+      diff,
+    };
+  }
+  const diff = [`City changed to ${change.city}`];
+  const tResult = updateTasksForDriver(plan.tasks, 'city', 1);
+  return {
+    plan: { ...plan, intake: { ...plan.intake, city: change.city }, tasks: tResult.tasks },
+    dirtyIds: tResult.dirtyIds,
+    diff,
+  };
+}
+
+/** Propagates changes across the plan, updating ONLY dirty nodes per AC3. */
+export function propagate(plan: PlanState, change: PlanChange): PropagateResult {
+  if (change.kind === 'guests') return handleGuests(plan, change.guests);
+  if (change.kind === 'budget') return handleBudget(plan, change.budgetInr);
+  return handleDateOrCity(plan, change);
+}
+
+/** Analyzes schedule crunch and ranks mitigation options per AC4. */
+export function rankCrunchOptions(
+  schedule: Schedule,
+  tasks: readonly PlanTask[],
+  availableDays: number,
+): CrunchAnalysis {
+  const shortfall = Math.ceil(schedule.projectDuration - availableDays);
+  if (shortfall <= 0) return { shortfallDays: 0, isCrunch: false, options: [] };
+
+  const byId = new Map(tasks.map((t) => [t.id, t]));
+  const critical = schedule.tasks.filter((t) => t.critical);
+  const options: CrunchOption[] = [];
+
+  for (const st of critical) {
+    const orig = byId.get(st.id);
+    if (!orig) continue;
+    if (orig.optional) {
+      options.push({
+        taskId: orig.id,
+        taskName: orig.name,
+        action: 'drop',
+        daysSaved: Math.round(st.expected),
+        reason: 'Optional non-core task can be dropped',
+      });
+    }
+    const compressible = Math.round(st.expected - orig.optimistic);
+    if (compressible > 0) {
+      options.push({
+        taskId: orig.id,
+        taskName: orig.name,
+        action: 'compress',
+        daysSaved: compressible,
+        reason: `Fast-track to optimistic ${orig.optimistic}d`,
+      });
+    }
+  }
+  options.sort((a, b) => b.daysSaved - a.daysSaved);
+  return { shortfallDays: shortfall, isCrunch: true, options };
+}
