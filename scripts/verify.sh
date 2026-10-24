@@ -9,6 +9,8 @@ step "tests + coverage"; npx vitest run --coverage
 step "dead code";        npx knip
 step "import cycles";    npx madge --circular --extensions ts,tsx src
 step "jsdoc on lib exports"; python3 scripts/gate.py jsdoc
+step "code quality limits";  python3 scripts/gate.py quality
+step "efficiency checks";    python3 scripts/gate.py efficiency
 step "script tests";     python3 -m unittest discover -s scripts -p "test_*.py"
 step "art manifest";     python3 scripts/flow_assets.py check
 step "offline evals";    npm run evals --if-present

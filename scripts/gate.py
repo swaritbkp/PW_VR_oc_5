@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""Stage gates for the Jashn SDLC/ADLC pipeline (Antigravity).
+"""Stage gates for the Jashn SDLC/ADLC pipeline (Antigravity 10/10 Edition).
 
   python scripts/gate.py status          show the current phase and every gate
   python scripts/gate.py check [phase]   run one phase's checks (default: current)
   python scripts/gate.py next            advance if the current phase passes
   python scripts/gate.py trace           every AC id in the spec is referenced by a test
   python scripts/gate.py jsdoc           every exported lib function has a JSDoc block
+  python scripts/gate.py quality         enforce <=250 lines/file, <=40 lines/fn, <=4 params, complexity <=8
+  python scripts/gate.py efficiency      enforce dynamic imports, memoisation and parallel GenAI calls
 Add --run to include scripts/verify.sh in the verify phase.
 """
 import json
@@ -21,6 +23,11 @@ STATE = ROOT / "docs" / "STATE.json"
 MIN_AXIS_SCORE = 9
 MIN_AC_IDS = 30
 MIN_TEST_FILES = 12
+MAX_FILE_LINES = 250
+MAX_FN_LINES = 40
+MAX_PARAMS = 4
+MAX_COMPLEXITY = 8
+
 AXES = ["Code Quality", "Security", "Efficiency", "Testing", "Accessibility", "Problem Statement Alignment"]
 DESIGN_SECTIONS = ["## Palette", "## Type", "## Layout", "## Principles", "## Critique"]
 CORE_FILES = [
@@ -34,7 +41,16 @@ CORE_FILES = [
     "src/app/api/plan/route.ts",
     "src/app/api/vendors/search/route.ts",
 ]
-EXPORT_FN = re.compile(r"^export\s+(?:async\s+)?function\s+\w+|^export\s+const\s+\w+\s*=\s*(?:async\s*)?\(")
+EXPORT_FN = re.compile(
+    r"^export\s+(?:async\s+)?function\s+\w+|"
+    r"^export\s+const\s+\w+(?:\s*:[^=]+)?\s*=\s*(?:async\s*)?(?:<[^>]+>\s*)?\("
+)
+FN_START = re.compile(
+    r"^(?:export\s+)?(?:async\s+)?function\s+(\w+)\s*(?:<[^>]*>)?\s*\(([^)]*)\)|"
+    r"^(?:export\s+)?const\s+(\w+)(?:\s*:[^=]+)?\s*=\s*(?:async\s*)?(?:<[^>]*>)?\s*\(([^)]*)\)\s*(?::[^=]+)?=>"
+)
+BRANCH_TOKENS = re.compile(r"\b(if|else\s+if|for|while|case|catch)\b|\?\?|\?[^.:]|&&|\|\|")
+RAW_ANY = re.compile(r":\s*any\b|<any>")
 
 
 def read(rel):
@@ -49,8 +65,25 @@ def ac_ids():
 
 def test_files():
     pattern = re.compile(r"\.(test|spec)\.tsx?$")
-    found = [p for base in ("src", "tests") if (ROOT / base).exists() for p in (ROOT / base).rglob("*") if pattern.search(p.name)]
+    found = [
+        p
+        for base in ("src", "tests")
+        if (ROOT / base).exists()
+        for p in (ROOT / base).rglob("*")
+        if pattern.search(p.name)
+    ]
     return found + sorted((ROOT / "scripts").glob("test_*.py"))
+
+
+def source_files():
+    src = ROOT / "src"
+    if not src.exists():
+        return []
+    return [
+        p
+        for p in sorted(src.rglob("*"))
+        if p.suffix in (".ts", ".tsx") and not re.search(r"\.(test|spec)\.tsx?$", p.name)
+    ]
 
 
 def check_trace():
@@ -78,9 +111,87 @@ def check_jsdoc():
     return problems
 
 
+def count_params(param_str):
+    cleaned = param_str.strip()
+    if not cleaned:
+        return 0
+    depth = 0
+    count = 1
+    for ch in cleaned:
+        if ch in "<({[":
+            depth += 1
+        elif ch in ">)}]":
+            depth -= 1
+        elif ch == "," and depth == 0:
+            count += 1
+    return count
+
+
+def check_quality():
+    problems = []
+    for path in source_files():
+        rel = path.relative_to(ROOT)
+        lines = path.read_text(encoding="utf-8").splitlines()
+        if len(lines) > MAX_FILE_LINES:
+            problems.append(f"{rel}: {len(lines)} lines > {MAX_FILE_LINES}")
+        for idx, line in enumerate(lines):
+            if RAW_ANY.search(line) and "//" not in line and "/*" not in line:
+                problems.append(f"{rel}:{idx + 1} uses `any` without an inline comment")
+            m = FN_START.match(line.strip())
+            if not m:
+                continue
+            name = m.group(1) or m.group(3)
+            params = m.group(2) if m.group(1) else m.group(4)
+            pcount = count_params(params or "")
+            if pcount > MAX_PARAMS:
+                problems.append(f"{rel}:{idx + 1} {name}() has {pcount} params > {MAX_PARAMS}")
+            if "{" not in line:
+                continue
+            depth = 0
+            end_idx = idx
+            complexity = 1
+            for scan in range(idx, len(lines)):
+                code_line = re.sub(r"//.*$", "", lines[scan])
+                if scan > idx:
+                    complexity += len(BRANCH_TOKENS.findall(code_line))
+                depth += code_line.count("{") - code_line.count("}")
+                if depth <= 0 and scan >= idx:
+                    end_idx = scan
+                    break
+            fn_lines = end_idx - idx + 1
+            if fn_lines > MAX_FN_LINES:
+                problems.append(f"{rel}:{idx + 1} {name}() is {fn_lines} lines > {MAX_FN_LINES}")
+            if complexity > MAX_COMPLEXITY:
+                problems.append(f"{rel}:{idx + 1} {name}() complexity {complexity} > {MAX_COMPLEXITY}")
+    return problems
+
+
+def check_efficiency():
+    problems = []
+    src = ROOT / "src"
+    if not src.exists():
+        return problems
+    all_code = "\n".join(p.read_text(encoding="utf-8", errors="ignore") for p in source_files())
+    if (src / "components").exists() and len(list((src / "components").rglob("*.tsx"))) >= 4:
+        if "useMemo" not in all_code:
+            problems.append("UI components do not use `useMemo` to memoise derived schedule/graph data")
+        if "dynamic(" not in all_code and "React.lazy" not in all_code:
+            problems.append("Heavy components (VendorMap / charts) must use `next/dynamic` or `React.lazy`")
+    if (src / "server" / "genai").exists():
+        genai_code = "\n".join(
+            p.read_text(encoding="utf-8", errors="ignore") for p in (src / "server" / "genai").rglob("*.ts")
+        )
+        if genai_code and "Promise.all" not in genai_code:
+            problems.append("src/server/genai must run parallel LLM calls via `Promise.all`")
+    return problems
+
+
 def check_selfscore():
     text = read("docs/SELFSCORE.md")
-    scores = {m.group(1).strip(): float(m.group(2)) for m in re.finditer(r"^\|\s*([A-Za-z ]+?)\s*\|\s*(\d+(?:\.\d+)?)\s*\|", text, re.M)}
+    scores = {
+        m.group(1).strip(): float(m.group(2))
+        for m in re.finditer(r"^\|\s*([A-Za-z ]+?)\s*\|\s*(\d+(?:\.\d+)?)\s*\|", text, re.M)
+    }
     problems = []
     for axis in AXES:
         if axis not in scores:
@@ -111,11 +222,11 @@ def check_build(_run):
     problems = [f"missing {rel}" for rel in CORE_FILES if not (ROOT / rel).exists()]
     if len(test_files()) < MIN_TEST_FILES:
         problems.append(f"need at least {MIN_TEST_FILES} test files")
-    return problems
+    return problems + check_quality() + check_efficiency()
 
 
 def check_verify(run):
-    problems = check_trace() + check_jsdoc() + check_selfscore()
+    problems = check_trace() + check_jsdoc() + check_quality() + check_efficiency() + check_selfscore()
     if run and subprocess.run(["bash", "scripts/verify.sh"], cwd=ROOT).returncode != 0:
         problems.append("scripts/verify.sh failed")
     return problems
@@ -131,7 +242,13 @@ def check_release(_run):
     return problems
 
 
-CHECKS = {"discover": check_discover, "design": check_design, "build": check_build, "verify": check_verify, "release": check_release}
+CHECKS = {
+    "discover": check_discover,
+    "design": check_design,
+    "build": check_build,
+    "verify": check_verify,
+    "release": check_release,
+}
 
 
 def load_state():
@@ -161,6 +278,10 @@ def main(argv):
         return 0 if report("trace", check_trace()) else 1
     if command == "jsdoc":
         return 0 if report("jsdoc", check_jsdoc()) else 1
+    if command == "quality":
+        return 0 if report("quality", check_quality()) else 1
+    if command == "efficiency":
+        return 0 if report("efficiency", check_efficiency()) else 1
     if command == "status":
         print(f"current phase: {state['phase']}   passed: {', '.join(state['passed']) or 'none'}")
         for phase in PHASES:

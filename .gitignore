@@ -6,3 +6,6 @@ coverage/
 assets/generated/
 *.log
 .DS_Store
+__pycache__/
+*.py[cod]
+tsconfig.tsbuildinfo
