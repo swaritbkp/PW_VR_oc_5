@@ -1,0 +1,228 @@
+{
+  "scenarioId": "golden-02-crunch-birthday",
+  "templateId": "birthday-dino-explorer",
+  "intake": {
+    "eventType": "birthday",
+    "templateId": "birthday-dino-explorer",
+    "city": "Ludhiana",
+    "date": "2026-10-29",
+    "guests": 40,
+    "budgetInr": 40000,
+    "style": "Dino adventure",
+    "nonNegotiables": ["T-Rex cake"],
+    "language": "en"
+  },
+  "core": {
+    "tasks": [
+      {
+        "id": "B01",
+        "name": "Set budget, guest list and theme",
+        "optimistic": 0.5,
+        "mostLikely": 1,
+        "pessimistic": 3,
+        "dependsOn": [],
+        "category": "planning",
+        "drivers": ["budget", "guests"],
+        "why": "Decisions here unlock bookings and keep the plan inside the budget."
+      },
+      {
+        "id": "B02",
+        "name": "Pick venue",
+        "optimistic": 1,
+        "mostLikely": 3,
+        "pessimistic": 10,
+        "dependsOn": ["B01"],
+        "category": "venue",
+        "drivers": ["guests", "budget", "city"],
+        "why": "The venue fixes the date, the guest limit and where everything else happens.",
+        "vendorNeed": "venue"
+      },
+      {
+        "id": "B03",
+        "name": "Book venue",
+        "optimistic": 0.5,
+        "mostLikely": 1,
+        "pessimistic": 3,
+        "dependsOn": ["B02"],
+        "category": "venue",
+        "drivers": ["guests", "budget", "city"],
+        "why": "The venue fixes the date, the guest limit and where everything else happens.",
+        "vendorNeed": "venue",
+        "bookingFor": "venue"
+      },
+      {
+        "id": "B04",
+        "name": "Order cake",
+        "optimistic": 0.5,
+        "mostLikely": 1,
+        "pessimistic": 3,
+        "dependsOn": ["B01"],
+        "category": "food",
+        "drivers": ["guests", "budget"],
+        "why": "Catering is the largest cost and scales with the guest count.",
+        "vendorNeed": "cake",
+        "bookingFor": "cake"
+      },
+      {
+        "id": "B05",
+        "name": "Book entertainer",
+        "optimistic": 1,
+        "mostLikely": 3,
+        "pessimistic": 10,
+        "dependsOn": ["B03"],
+        "category": "entertainment",
+        "drivers": ["budget", "city"],
+        "why": "Music and activities set the mood and need confirmed slots.",
+        "vendorNeed": "entertainer",
+        "bookingFor": "entertainer"
+      },
+      {
+        "id": "B06",
+        "name": "Send invites",
+        "optimistic": 0.5,
+        "mostLikely": 1,
+        "pessimistic": 2,
+        "dependsOn": ["B03"],
+        "category": "invites",
+        "drivers": ["guests"],
+        "why": "Guests need notice, and the replies give the final headcount."
+      },
+      {
+        "id": "B07",
+        "name": "Order decor and balloons",
+        "optimistic": 1,
+        "mostLikely": 3,
+        "pessimistic": 7,
+        "dependsOn": ["B03"],
+        "category": "decor",
+        "drivers": ["budget", "city"],
+        "why": "Decor and rentals need lead time and depend on the venue.",
+        "vendorNeed": "decorator",
+        "bookingFor": "decorator"
+      },
+      {
+        "id": "B08",
+        "name": "Order return gifts",
+        "optimistic": 1,
+        "mostLikely": 3,
+        "pessimistic": 7,
+        "dependsOn": ["B01"],
+        "category": "logistics",
+        "drivers": ["guests", "city"],
+        "why": "Travel, stay and supplies are easy to forget and hard to fix late.",
+        "vendorNeed": "return_gifts",
+        "bookingFor": "return_gifts"
+      },
+      {
+        "id": "B09",
+        "name": "Confirm menu and caterer",
+        "optimistic": 1,
+        "mostLikely": 2,
+        "pessimistic": 5,
+        "dependsOn": ["B03"],
+        "category": "food",
+        "drivers": ["guests", "budget"],
+        "why": "Catering is the largest cost and scales with the guest count.",
+        "vendorNeed": "caterer",
+        "bookingFor": "caterer"
+      },
+      {
+        "id": "B10",
+        "name": "Collect RSVPs and final count",
+        "optimistic": 2,
+        "mostLikely": 4,
+        "pessimistic": 7,
+        "dependsOn": ["B06"],
+        "category": "invites",
+        "drivers": ["guests"],
+        "why": "Guests need notice, and the replies give the final headcount."
+      },
+      {
+        "id": "B11",
+        "name": "Event day",
+        "optimistic": 0,
+        "mostLikely": 0,
+        "pessimistic": 0,
+        "dependsOn": ["B04", "B05", "B07", "B08", "B09", "B10", "B12"],
+        "category": "milestone",
+        "drivers": ["date"],
+        "why": "The fixed date every other task works back from."
+      },
+      {
+        "id": "B12",
+        "name": "Plan fossil-dig sandbox activity",
+        "optimistic": 1,
+        "mostLikely": 2,
+        "pessimistic": 5,
+        "dependsOn": ["B03"],
+        "category": "entertainment",
+        "drivers": ["budget", "city"],
+        "why": "Music and activities set the mood and need confirmed slots."
+      }
+    ],
+    "budgetLines": [
+      {
+        "id": "B01",
+        "category": "venue",
+        "name": "Venue rental charge",
+        "unit": "fixed",
+        "rateInr": 10000,
+        "drivers": ["budget"],
+        "notes": "Estimate for venue"
+      },
+      {
+        "id": "B02",
+        "category": "food",
+        "name": "Catering feast per head",
+        "unit": "per_head",
+        "rateInr": 350,
+        "drivers": ["guests"],
+        "notes": "Estimate per head for guests"
+      },
+      {
+        "id": "B03",
+        "category": "decor",
+        "name": "Thematic decor and styling",
+        "unit": "fixed",
+        "rateInr": 5200,
+        "drivers": ["budget"],
+        "notes": "Estimate for decor"
+      },
+      {
+        "id": "B04",
+        "category": "media",
+        "name": "Photography and video coverage",
+        "unit": "fixed",
+        "rateInr": 3200,
+        "drivers": ["budget"],
+        "notes": "Estimate for photography"
+      },
+      {
+        "id": "B05",
+        "category": "entertainment",
+        "name": "Live music and sound setup",
+        "unit": "fixed",
+        "rateInr": 2800,
+        "drivers": ["budget"],
+        "notes": "Estimate for entertainment"
+      }
+    ]
+  },
+  "extras": {
+    "ideas": ["Incorporate traditional dinosaur touches", "Provide local artisan welcome hampers"],
+    "vendorQuestions": [
+      {
+        "need": "venue",
+        "questions": ["What are the setup timing windows and noise cut-off rules?"]
+      }
+    ],
+    "assumptions": [
+      "Weather permits scheduled outdoor activities",
+      "Guest count remains within 10% tolerance"
+    ],
+    "risks": [
+      "High-season vendor availability crunch in chosen city",
+      "Power fluctuations requiring backup generators"
+    ]
+  }
+}

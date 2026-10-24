@@ -1,0 +1,300 @@
+{
+  "scenarioId": "wedding-retro-sangeet",
+  "templateId": "wedding-retro-sangeet",
+  "intake": {
+    "eventType": "wedding",
+    "templateId": "wedding-retro-sangeet",
+    "city": "Chandigarh",
+    "date": "2027-11-20",
+    "guests": 200,
+    "budgetInr": 1500000,
+    "style": "sangeet, retro, dance, music",
+    "nonNegotiables": ["Authentic cultural elements"],
+    "language": "en"
+  },
+  "core": {
+    "tasks": [
+      {
+        "id": "W01",
+        "name": "Set budget and draft guest list",
+        "optimistic": 1,
+        "mostLikely": 3,
+        "pessimistic": 7,
+        "dependsOn": [],
+        "category": "planning",
+        "drivers": ["budget", "guests"],
+        "why": "Decisions here unlock bookings and keep the plan inside the budget."
+      },
+      {
+        "id": "W02",
+        "name": "Choose date and ceremony format",
+        "optimistic": 2,
+        "mostLikely": 5,
+        "pessimistic": 14,
+        "dependsOn": ["W01"],
+        "category": "planning",
+        "drivers": ["budget", "guests"],
+        "why": "Decisions here unlock bookings and keep the plan inside the budget."
+      },
+      {
+        "id": "W03",
+        "name": "Shortlist and visit venues",
+        "optimistic": 7,
+        "mostLikely": 14,
+        "pessimistic": 30,
+        "dependsOn": ["W02"],
+        "category": "venue",
+        "drivers": ["guests", "budget", "city"],
+        "why": "The venue fixes the date, the guest limit and where everything else happens.",
+        "vendorNeed": "venue"
+      },
+      {
+        "id": "W04",
+        "name": "Book venue",
+        "optimistic": 1,
+        "mostLikely": 3,
+        "pessimistic": 10,
+        "dependsOn": ["W03"],
+        "category": "venue",
+        "drivers": ["guests", "budget", "city"],
+        "why": "The venue fixes the date, the guest limit and where everything else happens.",
+        "vendorNeed": "venue",
+        "bookingFor": "venue"
+      },
+      {
+        "id": "W05",
+        "name": "Book caterer",
+        "optimistic": 3,
+        "mostLikely": 7,
+        "pessimistic": 21,
+        "dependsOn": ["W04"],
+        "category": "food",
+        "drivers": ["guests", "budget"],
+        "why": "Catering is the largest cost and scales with the guest count.",
+        "vendorNeed": "caterer",
+        "bookingFor": "caterer"
+      },
+      {
+        "id": "W06",
+        "name": "Book photo and video",
+        "optimistic": 3,
+        "mostLikely": 7,
+        "pessimistic": 21,
+        "dependsOn": ["W04"],
+        "category": "media",
+        "drivers": ["budget", "city"],
+        "why": "Good photo and video teams book out early in peak season.",
+        "vendorNeed": "photographer",
+        "bookingFor": "photographer"
+      },
+      {
+        "id": "W07",
+        "name": "Book decorator",
+        "optimistic": 3,
+        "mostLikely": 7,
+        "pessimistic": 21,
+        "dependsOn": ["W04"],
+        "category": "decor",
+        "drivers": ["budget", "city"],
+        "why": "Decor and rentals need lead time and depend on the venue.",
+        "vendorNeed": "decorator",
+        "bookingFor": "decorator"
+      },
+      {
+        "id": "W08",
+        "name": "Book music",
+        "optimistic": 2,
+        "mostLikely": 5,
+        "pessimistic": 14,
+        "dependsOn": ["W04"],
+        "category": "entertainment",
+        "drivers": ["budget", "city"],
+        "why": "Music and activities set the mood and need confirmed slots.",
+        "vendorNeed": "music",
+        "bookingFor": "music"
+      },
+      {
+        "id": "W09",
+        "name": "Design and print invitations",
+        "optimistic": 7,
+        "mostLikely": 10,
+        "pessimistic": 21,
+        "dependsOn": ["W02"],
+        "category": "invites",
+        "drivers": ["guests"],
+        "why": "Guests need notice, and the replies give the final headcount.",
+        "vendorNeed": "invitations"
+      },
+      {
+        "id": "W10",
+        "name": "Send invitations",
+        "optimistic": 1,
+        "mostLikely": 3,
+        "pessimistic": 7,
+        "dependsOn": ["W09"],
+        "category": "invites",
+        "drivers": ["guests"],
+        "why": "Guests need notice, and the replies give the final headcount."
+      },
+      {
+        "id": "W11",
+        "name": "Arrange stay and transport",
+        "optimistic": 5,
+        "mostLikely": 10,
+        "pessimistic": 21,
+        "dependsOn": ["W04"],
+        "category": "logistics",
+        "drivers": ["guests", "city"],
+        "why": "Travel, stay and supplies are easy to forget and hard to fix late.",
+        "vendorNeed": "stay",
+        "bookingFor": "stay",
+        "optional": true
+      },
+      {
+        "id": "W12",
+        "name": "Attire, jewellery and makeup",
+        "optimistic": 14,
+        "mostLikely": 30,
+        "pessimistic": 60,
+        "dependsOn": ["W02"],
+        "category": "attire",
+        "drivers": ["budget"],
+        "why": "Outfits and styling take the longest to finish and fit.",
+        "vendorNeed": "makeup",
+        "bookingFor": "makeup"
+      },
+      {
+        "id": "W13",
+        "name": "Menu tasting and finalise",
+        "optimistic": 1,
+        "mostLikely": 3,
+        "pessimistic": 7,
+        "dependsOn": ["W05"],
+        "category": "food",
+        "drivers": ["guests", "budget"],
+        "why": "Catering is the largest cost and scales with the guest count."
+      },
+      {
+        "id": "W14",
+        "name": "Collect RSVPs and final headcount",
+        "optimistic": 7,
+        "mostLikely": 14,
+        "pessimistic": 21,
+        "dependsOn": ["W10"],
+        "category": "invites",
+        "drivers": ["guests"],
+        "why": "Guests need notice, and the replies give the final headcount."
+      },
+      {
+        "id": "W15",
+        "name": "Final confirmations and run sheet",
+        "optimistic": 2,
+        "mostLikely": 4,
+        "pessimistic": 8,
+        "dependsOn": ["W05", "W06", "W07", "W08", "W13", "W14"],
+        "category": "planning",
+        "drivers": ["budget", "guests"],
+        "why": "Decisions here unlock bookings and keep the plan inside the budget."
+      },
+      {
+        "id": "W16",
+        "name": "Event day",
+        "optimistic": 0,
+        "mostLikely": 0,
+        "pessimistic": 0,
+        "dependsOn": ["W15", "W12", "W11", "W26", "W27"],
+        "category": "milestone",
+        "drivers": ["date"],
+        "why": "The fixed date every other task works back from."
+      },
+      {
+        "id": "W26",
+        "name": "Choreography and rehearsals",
+        "optimistic": 7,
+        "mostLikely": 14,
+        "pessimistic": 30,
+        "dependsOn": ["W02"],
+        "category": "entertainment",
+        "drivers": ["budget", "city"],
+        "why": "Music and activities set the mood and need confirmed slots."
+      },
+      {
+        "id": "W27",
+        "name": "Book stage, sound and lights",
+        "optimistic": 3,
+        "mostLikely": 7,
+        "pessimistic": 14,
+        "dependsOn": ["W04"],
+        "category": "entertainment",
+        "drivers": ["budget", "city"],
+        "why": "Music and activities set the mood and need confirmed slots.",
+        "vendorNeed": "sound_lights",
+        "bookingFor": "sound_lights"
+      }
+    ],
+    "budgetLines": [
+      {
+        "id": "B01",
+        "category": "venue",
+        "name": "Venue rental charge",
+        "unit": "fixed",
+        "rateInr": 375000,
+        "drivers": ["budget"],
+        "notes": "Estimate for venue"
+      },
+      {
+        "id": "B02",
+        "category": "food",
+        "name": "Catering feast per head",
+        "unit": "per_head",
+        "rateInr": 2625,
+        "drivers": ["guests"],
+        "notes": "Estimate per head for guests"
+      },
+      {
+        "id": "B03",
+        "category": "decor",
+        "name": "Thematic decor and styling",
+        "unit": "fixed",
+        "rateInr": 195000,
+        "drivers": ["budget"],
+        "notes": "Estimate for decor"
+      },
+      {
+        "id": "B04",
+        "category": "media",
+        "name": "Photography and video coverage",
+        "unit": "fixed",
+        "rateInr": 120000,
+        "drivers": ["budget"],
+        "notes": "Estimate for photography"
+      },
+      {
+        "id": "B05",
+        "category": "entertainment",
+        "name": "Live music and sound setup",
+        "unit": "fixed",
+        "rateInr": 105000,
+        "drivers": ["budget"],
+        "notes": "Estimate for entertainment"
+      }
+    ]
+  },
+  "extras": {
+    "ideas": ["Incorporate traditional sangeet touches", "Provide local artisan welcome hampers"],
+    "vendorQuestions": [
+      {
+        "need": "venue",
+        "questions": ["What are the setup timing windows and noise cut-off rules?"]
+      }
+    ],
+    "assumptions": [
+      "Weather permits scheduled outdoor activities",
+      "Guest count remains within 10% tolerance"
+    ],
+    "risks": [
+      "High-season vendor availability crunch in chosen city",
+      "Power fluctuations requiring backup generators"
+    ]
+  }
+}

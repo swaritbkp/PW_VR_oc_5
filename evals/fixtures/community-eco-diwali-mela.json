@@ -1,0 +1,234 @@
+{
+  "scenarioId": "community-eco-diwali-mela",
+  "templateId": "community-eco-diwali-mela",
+  "intake": {
+    "eventType": "community",
+    "templateId": "community-eco-diwali-mela",
+    "city": "Chandigarh",
+    "date": "2027-11-20",
+    "guests": 400,
+    "budgetInr": 200000,
+    "style": "diwali, eco, market, stalls",
+    "nonNegotiables": ["Authentic cultural elements"],
+    "language": "en"
+  },
+  "core": {
+    "tasks": [
+      {
+        "id": "C01",
+        "name": "Committee approval and fund collection",
+        "optimistic": 3,
+        "mostLikely": 7,
+        "pessimistic": 14,
+        "dependsOn": [],
+        "category": "planning",
+        "drivers": ["budget", "guests"],
+        "why": "Decisions here unlock bookings and keep the plan inside the budget."
+      },
+      {
+        "id": "C02",
+        "name": "Obtain permissions",
+        "optimistic": 7,
+        "mostLikely": 14,
+        "pessimistic": 30,
+        "dependsOn": ["C01"],
+        "category": "permits",
+        "drivers": ["city", "date"],
+        "why": "Permissions can take weeks and can move the whole plan."
+      },
+      {
+        "id": "C03",
+        "name": "Plan layout and safety",
+        "optimistic": 2,
+        "mostLikely": 5,
+        "pessimistic": 10,
+        "dependsOn": ["C01"],
+        "category": "planning",
+        "drivers": ["budget", "guests"],
+        "why": "Decisions here unlock bookings and keep the plan inside the budget.",
+        "vendorNeed": "venue"
+      },
+      {
+        "id": "C04",
+        "name": "Book sound, stage and lighting",
+        "optimistic": 3,
+        "mostLikely": 7,
+        "pessimistic": 14,
+        "dependsOn": ["C02", "C03"],
+        "category": "entertainment",
+        "drivers": ["budget", "city"],
+        "why": "Music and activities set the mood and need confirmed slots.",
+        "vendorNeed": "sound_lights",
+        "bookingFor": "sound_lights"
+      },
+      {
+        "id": "C05",
+        "name": "Book food vendors",
+        "optimistic": 3,
+        "mostLikely": 7,
+        "pessimistic": 14,
+        "dependsOn": ["C01"],
+        "category": "food",
+        "drivers": ["guests", "budget"],
+        "why": "Catering is the largest cost and scales with the guest count.",
+        "vendorNeed": "caterer",
+        "bookingFor": "caterer"
+      },
+      {
+        "id": "C06",
+        "name": "Plan programme and performers",
+        "optimistic": 5,
+        "mostLikely": 10,
+        "pessimistic": 21,
+        "dependsOn": ["C01"],
+        "category": "entertainment",
+        "drivers": ["budget", "city"],
+        "why": "Music and activities set the mood and need confirmed slots.",
+        "vendorNeed": "music"
+      },
+      {
+        "id": "C07",
+        "name": "Create volunteer roster",
+        "optimistic": 2,
+        "mostLikely": 5,
+        "pessimistic": 10,
+        "dependsOn": ["C01"],
+        "category": "logistics",
+        "drivers": ["guests", "city"],
+        "why": "Travel, stay and supplies are easy to forget and hard to fix late."
+      },
+      {
+        "id": "C08",
+        "name": "Promote and invite residents",
+        "optimistic": 2,
+        "mostLikely": 5,
+        "pessimistic": 10,
+        "dependsOn": ["C06"],
+        "category": "invites",
+        "drivers": ["guests"],
+        "why": "Guests need notice, and the replies give the final headcount."
+      },
+      {
+        "id": "C09",
+        "name": "Arrange decor and tents",
+        "optimistic": 3,
+        "mostLikely": 7,
+        "pessimistic": 14,
+        "dependsOn": ["C03"],
+        "category": "decor",
+        "drivers": ["budget", "city"],
+        "why": "Decor and rentals need lead time and depend on the venue.",
+        "vendorNeed": "tent_house",
+        "bookingFor": "tent_house"
+      },
+      {
+        "id": "C10",
+        "name": "Plan safety, cleanup and waste",
+        "optimistic": 1,
+        "mostLikely": 3,
+        "pessimistic": 7,
+        "dependsOn": ["C03"],
+        "category": "logistics",
+        "drivers": ["guests", "city"],
+        "why": "Travel, stay and supplies are easy to forget and hard to fix late."
+      },
+      {
+        "id": "C11",
+        "name": "Event day",
+        "optimistic": 0,
+        "mostLikely": 0,
+        "pessimistic": 0,
+        "dependsOn": ["C04", "C05", "C07", "C08", "C09", "C10", "C12", "C13"],
+        "category": "milestone",
+        "drivers": ["date"],
+        "why": "The fixed date every other task works back from."
+      },
+      {
+        "id": "C12",
+        "name": "Allocate stalls and register vendors",
+        "optimistic": 3,
+        "mostLikely": 7,
+        "pessimistic": 14,
+        "dependsOn": ["C01"],
+        "category": "logistics",
+        "drivers": ["guests", "city"],
+        "why": "Travel, stay and supplies are easy to forget and hard to fix late."
+      },
+      {
+        "id": "C13",
+        "name": "Plan waste segregation and green alternatives",
+        "optimistic": 2,
+        "mostLikely": 4,
+        "pessimistic": 8,
+        "dependsOn": ["C03"],
+        "category": "logistics",
+        "drivers": ["guests", "city"],
+        "why": "Travel, stay and supplies are easy to forget and hard to fix late."
+      }
+    ],
+    "budgetLines": [
+      {
+        "id": "B01",
+        "category": "venue",
+        "name": "Venue rental charge",
+        "unit": "fixed",
+        "rateInr": 50000,
+        "drivers": ["budget"],
+        "notes": "Estimate for venue"
+      },
+      {
+        "id": "B02",
+        "category": "food",
+        "name": "Catering feast per head",
+        "unit": "per_head",
+        "rateInr": 175,
+        "drivers": ["guests"],
+        "notes": "Estimate per head for guests"
+      },
+      {
+        "id": "B03",
+        "category": "decor",
+        "name": "Thematic decor and styling",
+        "unit": "fixed",
+        "rateInr": 26000,
+        "drivers": ["budget"],
+        "notes": "Estimate for decor"
+      },
+      {
+        "id": "B04",
+        "category": "media",
+        "name": "Photography and video coverage",
+        "unit": "fixed",
+        "rateInr": 16000,
+        "drivers": ["budget"],
+        "notes": "Estimate for photography"
+      },
+      {
+        "id": "B05",
+        "category": "entertainment",
+        "name": "Live music and sound setup",
+        "unit": "fixed",
+        "rateInr": 14000,
+        "drivers": ["budget"],
+        "notes": "Estimate for entertainment"
+      }
+    ]
+  },
+  "extras": {
+    "ideas": ["Incorporate traditional diwali touches", "Provide local artisan welcome hampers"],
+    "vendorQuestions": [
+      {
+        "need": "venue",
+        "questions": ["What are the setup timing windows and noise cut-off rules?"]
+      }
+    ],
+    "assumptions": [
+      "Weather permits scheduled outdoor activities",
+      "Guest count remains within 10% tolerance"
+    ],
+    "risks": [
+      "High-season vendor availability crunch in chosen city",
+      "Power fluctuations requiring backup generators"
+    ]
+  }
+}

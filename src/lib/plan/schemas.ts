@@ -12,6 +12,7 @@ const cleanString = (max: number) =>
 
 export const EventTypeEnum = z.enum(['wedding', 'birthday', 'community']);
 export const LanguageEnum = z.enum(['en', 'hi', 'pa']);
+export type Language = z.infer<typeof LanguageEnum>;
 export const DriverEnum = z.enum(['guests', 'budget', 'date', 'city']);
 export const TaskCategoryEnum = z.enum([
   'planning',

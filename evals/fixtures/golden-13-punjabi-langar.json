@@ -1,0 +1,228 @@
+{
+  "scenarioId": "golden-13-punjabi-langar",
+  "templateId": "community-gurpurab-langar",
+  "intake": {
+    "eventType": "community",
+    "templateId": "community-gurpurab-langar",
+    "city": "Amritsar",
+    "date": "2027-11-28",
+    "guests": 500,
+    "budgetInr": 150000,
+    "style": "ਗੁਰਮਤਿ ਰਹਿਤ ਮਰਯਾਦਾ",
+    "nonNegotiables": ["ਨਿਰਸਵਾਰਥ ਸੇਵਾ"],
+    "language": "pa"
+  },
+  "core": {
+    "tasks": [
+      {
+        "id": "C01",
+        "name": "Committee approval and fund collection (ਪ੍ਰਬੰਧ)",
+        "optimistic": 3,
+        "mostLikely": 7,
+        "pessimistic": 14,
+        "dependsOn": [],
+        "category": "planning",
+        "drivers": ["budget", "guests"],
+        "why": "ਗੁਰਪੁਰਬ ਸਮਾਗਮ ਦੀ ਤਿਆਰੀ"
+      },
+      {
+        "id": "C02",
+        "name": "Obtain permissions (ਪ੍ਰਬੰਧ)",
+        "optimistic": 7,
+        "mostLikely": 14,
+        "pessimistic": 30,
+        "dependsOn": ["C01"],
+        "category": "permits",
+        "drivers": ["city", "date"],
+        "why": "ਗੁਰਪੁਰਬ ਸਮਾਗਮ ਦੀ ਤਿਆਰੀ"
+      },
+      {
+        "id": "C03",
+        "name": "Plan layout and safety (ਪ੍ਰਬੰਧ)",
+        "optimistic": 2,
+        "mostLikely": 5,
+        "pessimistic": 10,
+        "dependsOn": ["C01"],
+        "category": "planning",
+        "drivers": ["budget", "guests"],
+        "why": "ਗੁਰਪੁਰਬ ਸਮਾਗਮ ਦੀ ਤਿਆਰੀ",
+        "vendorNeed": "venue"
+      },
+      {
+        "id": "C04",
+        "name": "Book sound, stage and lighting (ਪ੍ਰਬੰਧ)",
+        "optimistic": 3,
+        "mostLikely": 7,
+        "pessimistic": 14,
+        "dependsOn": ["C02", "C03"],
+        "category": "entertainment",
+        "drivers": ["budget", "city"],
+        "why": "ਗੁਰਪੁਰਬ ਸਮਾਗਮ ਦੀ ਤਿਆਰੀ",
+        "vendorNeed": "sound_lights",
+        "bookingFor": "sound_lights"
+      },
+      {
+        "id": "C05",
+        "name": "Book food vendors (ਪ੍ਰਬੰਧ)",
+        "optimistic": 3,
+        "mostLikely": 7,
+        "pessimistic": 14,
+        "dependsOn": ["C01"],
+        "category": "food",
+        "drivers": ["guests", "budget"],
+        "why": "ਗੁਰਪੁਰਬ ਸਮਾਗਮ ਦੀ ਤਿਆਰੀ",
+        "vendorNeed": "caterer",
+        "bookingFor": "caterer"
+      },
+      {
+        "id": "C06",
+        "name": "Plan programme and performers (ਪ੍ਰਬੰਧ)",
+        "optimistic": 5,
+        "mostLikely": 10,
+        "pessimistic": 21,
+        "dependsOn": ["C01"],
+        "category": "entertainment",
+        "drivers": ["budget", "city"],
+        "why": "ਗੁਰਪੁਰਬ ਸਮਾਗਮ ਦੀ ਤਿਆਰੀ",
+        "vendorNeed": "music"
+      },
+      {
+        "id": "C07",
+        "name": "Create volunteer roster (ਪ੍ਰਬੰਧ)",
+        "optimistic": 2,
+        "mostLikely": 5,
+        "pessimistic": 10,
+        "dependsOn": ["C01"],
+        "category": "logistics",
+        "drivers": ["guests", "city"],
+        "why": "ਗੁਰਪੁਰਬ ਸਮਾਗਮ ਦੀ ਤਿਆਰੀ"
+      },
+      {
+        "id": "C08",
+        "name": "Promote and invite residents (ਪ੍ਰਬੰਧ)",
+        "optimistic": 2,
+        "mostLikely": 5,
+        "pessimistic": 10,
+        "dependsOn": ["C06"],
+        "category": "invites",
+        "drivers": ["guests"],
+        "why": "ਗੁਰਪੁਰਬ ਸਮਾਗਮ ਦੀ ਤਿਆਰੀ"
+      },
+      {
+        "id": "C09",
+        "name": "Arrange decor and tents (ਪ੍ਰਬੰਧ)",
+        "optimistic": 3,
+        "mostLikely": 7,
+        "pessimistic": 14,
+        "dependsOn": ["C03"],
+        "category": "decor",
+        "drivers": ["budget", "city"],
+        "why": "ਗੁਰਪੁਰਬ ਸਮਾਗਮ ਦੀ ਤਿਆਰੀ",
+        "vendorNeed": "tent_house",
+        "bookingFor": "tent_house"
+      },
+      {
+        "id": "C10",
+        "name": "Plan safety, cleanup and waste (ਪ੍ਰਬੰਧ)",
+        "optimistic": 1,
+        "mostLikely": 3,
+        "pessimistic": 7,
+        "dependsOn": ["C03"],
+        "category": "logistics",
+        "drivers": ["guests", "city"],
+        "why": "ਗੁਰਪੁਰਬ ਸਮਾਗਮ ਦੀ ਤਿਆਰੀ"
+      },
+      {
+        "id": "C11",
+        "name": "ਗੁਰਪੁਰਬ ਲੰਗਰ ਸਮਾਗਮ ਦਿਵਸ",
+        "optimistic": 0,
+        "mostLikely": 0,
+        "pessimistic": 0,
+        "dependsOn": ["C04", "C05", "C07", "C08", "C09", "C10", "C12", "C13"],
+        "category": "milestone",
+        "drivers": ["date"],
+        "why": "ਸੰਗਤ ਲਈ ਮੁੱਖ ਲੰਗਰ ਅਤੇ ਕੀਰਤਨ ਦਿਵਸ"
+      },
+      {
+        "id": "C12",
+        "name": "Organise langar seva rota and utensils (ਪ੍ਰਬੰਧ)",
+        "optimistic": 2,
+        "mostLikely": 5,
+        "pessimistic": 10,
+        "dependsOn": ["C07"],
+        "category": "logistics",
+        "drivers": ["guests", "city"],
+        "why": "ਗੁਰਪੁਰਬ ਸਮਾਗਮ ਦੀ ਤਿਆਰੀ"
+      },
+      {
+        "id": "C13",
+        "name": "Coordinate kirtan with the gurdwara committee (ਪ੍ਰਬੰਧ)",
+        "optimistic": 3,
+        "mostLikely": 7,
+        "pessimistic": 14,
+        "dependsOn": ["C01"],
+        "category": "planning",
+        "drivers": ["budget", "guests"],
+        "why": "ਗੁਰਪੁਰਬ ਸਮਾਗਮ ਦੀ ਤਿਆਰੀ"
+      }
+    ],
+    "budgetLines": [
+      {
+        "id": "PB1",
+        "category": "food",
+        "name": "ਗੁਰੂ ਕਾ ਲੰਗਰ ਰਸਦ ਸਮੱਗਰੀ",
+        "unit": "per_head",
+        "rateInr": 150,
+        "drivers": ["guests"],
+        "notes": "500 ਸੰਗਤਾਂ ਲਈ ਲੰਗਰ ਰਸਦ"
+      },
+      {
+        "id": "PB2",
+        "category": "venue",
+        "name": "ਟੈਂਟ ਅਤੇ ਬੈਠਣ ਦੀ ਵਿਵਸਥਾ",
+        "unit": "fixed",
+        "rateInr": 25000,
+        "drivers": ["budget"],
+        "notes": "ਪੰਡਾਲ ਅਤੇ ਦਰੀਆਂ ਦਾ ਪ੍ਰਬੰਧ"
+      },
+      {
+        "id": "PB3",
+        "category": "entertainment",
+        "name": "ਸਾਊਂਡ ਅਤੇ ਕੀਰਤਨ ਸਿਸਟਮ",
+        "unit": "fixed",
+        "rateInr": 12000,
+        "drivers": ["budget"],
+        "notes": "ਕੀਰਤਨ ਦਰਬਾਰ ਆਡੀਓ"
+      },
+      {
+        "id": "PB4",
+        "category": "logistics",
+        "name": "ਪਾਣੀ ਅਤੇ ਸਫਾਈ ਪ੍ਰਬੰਧ",
+        "unit": "fixed",
+        "rateInr": 8000,
+        "drivers": ["budget"],
+        "notes": "ਸੇਵਾਦਾਰ ਸਫਾਈ ਸਾਮਾਨ"
+      },
+      {
+        "id": "PB5",
+        "category": "decor",
+        "name": "ਫੁੱਲਾਂ ਦੀ ਸੇਵਾ ਅਤੇ ਰੋਸ਼ਨੀ",
+        "unit": "fixed",
+        "rateInr": 5000,
+        "drivers": ["budget"],
+        "notes": "ਦਰਬਾਰ ਸਾਹਿਬ ਫੁੱਲ"
+      }
+    ]
+  },
+  "extras": {
+    "ideas": ["ਜੋੜਾ ਘਰ ਵਿਸ਼ੇਸ਼ ਸੇਵਾ", "ਬਾਲ ਸੰਗਤ ਲਈ ਕੁਇਜ਼"],
+    "vendorQuestions": [
+      {
+        "need": "tent_house",
+        "questions": ["ਵਾਟਰਪਰੂਫ ਪੰਡਾਲ ਉਪਲਬਧ ਹੈ?"]
+      }
+    ],
+    "assumptions": ["ਸੇਵਾਦਾਰ ਸਮੇਂ ਸਿਰ ਪਹੁੰਚਣਗੇ"],
+    "risks": ["ਮੀਂਹ ਪੈਣ ਦੀ ਸੰਭਾਵਨਾ"]
+  }
+}

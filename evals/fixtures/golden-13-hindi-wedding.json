@@ -1,0 +1,307 @@
+{
+  "scenarioId": "golden-13-hindi-wedding",
+  "templateId": "wedding-phulkari-courtyard",
+  "intake": {
+    "eventType": "wedding",
+    "templateId": "wedding-phulkari-courtyard",
+    "city": "Delhi",
+    "date": "2027-12-10",
+    "guests": 250,
+    "budgetInr": 2000000,
+    "style": "पारंपरिक विवाह",
+    "nonNegotiables": ["शुद्ध शाकाहारी भोजन"],
+    "language": "hi"
+  },
+  "core": {
+    "tasks": [
+      {
+        "id": "W01",
+        "name": "Set budget and draft guest list (व्यवस्था)",
+        "optimistic": 1,
+        "mostLikely": 3,
+        "pessimistic": 7,
+        "dependsOn": [],
+        "category": "planning",
+        "drivers": ["budget", "guests"],
+        "why": "उत्सव की तैयारी के लिए आवश्यक कदम"
+      },
+      {
+        "id": "W02",
+        "name": "Choose date and ceremony format (व्यवस्था)",
+        "optimistic": 2,
+        "mostLikely": 5,
+        "pessimistic": 14,
+        "dependsOn": ["W01"],
+        "category": "planning",
+        "drivers": ["budget", "guests"],
+        "why": "उत्सव की तैयारी के लिए आवश्यक कदम"
+      },
+      {
+        "id": "W03",
+        "name": "Shortlist and visit venues (व्यवस्था)",
+        "optimistic": 7,
+        "mostLikely": 14,
+        "pessimistic": 30,
+        "dependsOn": ["W02"],
+        "category": "venue",
+        "drivers": ["guests", "budget", "city"],
+        "why": "उत्सव की तैयारी के लिए आवश्यक कदम",
+        "vendorNeed": "venue"
+      },
+      {
+        "id": "W04",
+        "name": "Book venue (व्यवस्था)",
+        "optimistic": 1,
+        "mostLikely": 3,
+        "pessimistic": 10,
+        "dependsOn": ["W03"],
+        "category": "venue",
+        "drivers": ["guests", "budget", "city"],
+        "why": "उत्सव की तैयारी के लिए आवश्यक कदम",
+        "vendorNeed": "venue",
+        "bookingFor": "venue"
+      },
+      {
+        "id": "W05",
+        "name": "Book caterer (व्यवस्था)",
+        "optimistic": 3,
+        "mostLikely": 7,
+        "pessimistic": 21,
+        "dependsOn": ["W04"],
+        "category": "food",
+        "drivers": ["guests", "budget"],
+        "why": "उत्सव की तैयारी के लिए आवश्यक कदम",
+        "vendorNeed": "caterer",
+        "bookingFor": "caterer"
+      },
+      {
+        "id": "W06",
+        "name": "Book photo and video (व्यवस्था)",
+        "optimistic": 3,
+        "mostLikely": 7,
+        "pessimistic": 21,
+        "dependsOn": ["W04"],
+        "category": "media",
+        "drivers": ["budget", "city"],
+        "why": "उत्सव की तैयारी के लिए आवश्यक कदम",
+        "vendorNeed": "photographer",
+        "bookingFor": "photographer"
+      },
+      {
+        "id": "W07",
+        "name": "Book decorator (व्यवस्था)",
+        "optimistic": 3,
+        "mostLikely": 7,
+        "pessimistic": 21,
+        "dependsOn": ["W04"],
+        "category": "decor",
+        "drivers": ["budget", "city"],
+        "why": "उत्सव की तैयारी के लिए आवश्यक कदम",
+        "vendorNeed": "decorator",
+        "bookingFor": "decorator"
+      },
+      {
+        "id": "W08",
+        "name": "Book music (व्यवस्था)",
+        "optimistic": 2,
+        "mostLikely": 5,
+        "pessimistic": 14,
+        "dependsOn": ["W04"],
+        "category": "entertainment",
+        "drivers": ["budget", "city"],
+        "why": "उत्सव की तैयारी के लिए आवश्यक कदम",
+        "vendorNeed": "music",
+        "bookingFor": "music"
+      },
+      {
+        "id": "W09",
+        "name": "Design and print invitations (व्यवस्था)",
+        "optimistic": 7,
+        "mostLikely": 10,
+        "pessimistic": 21,
+        "dependsOn": ["W02"],
+        "category": "invites",
+        "drivers": ["guests"],
+        "why": "उत्सव की तैयारी के लिए आवश्यक कदम",
+        "vendorNeed": "invitations"
+      },
+      {
+        "id": "W10",
+        "name": "Send invitations (व्यवस्था)",
+        "optimistic": 1,
+        "mostLikely": 3,
+        "pessimistic": 7,
+        "dependsOn": ["W09"],
+        "category": "invites",
+        "drivers": ["guests"],
+        "why": "उत्सव की तैयारी के लिए आवश्यक कदम"
+      },
+      {
+        "id": "W11",
+        "name": "Arrange stay and transport (व्यवस्था)",
+        "optimistic": 5,
+        "mostLikely": 10,
+        "pessimistic": 21,
+        "dependsOn": ["W04"],
+        "category": "logistics",
+        "drivers": ["guests", "city"],
+        "why": "उत्सव की तैयारी के लिए आवश्यक कदम",
+        "vendorNeed": "stay",
+        "bookingFor": "stay",
+        "optional": true
+      },
+      {
+        "id": "W12",
+        "name": "Attire, jewellery and makeup (व्यवस्था)",
+        "optimistic": 14,
+        "mostLikely": 30,
+        "pessimistic": 60,
+        "dependsOn": ["W02"],
+        "category": "attire",
+        "drivers": ["budget"],
+        "why": "उत्सव की तैयारी के लिए आवश्यक कदम",
+        "vendorNeed": "makeup",
+        "bookingFor": "makeup"
+      },
+      {
+        "id": "W13",
+        "name": "Menu tasting and finalise (व्यवस्था)",
+        "optimistic": 1,
+        "mostLikely": 3,
+        "pessimistic": 7,
+        "dependsOn": ["W05"],
+        "category": "food",
+        "drivers": ["guests", "budget"],
+        "why": "उत्सव की तैयारी के लिए आवश्यक कदम"
+      },
+      {
+        "id": "W14",
+        "name": "Collect RSVPs and final headcount (व्यवस्था)",
+        "optimistic": 7,
+        "mostLikely": 14,
+        "pessimistic": 21,
+        "dependsOn": ["W10"],
+        "category": "invites",
+        "drivers": ["guests"],
+        "why": "उत्सव की तैयारी के लिए आवश्यक कदम"
+      },
+      {
+        "id": "W15",
+        "name": "Final confirmations and run sheet (व्यवस्था)",
+        "optimistic": 2,
+        "mostLikely": 4,
+        "pessimistic": 8,
+        "dependsOn": ["W05", "W06", "W07", "W08", "W13", "W14"],
+        "category": "planning",
+        "drivers": ["budget", "guests"],
+        "why": "उत्सव की तैयारी के लिए आवश्यक कदम"
+      },
+      {
+        "id": "W16",
+        "name": "विवाह समारोह मुख्य दिवस",
+        "optimistic": 0,
+        "mostLikely": 0,
+        "pessimistic": 0,
+        "dependsOn": ["W15", "W12", "W11", "W21", "W22", "W23"],
+        "category": "milestone",
+        "drivers": ["date"],
+        "why": "विवाह का मुख्य उत्सव और सभी रस्में"
+      },
+      {
+        "id": "W21",
+        "name": "Plan phulkari and marigold decor mockups (व्यवस्था)",
+        "optimistic": 3,
+        "mostLikely": 5,
+        "pessimistic": 10,
+        "dependsOn": ["W07"],
+        "category": "decor",
+        "drivers": ["budget", "city"],
+        "why": "उत्सव की तैयारी के लिए आवश्यक कदम"
+      },
+      {
+        "id": "W22",
+        "name": "Arrange tent and weather cover (व्यवस्था)",
+        "optimistic": 3,
+        "mostLikely": 7,
+        "pessimistic": 14,
+        "dependsOn": ["W04"],
+        "category": "logistics",
+        "drivers": ["guests", "city"],
+        "why": "उत्सव की तैयारी के लिए आवश्यक कदम",
+        "vendorNeed": "tent_house",
+        "bookingFor": "tent_house"
+      },
+      {
+        "id": "W23",
+        "name": "Arrange generator and power backup (व्यवस्था)",
+        "optimistic": 2,
+        "mostLikely": 5,
+        "pessimistic": 10,
+        "dependsOn": ["W04"],
+        "category": "logistics",
+        "drivers": ["guests", "city"],
+        "why": "उत्सव की तैयारी के लिए आवश्यक कदम",
+        "vendorNeed": "power_backup",
+        "bookingFor": "power_backup"
+      }
+    ],
+    "budgetLines": [
+      {
+        "id": "HB1",
+        "category": "venue",
+        "name": "विवाह स्थल किराया",
+        "unit": "fixed",
+        "rateInr": 500000,
+        "drivers": ["budget"],
+        "notes": "स्थल का अनुमानित किराया"
+      },
+      {
+        "id": "HB2",
+        "category": "food",
+        "name": "पारंपरिक दावत प्रति व्यक्ति",
+        "unit": "per_head",
+        "rateInr": 2500,
+        "drivers": ["guests"],
+        "notes": "250 अतिथियों के लिए भोजन व्यवस्था"
+      },
+      {
+        "id": "HB3",
+        "category": "decor",
+        "name": "गेंदा और पुष्प सज्जा",
+        "unit": "fixed",
+        "rateInr": 300000,
+        "drivers": ["budget"],
+        "notes": "मंडप और द्वार सज्जा"
+      },
+      {
+        "id": "HB4",
+        "category": "media",
+        "name": "छायांकन एवं वीडियोग्राफी",
+        "unit": "fixed",
+        "rateInr": 180000,
+        "drivers": ["budget"],
+        "notes": "दो दिवसीय कवरेज"
+      },
+      {
+        "id": "HB5",
+        "category": "entertainment",
+        "name": "शहनाई और ढोल वादन",
+        "unit": "fixed",
+        "rateInr": 90000,
+        "drivers": ["budget"],
+        "notes": "बारात और स्वागत संगीत"
+      }
+    ]
+  },
+  "extras": {
+    "ideas": ["स्वागत में मिट्टी के कुल्हड़ों में पेय", "हस्तनिर्मित जयमाला"],
+    "vendorQuestions": [
+      {
+        "need": "venue",
+        "questions": ["क्या रात 10 बजे के बाद संगीत की अनुमति है?"]
+      }
+    ],
+    "assumptions": ["अतिथियों की संख्या 250 रहेगी"],
+    "risks": ["दिसंबर की ठंड और कोहरा"]
+  }
+}
