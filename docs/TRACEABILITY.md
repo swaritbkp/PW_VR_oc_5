@@ -18,12 +18,15 @@ AC16 | components/EventGraph/EventGraph.tsx, EventGraphList.tsx | components/Eve
 AC17 | evals/run.ts, server/genai/guardrails.ts | evals/run.ts, server/genai/guardrails.test.ts
 AC18 | lib/templates | lib/templates/catalog.test.ts
 AC19 | lib/graph/layout.ts, components/EventGraph, components/NodeInspector | lib/graph/layout.test.ts, components/EventGraph/EventGraph.test.tsx, components/NodeInspector/NodeInspector.test.tsx
-AC22 | lib/vendors/contact.ts | vendors.test.ts
-AC23, AC24 | lib/vendors/status.ts, lib/resilience | vendors.test.ts, resilience.test.ts
+AC20 | lib/geo/cities.ts, app/api/geo/route.ts, app/api/vendors/search/route.ts, components/Vendors/VendorList.tsx | lib/geo/cities.test.ts, app/api/geo/route.test.ts, app/api/vendors/search/route.test.ts, components/Vendors/VendorList.test.tsx
+AC21 | app/api/vendors/search/route.ts, app/api/vendors/details/route.ts, components/Vendors/VendorList.tsx, components/Vendors/VendorMap.tsx | app/api/vendors/search/route.test.ts, app/api/vendors/details/route.test.ts, components/Vendors/VendorList.test.tsx, components/Vendors/VendorMap.test.tsx
+AC22 | lib/vendors/contact.ts, components/Vendors/ContactSheet.tsx | lib/vendors/vendors.test.ts, components/Vendors/ContactSheet.test.tsx
+AC23, AC24 | lib/vendors/status.ts, lib/resilience, components/Vendors/ContactSheet.tsx | lib/vendors/vendors.test.ts, lib/resilience/resilience.test.ts, components/Vendors/ContactSheet.test.tsx
 AC25, AC26 | lib/resilience | resilience.test.ts
+AC27 | app/api/vendors/search/route.ts, components/Vendors/VendorList.tsx | app/api/vendors/search/route.test.ts, components/Vendors/VendorList.test.tsx
 AC28 | scripts/flow_assets.py | scripts/test_flow_assets.py
 AC29 | components/EventGraph/EventGraph.tsx | components/EventGraph/EventGraph.test.tsx
+AC30 | components/Vendors/ContactSheet.tsx, lib/plan/storage.ts | components/Vendors/ContactSheet.test.tsx, lib/plan/storage.test.ts
 Formatting/Sanitisation | lib/format.ts | lib/format.test.ts
 Security Headers | lib/security-headers.ts | lib/security-headers.test.ts
 WhatsApp Summaries | lib/plan/whatsapp.ts | lib/plan/whatsapp.test.ts
-(add the remaining ACs as they are implemented)
