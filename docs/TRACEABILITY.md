@@ -7,20 +7,22 @@ AC3, AC4 | lib/plan/propagate.ts, lib/plan/versions.ts | lib/plan/propagate.test
 AC4 | lib/dates.ts | lib/dates.test.ts
 AC5, AC30 | lib/plan/schemas.ts, lib/plan/storage.ts, server/security/rateLimit.ts, server/genai/registry.ts | lib/plan/schemas.test.ts, lib/plan/storage.test.ts, server/security/rateLimit.test.ts, app/api/plan/route.test.ts
 AC6 | server/genai/generate.ts, app/api/plan/route.ts | server/genai/generate.test.ts, app/api/plan/route.test.ts
+AC7 | components/EventGraph, components/CommandCenter, components/NodeInspector | components/EventGraph/EventGraph.test.tsx, components/CommandCenter/CommandCenter.test.tsx, components/NodeInspector/NodeInspector.test.tsx
 AC9 | lib/schedule/cpm.ts | lib/schedule/cpm.test.ts
-AC10 | lib/schedule/pert.ts, simulate.ts | cpm.test.ts, simulate.test.ts
+AC10 | lib/schedule/pert.ts, simulate.ts, components/CommandCenter | cpm.test.ts, simulate.test.ts, components/CommandCenter/CommandCenter.test.tsx
 AC11 | lib/schedule/replan.ts | replan.test.ts
-AC12, AC13 | lib/schedule/sentinel.ts | sentinel.test.ts
+AC12, AC13 | lib/schedule/sentinel.ts, components/CommandCenter | sentinel.test.ts, components/CommandCenter/CommandCenter.test.tsx
 AC14 | lib/ics.ts | lib/ics.test.ts
 AC15 | server/genai/generate.ts, server/genai/registry.ts | server/genai/generate.test.ts, server/genai/registry.test.ts
-AC16 | (UI data table toggle in M3) | (M3)
+AC16 | components/EventGraph/EventGraph.tsx, EventGraphList.tsx | components/EventGraph/EventGraph.test.tsx
 AC17 | evals/run.ts, server/genai/guardrails.ts | evals/run.ts, server/genai/guardrails.test.ts
 AC18 | lib/templates | lib/templates/catalog.test.ts
-AC19 | lib/graph/layout.ts | lib/graph/layout.test.ts
+AC19 | lib/graph/layout.ts, components/EventGraph, components/NodeInspector | lib/graph/layout.test.ts, components/EventGraph/EventGraph.test.tsx, components/NodeInspector/NodeInspector.test.tsx
 AC22 | lib/vendors/contact.ts | vendors.test.ts
 AC23, AC24 | lib/vendors/status.ts, lib/resilience | vendors.test.ts, resilience.test.ts
 AC25, AC26 | lib/resilience | resilience.test.ts
 AC28 | scripts/flow_assets.py | scripts/test_flow_assets.py
+AC29 | components/EventGraph/EventGraph.tsx | components/EventGraph/EventGraph.test.tsx
 Formatting/Sanitisation | lib/format.ts | lib/format.test.ts
 Security Headers | lib/security-headers.ts | lib/security-headers.test.ts
 WhatsApp Summaries | lib/plan/whatsapp.ts | lib/plan/whatsapp.test.ts

@@ -5,13 +5,10 @@
   "ignoreDependencies": [
     "@googlemaps/js-api-loader",
     "@tailwindcss/postcss",
-    "@testing-library/jest-dom",
-    "@testing-library/react",
     "madge",
     "postcss",
     "prettier",
-    "tailwindcss",
-    "vitest-axe"
+    "tailwindcss"
   ],
   "rules": {
     "exports": "off",
