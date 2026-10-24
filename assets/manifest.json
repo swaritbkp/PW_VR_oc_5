@@ -1,0 +1,123 @@
+{
+  "style": "Flat editorial illustration, warm natural light, subtle paper grain, rich but calm colour, wide composition with quiet negative space on the left, no text, no letters, no logos, no real people.",
+  "aspect": "16:9",
+  "model": null,
+  "assets": [
+    {
+      "id": "wedding-phulkari-courtyard",
+      "prompt": "A courtyard wedding with marigold garlands, phulkari embroidered fabric and warm evening light.",
+      "alt": "Illustration of a courtyard wedding with marigold garlands and phulkari fabric.",
+      "out": "public/art/wedding-phulkari-courtyard.png"
+    },
+    {
+      "id": "wedding-intimate-morning",
+      "prompt": "A sunlit banquet table set for a small family brunch with soft morning light and fresh flowers.",
+      "alt": "Illustration of a sunlit banquet table set for a small brunch.",
+      "out": "public/art/wedding-intimate-morning.png"
+    },
+    {
+      "id": "wedding-boho-garden",
+      "prompt": "A garden lawn at golden hour with lanterns, dried flower arches and long wooden tables.",
+      "alt": "Illustration of a garden lawn with lanterns and dried-flower arches.",
+      "out": "public/art/wedding-boho-garden.png"
+    },
+    {
+      "id": "wedding-retro-sangeet",
+      "prompt": "A retro stage with vintage lights, a glossy dance floor and streamers, seen from the audience.",
+      "alt": "Illustration of a stage with retro lights and a dance floor.",
+      "out": "public/art/wedding-retro-sangeet.png"
+    },
+    {
+      "id": "birthday-dino-explorer",
+      "prompt": "Friendly green dinosaurs in a leafy jungle with a fossil dig corner, playful and bright.",
+      "alt": "Illustration of friendly dinosaurs in a leafy jungle.",
+      "out": "public/art/birthday-dino-explorer.png"
+    },
+    {
+      "id": "birthday-space-adventure",
+      "prompt": "Rockets, ringed planets and stars on a deep blue sky, with a glowing moon, playful and bright.",
+      "alt": "Illustration of rockets, planets and stars on a dark blue sky.",
+      "out": "public/art/birthday-space-adventure.png"
+    },
+    {
+      "id": "birthday-pastel-pool",
+      "prompt": "A pastel-coloured pool with floats, an umbrella and soft shade, summer afternoon.",
+      "alt": "Illustration of a pastel pool with floats and an umbrella.",
+      "out": "public/art/birthday-pastel-pool.png"
+    },
+    {
+      "id": "birthday-mini-chef",
+      "prompt": "A kids kitchen table with aprons, rolling pins, dough and cupcakes in bright natural light.",
+      "alt": "Illustration of a kids kitchen table with aprons and dough.",
+      "out": "public/art/birthday-mini-chef.png"
+    },
+    {
+      "id": "community-lohri-bonfire",
+      "prompt": "Neighbours gathered around a bonfire at dusk in a residential courtyard with warm firelight.",
+      "alt": "Illustration of neighbours around a bonfire at dusk.",
+      "out": "public/art/community-lohri-bonfire.png"
+    },
+    {
+      "id": "community-eco-diwali-mela",
+      "prompt": "Lit clay diyas and handmade craft stalls in a courtyard at twilight, calm and welcoming.",
+      "alt": "Illustration of lit diyas and handmade stalls in a courtyard.",
+      "out": "public/art/community-eco-diwali-mela.png"
+    },
+    {
+      "id": "community-gurpurab-langar",
+      "prompt": "A community hall with a shared meal line, steaming pots and soft lamp light, respectful and warm.",
+      "alt": "Illustration of a community hall with a shared langar line.",
+      "out": "public/art/community-gurpurab-langar.png"
+    },
+    {
+      "id": "community-holi-organic",
+      "prompt": "A courtyard with soft coloured powder drifting in the air, bright but gentle palette.",
+      "alt": "Illustration of a courtyard with soft coloured powder in the air.",
+      "out": "public/art/community-holi-organic.png"
+    },
+    {
+      "id": "hero-event-graph",
+      "prompt": "An abstract timeline of connected rounded nodes along a curving ribbon leading to a glowing sun on the horizon.",
+      "alt": "Abstract illustration of connected steps along a ribbon leading to a glowing sun.",
+      "out": "public/art/hero-event-graph.png"
+    },
+    {
+      "id": "og-social",
+      "prompt": "A festive wide scene of a family planning around a table with a large calendar and warm lights, no faces.",
+      "alt": "Illustration of a table with a calendar and warm lights, used as a social preview.",
+      "out": "public/art/og-social.png"
+    },
+    {
+      "id": "empty-no-plan",
+      "prompt": "A blank notebook, a pen and a small marigold flower on a wooden desk, inviting and calm.",
+      "alt": "Illustration of a blank notebook, pen and marigold on a desk.",
+      "out": "public/art/empty-no-plan.png"
+    },
+    {
+      "id": "empty-no-vendors",
+      "prompt": "A small map with a pin and a magnifying glass on a table, calm and friendly.",
+      "alt": "Illustration of a small map with a pin and magnifying glass.",
+      "out": "public/art/empty-no-vendors.png"
+    },
+    {
+      "id": "empty-all-done",
+      "prompt": "Confetti and a closed checklist on a table with a cup of chai, celebratory but quiet.",
+      "alt": "Illustration of confetti and a completed checklist beside a cup of tea.",
+      "out": "public/art/empty-all-done.png"
+    },
+    {
+      "id": "backup-plan",
+      "prompt": "Two parallel paths from a gate to the same festive hall, one sunny and one under a canopy, showing a backup route.",
+      "alt": "Illustration of two paths reaching the same festive hall, one with a canopy as a backup.",
+      "out": "public/art/backup-plan.png"
+    },
+    {
+      "id": "teaser-video",
+      "prompt": "Slow push-in on a softly lit table with a glowing calendar and a ribbon of connected steps, no people.",
+      "alt": "Short silent teaser of a table with a glowing calendar and connected steps.",
+      "out": "public/art/teaser-video.mp4",
+      "kind": "video",
+      "enabled": false
+    }
+  ]
+}
