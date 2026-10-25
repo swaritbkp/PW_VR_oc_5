@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import dynamic from 'next/dynamic';
 import { AppHeader } from '@/components/UI/AppHeader';
 import { AppModals, type ModalType } from '@/components/UI/AppModals';
+import { CelebrationConcierge } from '@/components/UI/CelebrationConcierge';
+import { WorkspaceTabs } from '@/components/UI/WorkspaceTabs';
 import { CommandCenter } from '@/components/CommandCenter/CommandCenter';
-import { EventGraphList } from '@/components/EventGraph/EventGraphList';
 import { NodeInspector } from '@/components/NodeInspector/NodeInspector';
 import { allocate, reconcile } from '@/lib/budget/engine';
 import { layoutEventGraph } from '@/lib/graph/layout';
@@ -14,22 +14,15 @@ import { createVersionStore, pushVersion } from '@/lib/plan/versions';
 import { computeSchedule } from '@/lib/schedule/cpm';
 import { probabilityOnTime } from '@/lib/schedule/pert';
 import { evaluate, nextBestAction } from '@/lib/schedule/sentinel';
-
-const EventGraph = dynamic(
-  () => import('@/components/EventGraph/EventGraph').then((m) => m.EventGraph),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="p-12 text-center text-xs text-stone-400">Loading graph canvas...</div>
-    ),
-  },
-);
+import type { VendorNeedId } from '@/lib/plan/types';
+import type { Vendor, VendorStatus } from '@/lib/vendors/types';
 
 export default function HomePage(): React.JSX.Element {
   const [versionStore, setVersionStore] = useState(() => createVersionStore(getInitialPlan()));
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [activeModal, setActiveModal] = useState<ModalType>('none');
-  const [viewMode, setViewMode] = useState<'graph' | 'list'>('graph');
+  const [activeTab, setActiveTab] = useState<'roadmap' | 'vendors' | 'graph'>('roadmap');
+  const [vendorCategory, setVendorCategory] = useState<VendorNeedId>('venue');
 
   const currentPlan = useMemo(() => {
     const cur = versionStore.versions.find((v) => v.id === versionStore.currentId);
@@ -77,10 +70,30 @@ export default function HomePage(): React.JSX.Element {
     [currentPlan.tasks, selectedTaskId],
   );
 
+  const doneCount = useMemo(
+    () => currentPlan.tasks.filter((t) => t.done).length,
+    [currentPlan.tasks],
+  );
+
   const handleUpdateTaskStatus = (id: string, done: boolean) => {
     const updatedTasks = currentPlan.tasks.map((t) => (t.id === id ? { ...t, done } : t));
     const nextPlan = { ...currentPlan, tasks: updatedTasks };
     setVersionStore((s) => pushVersion(s, nextPlan, `Updated task ${id} status`));
+  };
+
+  const handleOpenVendorNeed = (need: string) => {
+    setVendorCategory(need as VendorNeedId);
+    setActiveTab('vendors');
+  };
+
+  const handleBookVendor = (vendor: Vendor, status: VendorStatus, quoteInr?: number) => {
+    setVersionStore((s) =>
+      pushVersion(
+        s,
+        currentPlan,
+        `Updated vendor ${vendor.name} (${status}${quoteInr ? ` ₹${quoteInr}` : ''})`,
+      ),
+    );
   };
 
   return (
@@ -89,6 +102,19 @@ export default function HomePage(): React.JSX.Element {
         title={currentPlan.intake.eventType}
         city={currentPlan.intake.city}
         onOpen={setActiveModal}
+      />
+
+      <CelebrationConcierge
+        eventType={currentPlan.intake.eventType}
+        city={currentPlan.intake.city}
+        guests={currentPlan.intake.guests}
+        daysLeft={currentPlan.targetDays}
+        doneCount={doneCount}
+        totalCount={currentPlan.tasks.length}
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+        onOpenPlanB={() => setActiveModal('disruption')}
+        onOpenWhatIf={() => setActiveModal('whatif')}
       />
 
       {commandData && (
@@ -103,56 +129,20 @@ export default function HomePage(): React.JSX.Element {
         />
       )}
 
-      <div className="w-full space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-stone-900 uppercase tracking-wide flex items-center gap-2">
-            <span>Living Event Graph Workspace</span>
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-              Interactive Canvas
-            </span>
-          </h2>
-          <div className="flex gap-1 bg-stone-200/70 p-1 rounded-xl text-xs backdrop-blur-xs">
-            <button
-              type="button"
-              onClick={() => setViewMode('graph')}
-              className={`px-3 py-1 rounded-lg font-bold transition-all ${
-                viewMode === 'graph'
-                  ? 'bg-white shadow-xs text-stone-900'
-                  : 'text-stone-600 hover:text-stone-900'
-              }`}
-            >
-              Canvas
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('list')}
-              className={`px-3 py-1 rounded-lg font-bold transition-all ${
-                viewMode === 'list'
-                  ? 'bg-white shadow-xs text-stone-900'
-                  : 'text-stone-600 hover:text-stone-900'
-              }`}
-            >
-              Timeline List
-            </button>
-          </div>
-        </div>
-
-        {viewMode === 'graph' && layout ? (
-          <EventGraph
-            layout={layout}
-            tasks={currentPlan.tasks}
-            selectedNodeId={selectedTaskId ?? undefined}
-            onSelectNode={(id) => setSelectedTaskId(id ?? null)}
-          />
-        ) : (
-          <EventGraphList
-            nodes={layout?.nodes ?? []}
-            tasks={currentPlan.tasks}
-            selectedNodeId={selectedTaskId ?? undefined}
-            onSelectNode={(id) => setSelectedTaskId(id)}
-          />
-        )}
-      </div>
+      <WorkspaceTabs
+        activeTab={activeTab}
+        tasks={currentPlan.tasks}
+        layout={layout}
+        selectedTaskId={selectedTaskId}
+        onSelectTaskId={setSelectedTaskId}
+        onOpenVendorCategory={handleOpenVendorNeed}
+        currentCity={currentPlan.intake.city}
+        eventType={currentPlan.intake.eventType}
+        eventDate={currentPlan.intake.date}
+        guests={currentPlan.intake.guests}
+        vendorCategory={vendorCategory}
+        onBookVendor={handleBookVendor}
+      />
 
       {selectedNode && (
         <div className="fixed inset-0 z-50 flex justify-end">

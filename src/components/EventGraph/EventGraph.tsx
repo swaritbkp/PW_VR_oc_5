@@ -142,6 +142,23 @@ export function EventGraph({
         />
       </div>
 
+      <div className="flex flex-wrap items-center gap-3 px-5 py-2 bg-stone-50/80 border-b border-stone-100 text-[11px] text-stone-600">
+        <span className="font-bold text-stone-800">Visual Guide:</span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" /> Completed
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" /> Priority Milestone
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-stone-400 inline-block" /> Flexible Date
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-3 h-3 rounded-xs border-2 border-dashed border-emerald-600 inline-block" />{' '}
+          Plan B Backup
+        </span>
+      </div>
+
       <div className="flex-1 overflow-auto p-6 min-h-[500px] bg-[#FAF9F6]">
         {viewMode === 'list' ? (
           <EventGraphList

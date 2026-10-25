@@ -43,7 +43,7 @@ function CountdownCard({ daysLeft }: { readonly daysLeft: number }): React.JSX.E
       </div>
       <div className="text-[10px] font-medium text-stone-500 flex items-center justify-between pt-1 border-t border-stone-100">
         <span>Timeline Target: 75 days</span>
-        <span className="text-amber-700 font-semibold">Fog Risk</span>
+        <span className="text-amber-700 font-semibold">Seasonal Buffer Active</span>
       </div>
     </div>
   );
@@ -74,18 +74,18 @@ function NextActionCard({
         <span
           className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
             isCrit
-              ? 'bg-red-50 text-red-700 border border-red-200'
-              : 'bg-blue-50 text-blue-700 border border-blue-200'
+              ? 'bg-amber-50 text-amber-800 border border-amber-200'
+              : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
           }`}
         >
-          {isCrit ? 'Critical Task' : `Slack: +${Math.round(task.totalFloat)}d`}
+          {isCrit ? 'Needs Decision' : `Flexible: +${Math.round(task.totalFloat)}d`}
         </span>
       </div>
       <p className="text-sm font-bold text-stone-900 truncate my-1">{task.name}</p>
       <button
         type="button"
         onClick={() => onSelectTask?.(task.id)}
-        className="w-full py-1 text-center text-xs font-semibold rounded-lg bg-stone-50 hover:bg-stone-100 text-stone-700 border border-stone-200 transition-colors"
+        className="w-full py-1 text-center text-xs font-semibold rounded-lg bg-amber-50/80 hover:bg-amber-100 text-amber-900 border border-amber-200 transition-colors"
       >
         Focus task on graph &rarr;
       </button>
@@ -95,7 +95,11 @@ function NextActionCard({
 
 function AlertList({ alerts }: { readonly alerts: readonly Alert[] }): React.JSX.Element {
   if (alerts.length === 0) {
-    return <p className="text-xs text-stone-400">No active Sentinel alerts. Plan is healthy.</p>;
+    return (
+      <p className="text-xs text-stone-500 py-1">
+        ✓ Everything is running smoothly! No timeline or budget risks detected.
+      </p>
+    );
   }
   return (
     <ul className="space-y-1.5 max-h-36 overflow-y-auto" role="list">
@@ -116,7 +120,7 @@ function AlertList({ alerts }: { readonly alerts: readonly Alert[] }): React.JSX
                 {a.ruleId}
               </span>
               <span className="text-stone-700 font-medium">
-                {a.taskId ? `Task ${a.taskId}` : 'Plan buffer'}
+                {a.taskId ? `Check status for ${a.taskId}` : 'Seasonal timeline buffer notice'}
               </span>
             </div>
             <span className="text-[10px] font-bold text-stone-500 capitalize">{a.severity}</span>
@@ -148,9 +152,11 @@ export function CommandCenter({
       <div className="bg-white border border-stone-200/80 rounded-2xl p-4 shadow-xs">
         <div className="flex items-center justify-between mb-2">
           <h4 className="text-xs font-bold text-stone-800 uppercase tracking-wider">
-            Sentinel Risk Radar ({alerts.length})
+            Plan Health & Proactive Checklist ({alerts.length})
           </h4>
-          <span className="text-[11px] font-semibold text-stone-500">Rules R1–R7 ranked</span>
+          <span className="text-[11px] font-semibold text-stone-500">
+            Automated Readiness Checks
+          </span>
         </div>
         <AlertList alerts={alerts} />
       </div>

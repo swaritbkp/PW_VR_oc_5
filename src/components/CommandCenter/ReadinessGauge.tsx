@@ -14,9 +14,21 @@ export function ReadinessGauge({
   const strokeColor = pct >= 80 ? '#059669' : pct >= 50 ? '#D97706' : '#DC2626';
 
   return (
-    <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-stone-200/80 shadow-xs">
-      <div className="relative w-24 h-24 flex items-center justify-center">
-        <svg className="w-24 h-24 -rotate-90 transform" viewBox="0 0 80 80">
+    <div className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-white border border-stone-200/80 shadow-xs">
+      <div className="flex items-center justify-between w-full mb-1">
+        <span className="text-xs font-semibold text-stone-600">Timeline Health</span>
+        <span
+          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+            pct >= 80
+              ? 'bg-emerald-100 text-emerald-900 border border-emerald-200'
+              : 'bg-amber-100 text-amber-900 border border-amber-200'
+          }`}
+        >
+          {pct >= 80 ? 'On Track' : 'Needs Attention'}
+        </span>
+      </div>
+      <div className="relative w-22 h-22 flex items-center justify-center my-1">
+        <svg className="w-22 h-22 -rotate-90 transform" viewBox="0 0 80 80">
           <circle cx="40" cy="40" r={radius} stroke="#F1F5F9" strokeWidth="7" fill="none" />
           <circle
             cx="40"
@@ -35,15 +47,14 @@ export function ReadinessGauge({
           <span className="text-xl font-black tabular-nums tracking-tight text-stone-900">
             {pct}%
           </span>
-          <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">
-            P(ready)
+          <span className="text-[9px] font-bold text-stone-400 uppercase tracking-wider">
+            Feasible
           </span>
         </div>
       </div>
-      <div className="flex items-center gap-2 mt-1 text-[10px] font-semibold text-stone-500">
-        <span className="px-1.5 py-0.5 rounded bg-stone-100 text-stone-600">P50: 98%</span>
-        <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700">P80: {pct}%</span>
-      </div>
+      <p className="text-[11px] font-medium text-stone-500 text-center">
+        {pct >= 85 ? 'High confidence buffer' : 'Buffer tightened by dependencies'}
+      </p>
     </div>
   );
 }

@@ -73,6 +73,18 @@ export function EventGraphNode({
         filter="drop-shadow(0 1px 2px rgba(0,0,0,0.05))"
       />
       <rect x={0} y={0} width={4} height={node.h} rx={2} fill={accentColor} />
+      {node.done && (
+        <text
+          x={node.w - 18}
+          y={17}
+          fontSize={11}
+          fill="#059669"
+          fontWeight="bold"
+          className="pointer-events-none select-none"
+        >
+          ✓
+        </text>
+      )}
       <text
         x={12}
         y={18}
@@ -81,7 +93,7 @@ export function EventGraphNode({
         fill="#0F172A"
         className="pointer-events-none select-none"
       >
-        {node.name.length > 20 ? `${node.name.slice(0, 18)}...` : node.name}
+        {node.name.length > 18 ? `${node.name.slice(0, 16)}...` : node.name}
       </text>
       <text
         x={12}
@@ -92,7 +104,7 @@ export function EventGraphNode({
       >
         {node.startDate ? `${node.startDate}` : ''}
         {isCrit
-          ? ' • Critical'
+          ? ' • Priority'
           : node.floatDays > 0
             ? ` • +${Math.round(node.floatDays)}d`
             : ' • 0d'}
