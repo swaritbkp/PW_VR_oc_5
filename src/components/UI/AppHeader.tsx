@@ -118,8 +118,13 @@ function NavButtons({
 
 export function AppHeader({ title, city, onOpen }: AppHeaderProps): React.JSX.Element {
   return (
-    <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-stone-200 shadow-sm">
-      <div className="flex items-center gap-3">
+    <header className="relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-3xl bg-white/90 backdrop-blur-xl border border-stone-200/80 shadow-lg shadow-stone-900/5">
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-10 pointer-events-none mix-blend-multiply"
+        style={{ backgroundImage: `url('/art/hero-event-graph.png')` }}
+        aria-hidden="true"
+      />
+      <div className="relative z-10 flex items-center gap-3">
         <MarigoldEmblem />
         <div>
           <div className="flex items-center gap-2">
@@ -136,7 +141,7 @@ export function AppHeader({ title, city, onOpen }: AppHeaderProps): React.JSX.El
           </p>
         </div>
       </div>
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="relative z-10 flex flex-wrap items-center gap-3">
         <LanguagePill />
         <NavButtons onOpen={onOpen} />
       </div>

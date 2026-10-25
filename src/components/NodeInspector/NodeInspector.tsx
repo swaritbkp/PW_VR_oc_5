@@ -91,29 +91,48 @@ function renderVendorsTab(task: PlanTask | undefined, hasBackup: boolean) {
   );
 }
 
+const LANE_ICONS: Record<string, string> = {
+  planning: '📋',
+  venue: '🏛️',
+  food: '🍲',
+  decor: '🌺',
+  media: '📸',
+  entertainment: '🎵',
+  attire: '👗',
+  invites: '💌',
+  logistics: '🚚',
+  milestone: '💎',
+};
+
 function renderHeader(node: GraphNode, onClose: () => void) {
+  const icon = LANE_ICONS[node.lane] ?? '✨';
   return (
-    <div className="p-4 border-b border-neutral-100 flex items-start justify-between bg-neutral-50/50">
-      <div>
-        <div className="flex items-center gap-1.5 mb-1">
-          <span className="text-xs font-semibold px-2 py-0.5 rounded bg-neutral-200 text-neutral-800">
-            {node.lane}
-          </span>
-          {node.critical && (
-            <span className="text-xs font-semibold px-2 py-0.5 rounded bg-red-100 text-red-800">
-              Critical
+    <div className="p-4 border-b border-stone-200/80 flex items-start justify-between bg-stone-50/80">
+      <div className="flex items-start gap-2.5">
+        <span className="w-8 h-8 rounded-xl bg-white border border-stone-200 shadow-2xs flex items-center justify-center text-sm shrink-0 select-none">
+          {icon}
+        </span>
+        <div>
+          <div className="flex items-center gap-1.5 mb-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-stone-200/80 text-stone-800">
+              {node.lane}
             </span>
-          )}
+            {node.critical && (
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-200">
+                Critical
+              </span>
+            )}
+          </div>
+          <h3 className="text-sm font-bold text-stone-900 leading-snug">{node.name}</h3>
         </div>
-        <h3 className="text-base font-bold text-neutral-900">{node.name}</h3>
       </div>
       <button
         type="button"
         onClick={onClose}
         aria-label="Close inspector"
-        className="p-1 rounded-md text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100"
+        className="p-1.5 rounded-xl text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 transition-colors"
       >
-        &times;
+        ✕
       </button>
     </div>
   );
@@ -181,7 +200,7 @@ export function NodeInspector({ node, task, onClose, onUpdateStatus }: NodeInspe
       role="dialog"
       aria-modal="true"
       aria-label={`Task inspector for ${node.name}`}
-      className="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-2xl border-l border-neutral-200 z-50 flex flex-col"
+      className="fixed inset-y-0 right-0 w-full sm:w-104 bg-white/95 backdrop-blur-xl shadow-2xl border-l border-stone-200 z-50 flex flex-col transition-all duration-300"
     >
       {renderHeader(node, onClose)}
       {renderTabs(tab, setTab, Boolean(task?.vendorNeed))}

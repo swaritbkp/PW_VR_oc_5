@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { formatInr } from '@/lib/format';
 import { TEMPLATES, type EventTemplate } from '@/lib/templates/catalog';
 import type { EventType } from '@/lib/plan/types';
-import { TemplateCoverSvg } from './TemplateCoverSvg';
+import { TemplateCoverImage } from './TemplateCoverImage';
 
 export interface TemplateGalleryProps {
   readonly onSelectTemplate: (template: EventTemplate) => void;
@@ -26,18 +26,6 @@ const MONTH_NAMES = [
   'Nov',
   'Dec',
 ];
-
-function renderBadge(outdoor: boolean) {
-  return outdoor ? (
-    <span className="px-2 py-0.5 text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full">
-      Outdoor
-    </span>
-  ) : (
-    <span className="px-2 py-0.5 text-[10px] font-semibold bg-stone-100 text-stone-700 border border-stone-200 rounded-full">
-      Indoor
-    </span>
-  );
-}
 
 function renderBestMonths(months: readonly number[]) {
   if (months.length === 0) return null;
@@ -74,15 +62,20 @@ function renderTemplateCard(template: EventTemplate, onSelect: (t: EventTemplate
     <div
       key={template.id}
       role="article"
-      className="p-5 rounded-2xl border border-stone-200 bg-white hover:border-amber-400 hover:shadow-md transition-all flex flex-col justify-between gap-3"
+      className="p-4 rounded-3xl border border-stone-200/90 bg-white hover:border-amber-400 hover:shadow-xl transition-all duration-300 flex flex-col justify-between gap-3 group"
       data-testid={`template-card-${template.id}`}
     >
       <div className="space-y-2">
-        <TemplateCoverSvg templateId={template.id} accent={template.accent} />
-        <div className="flex items-start justify-between gap-2">
-          <h4 className="flex-1 font-bold text-stone-900 text-sm leading-snug">{template.title}</h4>
-          {renderBadge(template.outdoor)}
-        </div>
+        <TemplateCoverImage
+          templateId={template.id}
+          title={template.title}
+          category={template.eventType}
+          outdoor={template.outdoor}
+          accent={template.accent}
+        />
+        <h4 className="font-bold text-stone-900 text-sm leading-snug group-hover:text-amber-900 transition-colors">
+          {template.title}
+        </h4>
         <p className="text-xs text-stone-600 line-clamp-2">{template.tagline}</p>
         {renderTemplateMetrics(template)}
       </div>
@@ -90,7 +83,7 @@ function renderTemplateCard(template: EventTemplate, onSelect: (t: EventTemplate
       <button
         type="button"
         onClick={() => onSelect(template)}
-        className="w-full py-2 px-3 text-xs font-bold rounded-xl bg-stone-900 text-white hover:bg-amber-800 transition-colors shadow-sm"
+        className="w-full py-2.5 px-3 text-xs font-bold rounded-xl bg-stone-900 text-white hover:bg-amber-800 transition-all shadow-sm active:scale-98"
       >
         Choose Template
       </button>

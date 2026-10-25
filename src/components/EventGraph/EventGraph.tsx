@@ -125,12 +125,12 @@ export function EventGraph({
 
   return (
     <div
-      className={`relative flex flex-col border border-stone-200 rounded-2xl bg-white overflow-hidden shadow-sm ${className}`}
+      className={`relative flex flex-col border border-stone-200/90 rounded-3xl bg-white overflow-hidden shadow-lg shadow-stone-900/5 ${className}`}
     >
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-stone-100 bg-stone-50/80 text-xs">
-        <div className="flex items-center gap-2">
-          <span className="font-bold text-stone-800">Event Graph Workspace</span>
-          <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-stone-200/60 text-stone-600">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-stone-100 bg-white/80 backdrop-blur-md text-xs">
+        <div className="flex items-center gap-2.5">
+          <span className="font-bold text-stone-900">Event Graph Canvas</span>
+          <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-stone-100 text-stone-600 border border-stone-200/60">
             {layout.nodes.length} nodes &bull; {layout.edges.length} edges
           </span>
         </div>
@@ -142,7 +142,7 @@ export function EventGraph({
         />
       </div>
 
-      <div className="flex-1 overflow-auto p-4 min-h-[440px] bg-[#FAF9F6]">
+      <div className="flex-1 overflow-auto p-6 min-h-[500px] bg-[#FAF9F6]">
         {viewMode === 'list' ? (
           <EventGraphList
             nodes={layout.nodes}

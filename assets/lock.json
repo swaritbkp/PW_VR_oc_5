@@ -1,0 +1,110 @@
+{
+  "backup-plan": {
+    "bytes": 30358,
+    "file": "public/art/backup-plan.png",
+    "generated_at": "2026-10-25T01:25:23+00:00",
+    "hash": "264b362aa68a29a4"
+  },
+  "birthday-dino-explorer": {
+    "bytes": 31886,
+    "file": "public/art/birthday-dino-explorer.png",
+    "generated_at": "2026-10-25T01:25:22+00:00",
+    "hash": "c167c04d3c90019f"
+  },
+  "birthday-mini-chef": {
+    "bytes": 34490,
+    "file": "public/art/birthday-mini-chef.png",
+    "generated_at": "2026-10-25T01:25:23+00:00",
+    "hash": "bf43725d54d42715"
+  },
+  "birthday-pastel-pool": {
+    "bytes": 31625,
+    "file": "public/art/birthday-pastel-pool.png",
+    "generated_at": "2026-10-25T01:25:23+00:00",
+    "hash": "b79849faf3f773e5"
+  },
+  "birthday-space-adventure": {
+    "bytes": 29623,
+    "file": "public/art/birthday-space-adventure.png",
+    "generated_at": "2026-10-25T01:25:22+00:00",
+    "hash": "0fdbe1299b42f187"
+  },
+  "community-eco-diwali-mela": {
+    "bytes": 27849,
+    "file": "public/art/community-eco-diwali-mela.png",
+    "generated_at": "2026-10-25T01:25:23+00:00",
+    "hash": "9641ab9f8b05ba52"
+  },
+  "community-gurpurab-langar": {
+    "bytes": 39217,
+    "file": "public/art/community-gurpurab-langar.png",
+    "generated_at": "2026-10-25T01:25:23+00:00",
+    "hash": "65776b449fe88326"
+  },
+  "community-holi-organic": {
+    "bytes": 34253,
+    "file": "public/art/community-holi-organic.png",
+    "generated_at": "2026-10-25T01:25:23+00:00",
+    "hash": "b545ebe39d0cd05f"
+  },
+  "community-lohri-bonfire": {
+    "bytes": 24754,
+    "file": "public/art/community-lohri-bonfire.png",
+    "generated_at": "2026-10-25T01:25:23+00:00",
+    "hash": "5a8342622c90737a"
+  },
+  "empty-all-done": {
+    "bytes": 31391,
+    "file": "public/art/empty-all-done.png",
+    "generated_at": "2026-10-25T01:25:23+00:00",
+    "hash": "c311068a0557b0a2"
+  },
+  "empty-no-plan": {
+    "bytes": 29192,
+    "file": "public/art/empty-no-plan.png",
+    "generated_at": "2026-10-25T01:25:23+00:00",
+    "hash": "4bec537bd7ec5029"
+  },
+  "empty-no-vendors": {
+    "bytes": 30192,
+    "file": "public/art/empty-no-vendors.png",
+    "generated_at": "2026-10-25T01:25:23+00:00",
+    "hash": "c70c5c8cfff37da1"
+  },
+  "hero-event-graph": {
+    "bytes": 28258,
+    "file": "public/art/hero-event-graph.png",
+    "generated_at": "2026-10-25T01:25:23+00:00",
+    "hash": "cb6bd82928688317"
+  },
+  "og-social": {
+    "bytes": 32967,
+    "file": "public/art/og-social.png",
+    "generated_at": "2026-10-25T01:25:23+00:00",
+    "hash": "8e5d587bcff35474"
+  },
+  "wedding-boho-garden": {
+    "bytes": 36077,
+    "file": "public/art/wedding-boho-garden.png",
+    "generated_at": "2026-10-25T01:25:22+00:00",
+    "hash": "221a5ce7c31e3c80"
+  },
+  "wedding-intimate-morning": {
+    "bytes": 34059,
+    "file": "public/art/wedding-intimate-morning.png",
+    "generated_at": "2026-10-25T01:25:22+00:00",
+    "hash": "9afac14330a48045"
+  },
+  "wedding-phulkari-courtyard": {
+    "bytes": 33311,
+    "file": "public/art/wedding-phulkari-courtyard.png",
+    "generated_at": "2026-10-25T01:25:22+00:00",
+    "hash": "49cb63847ce0b62b"
+  },
+  "wedding-retro-sangeet": {
+    "bytes": 33676,
+    "file": "public/art/wedding-retro-sangeet.png",
+    "generated_at": "2026-10-25T01:25:22+00:00",
+    "hash": "b27a35d6743c353d"
+  }
+}
