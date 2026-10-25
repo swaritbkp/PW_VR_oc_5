@@ -4,13 +4,17 @@ import React from 'react';
 import type { AllocationResult, ReconcileResult } from '@/lib/budget/engine';
 import { formatInr } from '@/lib/format';
 
+export interface BudgetDonutProps {
+  readonly budget: AllocationResult;
+  readonly reconciliation: ReconcileResult;
+  readonly onOpenBudget?: () => void;
+}
+
 export function BudgetDonut({
   budget,
   reconciliation,
-}: {
-  readonly budget: AllocationResult;
-  readonly reconciliation: ReconcileResult;
-}): React.JSX.Element {
+  onOpenBudget,
+}: BudgetDonutProps): React.JSX.Element {
   return (
     <div className="flex flex-col justify-between p-3.5 rounded-2xl bg-white border border-stone-200/80 shadow-xs">
       <div className="flex items-center justify-between">
@@ -83,19 +87,31 @@ export function BudgetDonut({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 text-[10px] font-medium text-stone-500 pt-1 border-t border-stone-100">
-        <span className="inline-flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-[#9A3412]" /> Venue
-        </span>
-        <span className="inline-flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-[#D97706]" /> Food
-        </span>
-        <span className="inline-flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-[#2563EB]" /> Decor
-        </span>
-        <span className="inline-flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-[#059669]" /> Buffer
-        </span>
+      <div className="flex items-center justify-between pt-1 border-t border-stone-100">
+        <div className="flex items-center gap-2 text-[10px] font-medium text-stone-500">
+          <span className="inline-flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-[#9A3412]" /> Venue
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-[#D97706]" /> Food
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-[#2563EB]" /> Decor
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-[#059669]" /> Buffer
+          </span>
+        </div>
+        {onOpenBudget && (
+          <button
+            type="button"
+            onClick={onOpenBudget}
+            className="text-[10px] font-bold text-amber-800 hover:text-amber-950 flex items-center gap-0.5 hover:-translate-y-0.5 transition-all cursor-pointer"
+            aria-label="Manage budget ledger"
+          >
+            Ledger &rarr;
+          </button>
+        )}
       </div>
     </div>
   );

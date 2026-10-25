@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { formatInr } from '@/lib/format';
 import { IntakeSchema, type IntakeInput } from '@/lib/plan/schemas';
 import type { EventType } from '@/lib/plan/types';
 
@@ -19,51 +20,42 @@ function parseNonNegotiables(raw: string): string[] {
     .slice(0, 5);
 }
 
-function renderEventTypeButtons(current: EventType, onChange: (t: EventType) => void) {
-  const types: readonly EventType[] = ['wedding', 'birthday', 'community'];
+const EVENT_TYPES: readonly EventType[] = ['wedding', 'birthday', 'community'];
+const LANGS = [
+  { code: 'en' as const, label: 'English' },
+  { code: 'hi' as const, label: 'हिंदी' },
+  { code: 'pa' as const, label: 'ਪੰਜਾਬੀ' },
+];
+
+function renderTypeBtn(t: EventType, active: boolean, onClick: () => void) {
+  const cls = active
+    ? 'bg-amber-800 text-white border-amber-800'
+    : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100';
   return (
-    <div className="grid grid-cols-3 gap-2">
-      {types.map((t) => (
-        <button
-          key={t}
-          type="button"
-          onClick={() => onChange(t)}
-          className={`py-2 px-3 text-xs font-semibold rounded-lg capitalize border transition-colors ${
-            current === t
-              ? 'bg-amber-800 text-white border-amber-800'
-              : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
-          }`}
-        >
-          {t}
-        </button>
-      ))}
-    </div>
+    <button
+      key={t}
+      type="button"
+      onClick={onClick}
+      className={`py-2 px-3 text-xs font-semibold rounded-lg capitalize border transition-colors ${cls}`}
+    >
+      {t}
+    </button>
   );
 }
 
-function renderLanguageButtons(current: string, onChange: (l: 'en' | 'hi' | 'pa') => void) {
-  const langs = [
-    { code: 'en', label: 'English' },
-    { code: 'hi', label: 'हिंदी' },
-    { code: 'pa', label: 'ਪੰਜਾਬੀ' },
-  ] as const;
+function renderLangBtn(l: (typeof LANGS)[number], active: boolean, onClick: () => void) {
+  const cls = active
+    ? 'bg-amber-800 text-white border-amber-800'
+    : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100';
   return (
-    <div className="flex gap-2">
-      {langs.map((l) => (
-        <button
-          key={l.code}
-          type="button"
-          onClick={() => onChange(l.code)}
-          className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${
-            current === l.code
-              ? 'bg-amber-800 text-white border-amber-800'
-              : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
-          }`}
-        >
-          {l.label}
-        </button>
-      ))}
-    </div>
+    <button
+      key={l.code}
+      type="button"
+      onClick={onClick}
+      className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${cls}`}
+    >
+      {l.label}
+    </button>
   );
 }
 
@@ -130,7 +122,9 @@ export function IntakeSheet({
         <label className="block text-xs font-semibold text-stone-700 mb-1.5">
           Celebration Type
         </label>
-        {renderEventTypeButtons(eventType, setEventType)}
+        <div className="grid grid-cols-3 gap-2">
+          {EVENT_TYPES.map((t) => renderTypeBtn(t, eventType === t, () => setEventType(t)))}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -189,6 +183,9 @@ export function IntakeSheet({
             required
             className="w-full p-2 text-xs border border-stone-200 rounded-lg"
           />
+          <p className="text-[10px] text-amber-800 font-mono mt-0.5">
+            {formatInr(parseInt(budgetInr, 10) || 0)}
+          </p>
         </div>
       </div>
 
@@ -222,7 +219,9 @@ export function IntakeSheet({
         <label className="block text-xs font-semibold text-stone-700 mb-1.5">
           Planning Language
         </label>
-        {renderLanguageButtons(language, setLanguage)}
+        <div className="flex gap-2">
+          {LANGS.map((l) => renderLangBtn(l, language === l.code, () => setLanguage(l.code)))}
+        </div>
       </div>
 
       <div className="flex gap-2 pt-2 border-t border-stone-100">

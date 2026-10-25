@@ -8,12 +8,12 @@ import { GuidedJourneyBar } from '@/components/Journey/GuidedJourneyBar';
 import { WorkspaceTabs } from '@/components/UI/WorkspaceTabs';
 import { CommandCenter } from '@/components/CommandCenter/CommandCenter';
 import { NodeInspector } from '@/components/NodeInspector/NodeInspector';
-import { allocate, reconcile } from '@/lib/budget/engine';
+import { allocate, reconcile, type BudgetLine } from '@/lib/budget/engine';
 import { layoutEventGraph } from '@/lib/graph/layout';
 import { getInitialPlan } from '@/lib/plan/initialPlan';
 import { evaluateJourney, type GuidedActionId } from '@/lib/plan/journey';
-import type { PlanState } from '@/lib/plan/propagate';
-import type { VendorNeedId } from '@/lib/plan/types';
+import { propagate, type PlanState } from '@/lib/plan/propagate';
+import type { PlanTask, VendorNeedId } from '@/lib/plan/types';
 import { createVersionStore, pushVersion } from '@/lib/plan/versions';
 import { computeSchedule } from '@/lib/schedule/cpm';
 import { probabilityOnTime } from '@/lib/schedule/pert';
@@ -89,6 +89,16 @@ export default function HomePage(): React.JSX.Element {
     const updatedTasks = currentPlan.tasks.map((t) => (t.id === id ? { ...t, done } : t));
     const nextPlan = { ...currentPlan, tasks: updatedTasks };
     setVersionStore((s) => pushVersion(s, nextPlan, `Updated task ${id} status`));
+  };
+
+  const handleUpdateTask = (id: string, updates: Partial<PlanTask>) => {
+    const res = propagate(currentPlan, { kind: 'task', taskId: id, updates });
+    setVersionStore((s) => pushVersion(s, res.plan, res.diff.join('; ')));
+  };
+
+  const handleUpdateBudgetLines = (budgetLines: readonly BudgetLine[], reason: string) => {
+    const nextPlan = { ...currentPlan, budgetLines };
+    setVersionStore((s) => pushVersion(s, nextPlan, reason));
   };
 
   const handleOpenVendorNeed = (need: string) => {
@@ -176,6 +186,7 @@ export default function HomePage(): React.JSX.Element {
           nextAction={commandData.nextTask}
           alerts={commandData.alerts}
           onSelectTask={(id) => setSelectedTaskId(id ?? null)}
+          onOpenBudget={() => setActiveModal('budget')}
         />
       )}
 
@@ -207,6 +218,7 @@ export default function HomePage(): React.JSX.Element {
               task={selectedTask}
               onClose={() => setSelectedTaskId(null)}
               onUpdateStatus={(taskId, st) => handleUpdateTaskStatus(taskId, Boolean(st.done))}
+              onUpdateTask={handleUpdateTask}
             />
           </div>
         </div>
@@ -220,6 +232,7 @@ export default function HomePage(): React.JSX.Element {
         setVersionStore={setVersionStore}
         onOpenModal={setActiveModal}
         onImportPlan={handleImportPlan}
+        onUpdateBudgetLines={handleUpdateBudgetLines}
       />
     </main>
   );

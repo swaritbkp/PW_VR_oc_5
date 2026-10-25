@@ -74,6 +74,48 @@ describe('NodeInspector component (AC7, AC19, AC29)', () => {
     expect(handleStatus).toHaveBeenCalledWith('T1', { started: true, done: true });
   });
 
+  it('allows editing task duration estimates with real-time update callbacks', () => {
+    const handleUpdateTask = vi.fn();
+    render(
+      <NodeInspector
+        node={dummyNode}
+        task={dummyTask}
+        onClose={vi.fn()}
+        onUpdateTask={handleUpdateTask}
+      />,
+    );
+
+    const optInput = screen.getByLabelText(/Optimistic duration days/i);
+    fireEvent.change(optInput, { target: { value: '4' } });
+    expect(handleUpdateTask).toHaveBeenCalledWith('T1', expect.objectContaining({ optimistic: 4 }));
+
+    const mlInput = screen.getByLabelText(/Most likely duration days/i);
+    fireEvent.change(mlInput, { target: { value: '6' } });
+    expect(handleUpdateTask).toHaveBeenCalledWith('T1', expect.objectContaining({ mostLikely: 6 }));
+  });
+
+  it('allows editing task title and custom rationale', () => {
+    const handleUpdateTask = vi.fn();
+    render(
+      <NodeInspector
+        node={dummyNode}
+        task={dummyTask}
+        onClose={vi.fn()}
+        onUpdateTask={handleUpdateTask}
+      />,
+    );
+
+    const nameInput = screen.getByLabelText(/Task Name/i);
+    fireEvent.change(nameInput, { target: { value: 'Reserve Heritage Haveli' } });
+    expect(handleUpdateTask).toHaveBeenCalledWith('T1', { name: 'Reserve Heritage Haveli' });
+
+    const whyInput = screen.getByLabelText(/Edit task rationale/i);
+    fireEvent.change(whyInput, { target: { value: 'Special courtyard booking required early' } });
+    expect(handleUpdateTask).toHaveBeenCalledWith('T1', {
+      why: 'Special courtyard booking required early',
+    });
+  });
+
   it('passes automated accessibility audit with zero violations (AC7)', async () => {
     const { container } = render(
       <NodeInspector node={dummyNode} task={dummyTask} onClose={vi.fn()} />,

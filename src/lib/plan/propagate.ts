@@ -16,7 +16,8 @@ export type PlanChange =
   | { readonly kind: 'guests'; readonly guests: number }
   | { readonly kind: 'budget'; readonly budgetInr: number }
   | { readonly kind: 'date'; readonly date: string }
-  | { readonly kind: 'city'; readonly city: string };
+  | { readonly kind: 'city'; readonly city: string }
+  | { readonly kind: 'task'; readonly taskId: string; readonly updates: Partial<PlanTask> };
 
 export interface PropagateResult {
   readonly plan: PlanState;
@@ -124,10 +125,46 @@ function handleDateOrCity(
   };
 }
 
+function findDownstreamDependents(taskId: string, tasks: readonly PlanTask[]): string[] {
+  const dirty = new Set<string>([taskId]);
+  const queue = [taskId];
+  while (queue.length > 0) {
+    const cur = queue.shift()!;
+    for (const t of tasks) {
+      if (t.dependsOn.includes(cur) && !dirty.has(t.id)) {
+        dirty.add(t.id);
+        queue.push(t.id);
+      }
+    }
+  }
+  return Array.from(dirty);
+}
+
+function handleTaskUpdate(
+  plan: PlanState,
+  taskId: string,
+  updates: Partial<PlanTask>,
+): PropagateResult {
+  const updatedTasks = plan.tasks.map((t) => (t.id === taskId ? { ...t, ...updates } : t));
+  const dirtyIds = findDownstreamDependents(taskId, updatedTasks);
+  const target = updatedTasks.find((t) => t.id === taskId);
+  const durDesc = target
+    ? `${target.optimistic}d/${target.mostLikely}d/${target.pessimistic}d`
+    : '';
+  const diff = [`Updated task ${taskId}: ${updates.name ?? ''} ${durDesc}`.trim()];
+
+  return {
+    plan: { ...plan, tasks: updatedTasks },
+    dirtyIds,
+    diff,
+  };
+}
+
 /** Propagates changes across the plan, updating ONLY dirty nodes per AC3. */
 export function propagate(plan: PlanState, change: PlanChange): PropagateResult {
   if (change.kind === 'guests') return handleGuests(plan, change.guests);
   if (change.kind === 'budget') return handleBudget(plan, change.budgetInr);
+  if (change.kind === 'task') return handleTaskUpdate(plan, change.taskId, change.updates);
   return handleDateOrCity(plan, change);
 }
 

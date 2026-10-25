@@ -4,6 +4,7 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import type { PlanState } from '@/lib/plan/propagate';
 import type { VendorNeedId } from '@/lib/plan/types';
+import type { BudgetLine } from '@/lib/budget/engine';
 import type { VendorSelection } from '@/lib/vendors/types';
 import type { VersionStore } from '@/lib/plan/versions';
 import { pushVersion, restoreVersion, undo } from '@/lib/plan/versions';
@@ -13,49 +14,44 @@ const WhatIfDrawer = dynamic(
   () => import('@/components/LivingPlan/WhatIfDrawer').then((m) => m.WhatIfDrawer),
   { ssr: false },
 );
-
 const DisruptionDrawer = dynamic(
   () => import('@/components/Resilience/DisruptionDrawer').then((m) => m.DisruptionDrawer),
   { ssr: false },
 );
-
 const ShareSheet = dynamic(
   () => import('@/components/Share/ShareSheet').then((m) => m.ShareSheet),
   { ssr: false },
 );
-
 const AuditPanel = dynamic(
   () => import('@/components/Audit/AuditPanel').then((m) => m.AuditPanel),
   { ssr: false },
 );
-
 const TemplateGallery = dynamic(
   () => import('@/components/Templates/TemplateGallery').then((m) => m.TemplateGallery),
   { ssr: false },
 );
-
 const ChaosMonkey = dynamic(
   () => import('@/components/Resilience/ChaosMonkey').then((m) => m.ChaosMonkey),
   { ssr: false },
 );
-
 const DossierModal = dynamic(
   () => import('@/components/Share/DossierModal').then((m) => m.DossierModal),
   { ssr: false },
 );
-
 const NegotiationCoach = dynamic(
   () => import('@/components/Vendors/NegotiationCoach').then((m) => m.NegotiationCoach),
   { ssr: false },
 );
-
 const RedFlagDetector = dynamic(
   () => import('@/components/Vendors/RedFlagDetector').then((m) => m.RedFlagDetector),
   { ssr: false },
 );
-
 const PortableFilePanel = dynamic(
   () => import('@/components/Share/PortableFilePanel').then((m) => m.PortableFilePanel),
+  { ssr: false },
+);
+const BudgetLedger = dynamic(
+  () => import('@/components/Budget/BudgetLedger').then((m) => m.BudgetLedger),
   { ssr: false },
 );
 
@@ -70,7 +66,8 @@ export type ModalType =
   | 'dossier'
   | 'negotiate'
   | 'redflags'
-  | 'portable';
+  | 'portable'
+  | 'budget';
 
 export interface AppModalsProps {
   readonly activeModal: ModalType;
@@ -80,6 +77,7 @@ export interface AppModalsProps {
   readonly setVersionStore: React.Dispatch<React.SetStateAction<VersionStore>>;
   readonly onOpenModal?: (modal: ModalType) => void;
   readonly onImportPlan?: (plan: PlanState, selections: readonly VendorSelection[]) => void;
+  readonly onUpdateBudgetLines?: (lines: readonly BudgetLine[], reason: string) => void;
 }
 
 function renderAuditModal(onClose: () => void) {
@@ -135,12 +133,16 @@ function renderTemplateModal(
   );
 }
 
-function renderFeatureModal(
-  activeModal: ModalType,
-  currentPlan: PlanState,
-  onClose: () => void,
-  onImportPlan?: (plan: PlanState, selections: readonly VendorSelection[]) => void,
-) {
+interface FeatureModalOptions {
+  readonly activeModal: ModalType;
+  readonly currentPlan: PlanState;
+  readonly onClose: () => void;
+  readonly onImportPlan?: (plan: PlanState, selections: readonly VendorSelection[]) => void;
+  readonly onUpdateBudgetLines?: (lines: readonly BudgetLine[], reason: string) => void;
+}
+
+function renderFeatureModal(opts: FeatureModalOptions) {
+  const { activeModal, currentPlan, onClose, onImportPlan, onUpdateBudgetLines } = opts;
   if (activeModal === 'chaos') {
     return (
       <ChaosMonkey
@@ -165,6 +167,17 @@ function renderFeatureModal(
       />
     );
   }
+  if (activeModal === 'budget') {
+    return (
+      <BudgetLedger
+        budgetLines={currentPlan.budgetLines}
+        budgetInr={currentPlan.intake.budgetInr}
+        guests={currentPlan.intake.guests}
+        onUpdateBudgetLines={onUpdateBudgetLines}
+        onClose={onClose}
+      />
+    );
+  }
   return null;
 }
 
@@ -176,9 +189,16 @@ export function AppModals({
   setVersionStore,
   onOpenModal,
   onImportPlan,
+  onUpdateBudgetLines,
 }: AppModalsProps): React.JSX.Element | null {
   if (activeModal === 'none') return null;
-  const feature = renderFeatureModal(activeModal, currentPlan, onClose, onImportPlan);
+  const feature = renderFeatureModal({
+    activeModal,
+    currentPlan,
+    onClose,
+    onImportPlan,
+    onUpdateBudgetLines,
+  });
   if (feature) return feature;
   if (activeModal === 'audit') return renderAuditModal(onClose);
   if (activeModal === 'templates')

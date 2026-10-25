@@ -90,6 +90,27 @@ describe('WhatIfDrawer Component (AC3, AC4, AC11)', () => {
     expect(handleCommit).toHaveBeenCalled();
   });
 
+  it('allows direct typing in bidirectional numeric inputs for guests and budget', () => {
+    render(
+      <WhatIfDrawer
+        currentPlan={initialPlan}
+        versionStore={store}
+        onClose={vi.fn()}
+        onCommit={vi.fn()}
+        onRestore={vi.fn()}
+        onUndo={vi.fn()}
+      />,
+    );
+
+    const guestInput = screen.getByLabelText(/Exact guests/i);
+    fireEvent.change(guestInput, { target: { value: '350' } });
+    expect(screen.getByText(/Guests changed from 200 to 350/i)).toBeInTheDocument();
+
+    const budgetInput = screen.getByLabelText(/Exact INR budget/i);
+    fireEvent.change(budgetInput, { target: { value: '3500000' } });
+    expect(screen.getByText(/Budget changed to ₹3500000/i)).toBeInTheDocument();
+  });
+
   it('AC4 & AC11 restores earlier plan versions and triggers undo', () => {
     const v2Store = pushVersion(store, initialPlan, 'Guest count updated');
     const handleRestore = vi.fn();

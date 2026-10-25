@@ -4,70 +4,30 @@ import React, { useState } from 'react';
 import type { GraphNode } from '../../lib/graph/layout';
 import type { PlanTask } from '../../lib/plan/types';
 import { IconCheckCircle } from '../UI/JashnIcons';
+import { NodeEstimatesForm } from './NodeEstimatesForm';
 
 export interface NodeInspectorProps {
   readonly node: GraphNode;
   readonly task?: PlanTask;
   readonly onClose: () => void;
   readonly onUpdateStatus?: (taskId: string, status: { started?: boolean; done?: boolean }) => void;
+  readonly onUpdateTask?: (taskId: string, updates: Partial<PlanTask>) => void;
 }
 
 const VALID_LANES = new Set(['venue', 'food', 'decor', 'media', 'music', 'logistics']);
 
-function renderDateGrid(node: GraphNode, task: PlanTask | undefined) {
-  const dur = task ? `${task.optimistic}d / ${task.mostLikely}d / ${task.pessimistic}d` : '1d';
-  const floatStr =
-    node.floatDays > 0 ? `+${Math.round(node.floatDays)} days` : '0 days (Critical Chain)';
-  return (
-    <div className="grid grid-cols-2 gap-2 bg-neutral-50 p-2.5 rounded-lg border border-neutral-100">
-      <div>
-        <span className="text-neutral-400">Earliest Start:</span>
-        <p className="font-medium text-neutral-800">{node.startDate || 'Day 0'}</p>
-      </div>
-      <div>
-        <span className="text-neutral-400">Must Start By:</span>
-        <p className="font-medium text-neutral-800">{node.mustStartBy || 'On Schedule'}</p>
-      </div>
-      <div>
-        <span className="text-neutral-400">Duration (o/m/p):</span>
-        <p className="font-medium text-neutral-800">{dur}</p>
-      </div>
-      <div>
-        <span className="text-neutral-400">Float Slack:</span>
-        <p className="font-medium text-neutral-800">{floatStr}</p>
-      </div>
-    </div>
-  );
-}
-
-function renderPlanTab(node: GraphNode, task: PlanTask | undefined) {
-  return (
-    <div className="space-y-3 text-xs">
-      <div>
-        <span className="font-semibold text-neutral-500">Why this task:</span>
-        <p className="text-neutral-800 mt-0.5">
-          {task?.why || 'Essential celebration timeline step.'}
-        </p>
-      </div>
-      {renderDateGrid(node, task)}
-      {task?.drivers && task.drivers.length > 0 && (
-        <div>
-          <span className="font-semibold text-neutral-500">Sensitive Drivers:</span>
-          <div className="flex gap-1.5 mt-1">
-            {task.drivers.map((d) => (
-              <span
-                key={d}
-                className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[11px] font-medium capitalize"
-              >
-                {d}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+const LANE_ICONS: Record<string, string> = {
+  planning: '📋',
+  venue: '🏛️',
+  food: '🍲',
+  decor: '🌺',
+  media: '📸',
+  entertainment: '🎵',
+  attire: '👗',
+  invites: '💌',
+  logistics: '🚚',
+  milestone: '💎',
+};
 
 function renderVendorsTab(task: PlanTask | undefined, hasBackup: boolean) {
   if (!task?.vendorNeed) {
@@ -94,19 +54,6 @@ function renderVendorsTab(task: PlanTask | undefined, hasBackup: boolean) {
   );
 }
 
-const LANE_ICONS: Record<string, string> = {
-  planning: '📋',
-  venue: '🏛️',
-  food: '🍲',
-  decor: '🌺',
-  media: '📸',
-  entertainment: '🎵',
-  attire: '👗',
-  invites: '💌',
-  logistics: '🚚',
-  milestone: '💎',
-};
-
 function renderBanner(lane: string) {
   const artLane = VALID_LANES.has(lane) ? lane : 'venue';
   return (
@@ -124,7 +71,7 @@ function renderBanner(lane: string) {
   );
 }
 
-function renderHeader(node: GraphNode, onClose: () => void) {
+function renderHeader(node: GraphNode, task: PlanTask | undefined, onClose: () => void) {
   const icon = LANE_ICONS[node.lane] ?? '✨';
   return (
     <div className="p-4 border-b border-stone-200/80 flex items-start justify-between bg-stone-50/80">
@@ -143,7 +90,9 @@ function renderHeader(node: GraphNode, onClose: () => void) {
               </span>
             )}
           </div>
-          <h3 className="text-sm font-bold text-stone-900 leading-snug">{node.name}</h3>
+          <h3 className="text-sm font-bold text-stone-900 leading-snug">
+            {task?.name ?? node.name}
+          </h3>
         </div>
       </div>
       <button
@@ -213,7 +162,13 @@ function renderFooter(
 }
 
 /** Inspector drawer displaying task parameters, dates, vendor details, and status actions (AC7, AC19, AC29). */
-export function NodeInspector({ node, task, onClose, onUpdateStatus }: NodeInspectorProps) {
+export function NodeInspector({
+  node,
+  task,
+  onClose,
+  onUpdateStatus,
+  onUpdateTask,
+}: NodeInspectorProps): React.JSX.Element {
   const [tab, setTab] = useState<'plan' | 'vendors'>('plan');
 
   return (
@@ -224,10 +179,14 @@ export function NodeInspector({ node, task, onClose, onUpdateStatus }: NodeInspe
       className="fixed inset-y-0 right-0 w-full sm:w-104 bg-white/95 backdrop-blur-xl shadow-2xl border-l border-stone-200 z-50 flex flex-col transition-all duration-300"
     >
       {renderBanner(node.lane)}
-      {renderHeader(node, onClose)}
+      {renderHeader(node, task, onClose)}
       {renderTabs(tab, setTab, Boolean(task?.vendorNeed))}
       <div className="p-4 flex-1 overflow-y-auto">
-        {tab === 'plan' ? renderPlanTab(node, task) : renderVendorsTab(task, node.hasBackup)}
+        {tab === 'plan' ? (
+          <NodeEstimatesForm node={node} task={task} onUpdateTask={onUpdateTask} />
+        ) : (
+          renderVendorsTab(task, node.hasBackup)
+        )}
       </div>
       {renderFooter(node.id, onUpdateStatus)}
     </div>

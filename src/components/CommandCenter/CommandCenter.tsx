@@ -16,6 +16,7 @@ export interface CommandCenterProps {
   readonly nextAction?: ScheduledTask;
   readonly alerts: readonly Alert[];
   readonly onSelectTask?: (taskId: string) => void;
+  readonly onOpenBudget?: () => void;
 }
 
 function CountdownCard({ daysLeft }: { readonly daysLeft: number }): React.JSX.Element {
@@ -141,13 +142,14 @@ export function CommandCenter({
   nextAction,
   alerts,
   onSelectTask,
+  onOpenBudget,
 }: CommandCenterProps): React.JSX.Element {
   return (
     <section aria-label="Command Center" className="w-full space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 items-stretch">
         <CountdownCard daysLeft={daysLeft} />
         <ReadinessGauge probability={prob} />
-        <BudgetDonut budget={budget} reconciliation={recon} />
+        <BudgetDonut budget={budget} reconciliation={recon} onOpenBudget={onOpenBudget} />
         <NextActionCard task={nextAction} onSelectTask={onSelectTask} />
       </div>
 

@@ -119,6 +119,24 @@ describe('AC3 change propagation', () => {
     expect(res.dirtyIds).toContain('T04');
     expect(res.diff[0]).toBe('City changed to Amritsar');
   });
+
+  it('AC3 propagates task estimate updates and marks downstream dependents as dirty', () => {
+    const res = propagate(samplePlan, {
+      kind: 'task',
+      taskId: 'T01',
+      updates: { optimistic: 7, mostLikely: 12, pessimistic: 18, name: 'Book Royal Palace' },
+    });
+    expect(res.dirtyIds).toContain('T01');
+    expect(res.dirtyIds).toContain('T02');
+    expect(res.dirtyIds).toContain('T03');
+    expect(res.dirtyIds).toContain('T04');
+    const updatedT01 = res.plan.tasks.find((t) => t.id === 'T01');
+    expect(updatedT01?.name).toBe('Book Royal Palace');
+    expect(updatedT01?.optimistic).toBe(7);
+    expect(updatedT01?.mostLikely).toBe(12);
+    expect(updatedT01?.pessimistic).toBe(18);
+    expect(res.diff[0]).toContain('Updated task T01: Book Royal Palace');
+  });
 });
 
 describe('AC4 crunch mode ranking', () => {
