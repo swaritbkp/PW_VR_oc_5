@@ -14,8 +14,9 @@ Planning celebrations in India—from an intimate Phulkari courtyard wedding in 
 1. **Curated Contemporary Templates**: Start from 12 culturally authentic, tested event templates or enter bespoke requirements.
 2. **Deterministic PERT/CPM Scheduling**: Schedulable DAG calculating critical paths, early/late start dates, float slack, and Monte Carlo P(ready) confidence targets (P50/P80/P90).
 3. **No Hallucinated Vendors**: Real Google Places (New) search proxied server-side with zero client key exposure; click-to-contact via `tel:` and multilingual WhatsApp (`wa.me` in English, Hindi, Punjabi) for human confirmation.
-4. **Plan B Resilience & Disruption Simulator**: Stress-test plans against real-world incidents (venue cancellation, monsoon downpour, power cut) with ghost-path timeline diffs and resilience scoring.
-5. **Living Plan Dynamics**: Interactive what-if sliders (guests, budget) with surgical dirty-set change propagation and instant single-click undo/version history.
+4. **Plan B Resilience & Compound Chaos Monkey**: Stress-test plans against multi-incident disruptions (e.g., venue cancellation + monsoon downpour + caterer flake) with real-time CPM rerouting, emergency protocols, and ghost-path timeline diffs.
+5. **Living Plan Dynamics & Portability**: Interactive what-if sliders (guests, budget) with surgical dirty-set change propagation, instant single-click undo, and fully portable AC30-compliant `.jashn` event package export and import.
+6. **5-Step Guided Event Journey**: An autonomous 5-step guided journey with real-time progress tracking, AI coach nudges, 1-click stage actions, and an automated 60-second Demo Tour mode.
 
 ---
 
@@ -182,6 +183,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 7. AI-Art Disclosure
+## 7. AI-Art Disclosure & Nano Banana Pipeline
 
-Template covers and empty-state illustrations are developed with Google Flow (Imagen) through `scripts/flow_assets.py`. All generated art is committed statically as build artifacts with inline SVG vector fallbacks to ensure zero external dependencies at runtime.
+Template covers, Category Inspector Banners (`cat-venue`, `cat-food`, `cat-decor`, `cat-media`, `cat-music`, `cat-logistics`), and empty-state illustrations are generated with **Nano Banana** (`gemini-2.5-flash-image`) and Google Flow via `scripts/generate_nanobanana_assets.mjs` and `scripts/flow_assets.py`. All generated art is committed statically to `public/art/` with deterministic pure-raster and SVG vector fallbacks to guarantee zero broken images or runtime external dependencies.

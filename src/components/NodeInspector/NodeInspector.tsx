@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import type { GraphNode } from '../../lib/graph/layout';
 import type { PlanTask } from '../../lib/plan/types';
+import { IconCheckCircle } from '../UI/JashnIcons';
 
 export interface NodeInspectorProps {
   readonly node: GraphNode;
@@ -10,6 +11,8 @@ export interface NodeInspectorProps {
   readonly onClose: () => void;
   readonly onUpdateStatus?: (taskId: string, status: { started?: boolean; done?: boolean }) => void;
 }
+
+const VALID_LANES = new Set(['venue', 'food', 'decor', 'media', 'music', 'logistics']);
 
 function renderDateGrid(node: GraphNode, task: PlanTask | undefined) {
   const dur = task ? `${task.optimistic}d / ${task.mostLikely}d / ${task.pessimistic}d` : '1d';
@@ -104,6 +107,23 @@ const LANE_ICONS: Record<string, string> = {
   milestone: '💎',
 };
 
+function renderBanner(lane: string) {
+  const artLane = VALID_LANES.has(lane) ? lane : 'venue';
+  return (
+    <div className="relative w-full h-24 sm:h-28 overflow-hidden bg-stone-100 shrink-0 border-b border-stone-200/60">
+      <img
+        src={`/art/cat-${artLane}.png`}
+        alt={`Category banner for ${lane}`}
+        className="w-full h-full object-cover"
+      />
+      <div className="absolute inset-0 bg-linear-to-t from-stone-900/60 via-transparent to-transparent" />
+      <span className="absolute bottom-2 left-4 text-xs font-bold uppercase tracking-wider text-white drop-shadow-sm">
+        {lane}
+      </span>
+    </div>
+  );
+}
+
 function renderHeader(node: GraphNode, onClose: () => void) {
   const icon = LANE_ICONS[node.lane] ?? '✨';
   return (
@@ -176,16 +196,17 @@ function renderFooter(
       <button
         type="button"
         onClick={() => onUpdate?.(nodeId, { started: true, done: false })}
-        className="flex-1 py-2 text-xs font-medium rounded-lg border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700"
+        className="flex-1 py-2 text-xs font-medium rounded-lg border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 hover:-translate-y-0.5 transition-all duration-200 shadow-2xs"
       >
         Mark Started
       </button>
       <button
         type="button"
         onClick={() => onUpdate?.(nodeId, { started: true, done: true })}
-        className="flex-1 py-2 text-xs font-medium rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+        className="flex-1 py-2 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-1.5 hover:-translate-y-0.5 transition-all duration-200 shadow-2xs"
       >
-        Mark Done
+        <IconCheckCircle className="w-3.5 h-3.5" />
+        <span>Mark Done</span>
       </button>
     </div>
   );
@@ -202,6 +223,7 @@ export function NodeInspector({ node, task, onClose, onUpdateStatus }: NodeInspe
       aria-label={`Task inspector for ${node.name}`}
       className="fixed inset-y-0 right-0 w-full sm:w-104 bg-white/95 backdrop-blur-xl shadow-2xl border-l border-stone-200 z-50 flex flex-col transition-all duration-300"
     >
+      {renderBanner(node.lane)}
       {renderHeader(node, onClose)}
       {renderTabs(tab, setTab, Boolean(task?.vendorNeed))}
       <div className="p-4 flex-1 overflow-y-auto">

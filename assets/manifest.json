@@ -1,7 +1,7 @@
 {
   "style": "Flat editorial illustration, warm natural light, subtle paper grain, rich but calm colour, wide composition with quiet negative space on the left, no text, no letters, no logos, no real people.",
   "aspect": "16:9",
-  "model": null,
+  "model": "gemini-2.5-flash-image",
   "assets": [
     {
       "id": "wedding-phulkari-courtyard",
@@ -110,6 +110,42 @@
       "prompt": "Two parallel paths from a gate to the same festive hall, one sunny and one under a canopy, showing a backup route.",
       "alt": "Illustration of two paths reaching the same festive hall, one with a canopy as a backup.",
       "out": "public/art/backup-plan.png"
+    },
+    {
+      "id": "cat-venue",
+      "prompt": "An elegant Indian banquet courtyard with arched stone doorways, royal floral entrance, and warm ambient lamps, no people.",
+      "alt": "Illustration of an elegant Indian banquet courtyard with arched stone doorways.",
+      "out": "public/art/cat-venue.png"
+    },
+    {
+      "id": "cat-food",
+      "prompt": "A luxury Indian celebration feast with gleaming copper handis, traditional sweet halwai station, and clay cups, no people.",
+      "alt": "Illustration of a traditional Indian banquet feast with copper handis and sweets.",
+      "out": "public/art/cat-food.png"
+    },
+    {
+      "id": "cat-decor",
+      "prompt": "Elaborate marigold garland canopies, phulkari drapes, brass lanterns, and flower petal floor rangoli, no people.",
+      "alt": "Illustration of festive floral decor with marigold canopies and phulkari drapes.",
+      "out": "public/art/cat-decor.png"
+    },
+    {
+      "id": "cat-media",
+      "prompt": "A classic vintage camera setup on a tripod beside warm studio spotlights and framed memory boards, no people.",
+      "alt": "Illustration of a photography camera setup with warm studio lighting.",
+      "out": "public/art/cat-media.png"
+    },
+    {
+      "id": "cat-music",
+      "prompt": "Traditional Punjabi dhol drums draped in festive silk tassels beside sitars and ambient acoustic stage, no people.",
+      "alt": "Illustration of festive dhol drums and sitars on an acoustic stage.",
+      "out": "public/art/cat-music.png"
+    },
+    {
+      "id": "cat-logistics",
+      "prompt": "A polished wooden welcome desk with printed itinerary scrolls, floral badges, and vintage travel maps, no people.",
+      "alt": "Illustration of an event hospitality desk with itinerary scrolls and floral badges.",
+      "out": "public/art/cat-logistics.png"
     },
     {
       "id": "teaser-video",

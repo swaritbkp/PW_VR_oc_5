@@ -4,21 +4,26 @@ import React, { useMemo, useState } from 'react';
 import { AppHeader } from '@/components/UI/AppHeader';
 import { AppModals, type ModalType } from '@/components/UI/AppModals';
 import { CelebrationConcierge } from '@/components/UI/CelebrationConcierge';
+import { GuidedJourneyBar } from '@/components/Journey/GuidedJourneyBar';
 import { WorkspaceTabs } from '@/components/UI/WorkspaceTabs';
 import { CommandCenter } from '@/components/CommandCenter/CommandCenter';
 import { NodeInspector } from '@/components/NodeInspector/NodeInspector';
 import { allocate, reconcile } from '@/lib/budget/engine';
 import { layoutEventGraph } from '@/lib/graph/layout';
 import { getInitialPlan } from '@/lib/plan/initialPlan';
+import { evaluateJourney, type GuidedActionId } from '@/lib/plan/journey';
+import type { PlanState } from '@/lib/plan/propagate';
+import type { VendorNeedId } from '@/lib/plan/types';
 import { createVersionStore, pushVersion } from '@/lib/plan/versions';
 import { computeSchedule } from '@/lib/schedule/cpm';
 import { probabilityOnTime } from '@/lib/schedule/pert';
 import { evaluate, nextBestAction } from '@/lib/schedule/sentinel';
-import type { VendorNeedId } from '@/lib/plan/types';
-import type { Vendor, VendorStatus } from '@/lib/vendors/types';
+import type { Vendor, VendorSelection, VendorStatus } from '@/lib/vendors/types';
 
 export default function HomePage(): React.JSX.Element {
   const [versionStore, setVersionStore] = useState(() => createVersionStore(getInitialPlan()));
+  const [vendorSelections, setVendorSelections] = useState<VendorSelection[]>([]);
+  const [simulationRun, setSimulationRun] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [activeModal, setActiveModal] = useState<ModalType>('none');
   const [activeTab, setActiveTab] = useState<'roadmap' | 'vendors' | 'graph'>('roadmap');
@@ -28,6 +33,11 @@ export default function HomePage(): React.JSX.Element {
     const cur = versionStore.versions.find((v) => v.id === versionStore.currentId);
     return cur ? cur.plan : versionStore.versions[0].plan;
   }, [versionStore]);
+
+  const journey = useMemo(
+    () => evaluateJourney(currentPlan, { vendorSelections, simulationRun }),
+    [currentPlan, vendorSelections, simulationRun],
+  );
 
   const schedule = useMemo(() => {
     const res = computeSchedule(currentPlan.tasks);
@@ -87,6 +97,10 @@ export default function HomePage(): React.JSX.Element {
   };
 
   const handleBookVendor = (vendor: Vendor, status: VendorStatus, quoteInr?: number) => {
+    setVendorSelections((prev) => [
+      ...prev.filter((v) => v.placeId !== vendor.placeId),
+      { placeId: vendor.placeId, need: vendorCategory, status, quoteInr: quoteInr ?? 0 },
+    ]);
     setVersionStore((s) =>
       pushVersion(
         s,
@@ -96,12 +110,40 @@ export default function HomePage(): React.JSX.Element {
     );
   };
 
+  const handleJourneyAction = (actionId: GuidedActionId) => {
+    if (actionId === 'templates') setActiveModal('templates');
+    else if (actionId === 'graph') setActiveTab('graph');
+    else if (actionId === 'vendors') setActiveTab('vendors');
+    else if (actionId === 'chaos') {
+      setSimulationRun(true);
+      setActiveModal('chaos');
+    } else if (actionId === 'export_jashn') setActiveModal('portable');
+    else if (actionId === 'dossier') setActiveModal('dossier');
+    else if (actionId === 'whatif') setActiveModal('whatif');
+  };
+
+  const handleSimulateTourStep = (stepIndex: number) => {
+    const actions: GuidedActionId[] = ['templates', 'graph', 'vendors', 'chaos', 'export_jashn'];
+    handleJourneyAction(actions[stepIndex] ?? 'templates');
+  };
+
+  const handleImportPlan = (plan: PlanState, selections: readonly VendorSelection[]) => {
+    setVersionStore((s) => pushVersion(s, plan, 'Imported .jashn package'));
+    if (selections?.length) setVendorSelections([...selections]);
+  };
+
   return (
     <main className="min-h-screen bg-[#FAF9F6] p-4 sm:p-8 max-w-7xl mx-auto space-y-6">
       <AppHeader
         title={currentPlan.intake.eventType}
         city={currentPlan.intake.city}
         onOpen={setActiveModal}
+      />
+
+      <GuidedJourneyBar
+        journey={journey}
+        onTriggerAction={handleJourneyAction}
+        onSimulateTourStep={handleSimulateTourStep}
       />
 
       <CelebrationConcierge
@@ -113,9 +155,15 @@ export default function HomePage(): React.JSX.Element {
         totalCount={currentPlan.tasks.length}
         activeTab={activeTab}
         onSelectTab={setActiveTab}
-        onOpenPlanB={() => setActiveModal('disruption')}
+        onOpenPlanB={() => {
+          setSimulationRun(true);
+          setActiveModal('disruption');
+        }}
         onOpenWhatIf={() => setActiveModal('whatif')}
-        onOpenChaos={() => setActiveModal('chaos')}
+        onOpenChaos={() => {
+          setSimulationRun(true);
+          setActiveModal('chaos');
+        }}
         onOpenDossier={() => setActiveModal('dossier')}
       />
 
@@ -171,6 +219,7 @@ export default function HomePage(): React.JSX.Element {
         onClose={() => setActiveModal('none')}
         setVersionStore={setVersionStore}
         onOpenModal={setActiveModal}
+        onImportPlan={handleImportPlan}
       />
     </main>
   );

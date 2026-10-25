@@ -9,6 +9,7 @@ export interface ShareSheetProps {
   readonly plan: PlanState;
   readonly onClose: () => void;
   readonly onOpenDossier?: () => void;
+  readonly onOpenPortable?: () => void;
 }
 
 function generateIcsContent(plan: PlanState): string {
@@ -52,7 +53,12 @@ function renderLanguages(current: SupportedLanguage, onChange: (l: SupportedLang
   );
 }
 
-export function ShareSheet({ plan, onClose, onOpenDossier }: ShareSheetProps): React.JSX.Element {
+export function ShareSheet({
+  plan,
+  onClose,
+  onOpenDossier,
+  onOpenPortable,
+}: ShareSheetProps): React.JSX.Element {
   const [lang, setLang] = useState<SupportedLanguage>('en');
   const [copied, setCopied] = useState(false);
 
@@ -130,6 +136,15 @@ export function ShareSheet({ plan, onClose, onOpenDossier }: ShareSheetProps): R
 
         <div className="pt-3 border-t border-stone-200 space-y-2">
           <h4 className="font-bold text-stone-800 text-xs">Calendar & Print Exports</h4>
+          {onOpenPortable && (
+            <button
+              type="button"
+              onClick={onOpenPortable}
+              className="w-full py-2.5 px-3 text-xs font-semibold rounded-xl bg-stone-900 text-white hover:bg-stone-800 flex items-center justify-center gap-2 shadow-xs"
+            >
+              <span>📦</span> Save / Load .jashn File
+            </button>
+          )}
           {onOpenDossier && (
             <button
               type="button"

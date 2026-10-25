@@ -6,6 +6,7 @@ import type { Alert } from '../../lib/schedule/sentinel';
 import type { AllocationResult, ReconcileResult } from '../../lib/budget/engine';
 import { ReadinessGauge } from './ReadinessGauge';
 import { BudgetDonut } from './BudgetDonut';
+import { IconTimeline } from '../UI/JashnIcons';
 
 export interface CommandCenterProps {
   readonly daysLeft: number;
@@ -85,9 +86,10 @@ function NextActionCard({
       <button
         type="button"
         onClick={() => onSelectTask?.(task.id)}
-        className="w-full py-1 text-center text-xs font-semibold rounded-lg bg-amber-50/80 hover:bg-amber-100 text-amber-900 border border-amber-200 transition-colors"
+        className="w-full py-1.5 flex items-center justify-center gap-1.5 text-center text-xs font-semibold rounded-lg bg-amber-50/80 hover:bg-amber-100 text-amber-900 border border-amber-200 hover:-translate-y-0.5 transition-all duration-200 shadow-2xs"
       >
-        Focus task on graph &rarr;
+        <IconTimeline className="w-3.5 h-3.5" />
+        <span>Focus task on graph &rarr;</span>
       </button>
     </div>
   );

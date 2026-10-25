@@ -34,3 +34,6 @@ Chaos Monkey Cascade Stress-Tester (AC25, AC26) | lib/resilience/chaos.ts, compo
 Cultural AI Negotiation Coach (AC22, AC23) | lib/vendors/negotiate.ts, components/Vendors/NegotiationCoach.tsx | lib/vendors/negotiate.test.ts, components/Vendors/NegotiationCoach.test.tsx
 Smart Vendor Red-Flag Detector (AC22, AC23) | lib/vendors/redflags.ts, components/Vendors/RedFlagDetector.tsx | lib/vendors/redflags.test.ts, components/Vendors/RedFlagDetector.test.tsx
 Executive Celebration Dossier Exporter (AC14, AC30) | lib/plan/dossier.ts, components/Share/DossierModal.tsx | lib/plan/dossier.test.ts, components/Share/DossierModal.test.tsx
+5-Step Guided Event Journey (AC18, AC19, AC25) | lib/plan/journey.ts, components/Journey/GuidedJourneyBar.tsx | lib/plan/journey.test.ts, components/Journey/GuidedJourneyBar.test.tsx
+Portable .jashn Event File (AC5, AC30) | lib/plan/portability.ts, components/Share/PortableFilePanel.tsx | lib/plan/portability.test.ts, components/Share/PortableFilePanel.test.tsx
+Nano Banana Custom Art Pipeline (AC28) | scripts/generate_nanobanana_assets.mjs, assets/manifest.json, components/NodeInspector/NodeInspector.tsx | scripts/test_flow_assets.py

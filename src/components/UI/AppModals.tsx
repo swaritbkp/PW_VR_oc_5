@@ -4,6 +4,7 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import type { PlanState } from '@/lib/plan/propagate';
 import type { VendorNeedId } from '@/lib/plan/types';
+import type { VendorSelection } from '@/lib/vendors/types';
 import type { VersionStore } from '@/lib/plan/versions';
 import { pushVersion, restoreVersion, undo } from '@/lib/plan/versions';
 import { buildTemplateTasks } from '@/lib/templates/catalog';
@@ -53,6 +54,11 @@ const RedFlagDetector = dynamic(
   { ssr: false },
 );
 
+const PortableFilePanel = dynamic(
+  () => import('@/components/Share/PortableFilePanel').then((m) => m.PortableFilePanel),
+  { ssr: false },
+);
+
 export type ModalType =
   | 'none'
   | 'templates'
@@ -63,7 +69,8 @@ export type ModalType =
   | 'chaos'
   | 'dossier'
   | 'negotiate'
-  | 'redflags';
+  | 'redflags'
+  | 'portable';
 
 export interface AppModalsProps {
   readonly activeModal: ModalType;
@@ -72,6 +79,7 @@ export interface AppModalsProps {
   readonly onClose: () => void;
   readonly setVersionStore: React.Dispatch<React.SetStateAction<VersionStore>>;
   readonly onOpenModal?: (modal: ModalType) => void;
+  readonly onImportPlan?: (plan: PlanState, selections: readonly VendorSelection[]) => void;
 }
 
 function renderAuditModal(onClose: () => void) {
@@ -127,7 +135,12 @@ function renderTemplateModal(
   );
 }
 
-function renderFeatureModal(activeModal: ModalType, currentPlan: PlanState, onClose: () => void) {
+function renderFeatureModal(
+  activeModal: ModalType,
+  currentPlan: PlanState,
+  onClose: () => void,
+  onImportPlan?: (plan: PlanState, selections: readonly VendorSelection[]) => void,
+) {
   if (activeModal === 'chaos') {
     return (
       <ChaosMonkey
@@ -141,6 +154,17 @@ function renderFeatureModal(activeModal: ModalType, currentPlan: PlanState, onCl
   if (activeModal === 'dossier') return <DossierModal plan={currentPlan} onClose={onClose} />;
   if (activeModal === 'negotiate') return <NegotiationCoach onClose={onClose} />;
   if (activeModal === 'redflags') return <RedFlagDetector onClose={onClose} />;
+  if (activeModal === 'portable') {
+    return (
+      <PortableFilePanel
+        plan={currentPlan}
+        onClose={onClose}
+        onImportPlan={(np, sel) => {
+          if (onImportPlan) onImportPlan(np, sel);
+        }}
+      />
+    );
+  }
   return null;
 }
 
@@ -151,9 +175,10 @@ export function AppModals({
   onClose,
   setVersionStore,
   onOpenModal,
+  onImportPlan,
 }: AppModalsProps): React.JSX.Element | null {
   if (activeModal === 'none') return null;
-  const feature = renderFeatureModal(activeModal, currentPlan, onClose);
+  const feature = renderFeatureModal(activeModal, currentPlan, onClose, onImportPlan);
   if (feature) return feature;
   if (activeModal === 'audit') return renderAuditModal(onClose);
   if (activeModal === 'templates')
@@ -164,6 +189,7 @@ export function AppModals({
         plan={currentPlan}
         onClose={onClose}
         onOpenDossier={onOpenModal ? () => onOpenModal('dossier') : undefined}
+        onOpenPortable={onOpenModal ? () => onOpenModal('portable') : undefined}
       />
     );
   }

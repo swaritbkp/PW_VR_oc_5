@@ -1,11 +1,20 @@
 'use client';
 
 import React, { useState } from 'react';
+import type { ModalType } from './AppModals';
+import {
+  IconAlertShield,
+  IconDownloadFile,
+  IconShieldBolt,
+  IconSliders,
+  IconSparkles,
+  IconUploadFile,
+} from './JashnIcons';
 
 export interface AppHeaderProps {
   readonly title: string;
   readonly city: string;
-  readonly onOpen: (modal: 'templates' | 'whatif' | 'disruption' | 'share' | 'audit') => void;
+  readonly onOpen: (modal: ModalType) => void;
 }
 
 function MarigoldEmblem(): React.JSX.Element {
@@ -73,44 +82,57 @@ function LanguagePill(): React.JSX.Element {
 function NavButtons({
   onOpen,
 }: {
-  readonly onOpen: (modal: 'templates' | 'whatif' | 'disruption' | 'share' | 'audit') => void;
+  readonly onOpen: (modal: ModalType) => void;
 }): React.JSX.Element {
   return (
     <nav aria-label="Planning actions" className="flex flex-wrap items-center gap-2">
       <button
         type="button"
         onClick={() => onOpen('templates')}
-        className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-semibold rounded-full bg-stone-100 text-stone-700 hover:bg-stone-200 transition-colors border border-stone-200/60"
+        className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-semibold rounded-full bg-stone-100 text-stone-700 hover:bg-stone-200 hover:-translate-y-0.5 transition-all duration-200 border border-stone-200/60"
       >
-        <span>✨</span> Templates
+        <IconSparkles className="w-3.5 h-3.5 text-amber-600" />
+        <span>Templates</span>
       </button>
       <button
         type="button"
         onClick={() => onOpen('whatif')}
-        className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-semibold rounded-full bg-stone-100 text-stone-700 hover:bg-stone-200 transition-colors border border-stone-200/60"
+        className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-semibold rounded-full bg-stone-100 text-stone-700 hover:bg-stone-200 hover:-translate-y-0.5 transition-all duration-200 border border-stone-200/60"
       >
-        <span>🎚️</span> What-If Sliders
+        <IconSliders className="w-3.5 h-3.5 text-stone-600" />
+        <span>What-If Sliders</span>
       </button>
       <button
         type="button"
-        onClick={() => onOpen('disruption')}
-        className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-semibold rounded-full bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 transition-colors shadow-xs"
+        onClick={() => onOpen('chaos')}
+        className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-semibold rounded-full bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 hover:-translate-y-0.5 transition-all duration-200 shadow-xs"
       >
-        <span>⚡</span> Simulate Disruption
+        <IconShieldBolt className="w-3.5 h-3.5 text-amber-600" />
+        <span>Chaos Monkey</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => onOpen('portable')}
+        className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-semibold rounded-full bg-stone-900 text-white hover:bg-stone-800 hover:-translate-y-0.5 transition-all duration-200 shadow-xs"
+      >
+        <IconUploadFile className="w-3.5 h-3.5 text-amber-300" />
+        <span>Save / Load .jashn</span>
       </button>
       <button
         type="button"
         onClick={() => onOpen('share')}
-        className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-900 border border-emerald-300 hover:bg-emerald-100 transition-colors shadow-xs"
+        className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-900 border border-emerald-300 hover:bg-emerald-100 hover:-translate-y-0.5 transition-all duration-200 shadow-xs"
       >
-        <span>📤</span> Share & Export
+        <IconDownloadFile className="w-3.5 h-3.5 text-emerald-600" />
+        <span>Share &amp; Export</span>
       </button>
       <button
         type="button"
         onClick={() => onOpen('audit')}
-        className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-semibold rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors border border-stone-200/60"
+        className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-semibold rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 hover:-translate-y-0.5 transition-all duration-200 border border-stone-200/60"
       >
-        <span>🛡️</span> Audit
+        <IconAlertShield className="w-3.5 h-3.5 text-stone-600" />
+        <span>Audit</span>
       </button>
     </nav>
   );

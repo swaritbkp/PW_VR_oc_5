@@ -50,21 +50,21 @@ function ToolbarControls({
   readonly onZoomChange: (delta: number | null) => void;
 }): React.JSX.Element {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 p-1 bg-white/95 backdrop-blur-md rounded-2xl border border-stone-200/90 shadow-2xs">
       <button
         type="button"
         onClick={onToggleView}
-        className="px-2.5 py-1 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 font-semibold text-xs transition-colors"
+        className="px-2.5 py-1 rounded-xl border border-stone-200 bg-stone-50 hover:bg-white text-stone-700 font-semibold text-xs hover:-translate-y-0.5 transition-all duration-200 shadow-2xs"
         aria-label="Toggle list view"
       >
         {viewMode === 'canvas' ? 'View as List' : 'View Canvas'}
       </button>
       {viewMode === 'canvas' && (
-        <div className="flex items-center border border-stone-200 rounded-lg bg-white overflow-hidden shadow-2xs">
+        <div className="flex items-center border border-stone-200 rounded-xl bg-white overflow-hidden shadow-2xs">
           <button
             type="button"
             onClick={() => onZoomChange(-ZOOM_STEP)}
-            className="px-2 py-1 hover:bg-stone-100 text-stone-700 text-xs font-bold"
+            className="px-2.5 py-1 hover:bg-stone-100 text-stone-700 text-xs font-bold transition-colors"
             aria-label="Zoom out"
           >
             -
@@ -72,7 +72,7 @@ function ToolbarControls({
           <button
             type="button"
             onClick={() => onZoomChange(null)}
-            className="px-1.5 text-[11px] font-semibold text-stone-600 tabular-nums"
+            className="px-2 text-[11px] font-semibold text-stone-600 tabular-nums hover:text-amber-800 transition-colors"
             aria-label="Reset zoom"
           >
             {Math.round(zoom * 100)}%
@@ -80,7 +80,7 @@ function ToolbarControls({
           <button
             type="button"
             onClick={() => onZoomChange(ZOOM_STEP)}
-            className="px-2 py-1 hover:bg-stone-100 text-stone-700 text-xs font-bold"
+            className="px-2.5 py-1 hover:bg-stone-100 text-stone-700 text-xs font-bold transition-colors"
             aria-label="Zoom in"
           >
             +

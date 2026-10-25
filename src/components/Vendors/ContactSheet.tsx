@@ -9,6 +9,7 @@ import {
   type EnquiryLanguage,
 } from '@/lib/vendors/contact';
 import type { Vendor, VendorStatus } from '@/lib/vendors/types';
+import { IconAlertShield, IconCheckCircle, IconScale } from '../UI/JashnIcons';
 import { ContactLinks } from './ContactLinks';
 
 export interface ContactSheetProps {
@@ -63,7 +64,7 @@ function renderFooterButtons(
         <button
           type="button"
           onClick={() => onUpdate(vendor, 'contacted')}
-          className={`py-2 px-3 text-xs font-semibold rounded-lg border ${
+          className={`py-2 px-3 text-xs font-semibold rounded-lg border hover:-translate-y-0.5 transition-all duration-200 shadow-2xs ${
             status === 'contacted'
               ? 'bg-blue-50 text-blue-800 border-blue-400'
               : 'border-stone-200 text-stone-700 hover:bg-stone-50'
@@ -74,7 +75,7 @@ function renderFooterButtons(
         <button
           type="button"
           onClick={() => onUpdate(vendor, 'backup')}
-          className={`py-2 px-3 text-xs font-semibold rounded-lg border ${
+          className={`py-2 px-3 text-xs font-semibold rounded-lg border hover:-translate-y-0.5 transition-all duration-200 shadow-2xs ${
             status === 'backup'
               ? 'bg-teal-50 text-teal-800 border-teal-400'
               : 'border-teal-200 text-teal-800 bg-teal-50/50 hover:bg-teal-100'
@@ -86,9 +87,10 @@ function renderFooterButtons(
       <button
         type="button"
         onClick={() => onUpdate(vendor, 'booked', quote)}
-        className="w-full py-2.5 px-3 text-xs font-bold rounded-lg bg-emerald-700 text-white hover:bg-emerald-800 transition-colors shadow-sm"
+        className="w-full py-2.5 px-3 text-xs font-bold rounded-lg bg-emerald-700 text-white hover:bg-emerald-800 flex items-center justify-center gap-1.5 hover:-translate-y-0.5 transition-all duration-200 shadow-sm"
       >
-        Confirm Booking
+        <IconCheckCircle className="w-3.5 h-3.5" />
+        <span>Confirm Booking</span>
       </button>
     </div>
   );
@@ -170,18 +172,20 @@ export function ContactSheet({
                 <button
                   type="button"
                   onClick={() => onOpenNegotiation(vendor)}
-                  className="py-1.5 px-2 text-[11px] font-semibold rounded-lg bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 transition-colors"
+                  className="py-1.5 px-2 text-[11px] font-semibold rounded-lg bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 flex items-center justify-center gap-1.5 hover:-translate-y-0.5 transition-all duration-200 shadow-2xs"
                 >
-                  🤝 Negotiation Coach
+                  <IconScale className="w-3.5 h-3.5 text-amber-800" />
+                  <span>Negotiation Coach</span>
                 </button>
               )}
               {onOpenRedFlags && (
                 <button
                   type="button"
                   onClick={onOpenRedFlags}
-                  className="py-1.5 px-2 text-[11px] font-semibold rounded-lg bg-rose-50 text-rose-900 border border-rose-200 hover:bg-rose-100 transition-colors"
+                  className="py-1.5 px-2 text-[11px] font-semibold rounded-lg bg-rose-50 text-rose-900 border border-rose-200 hover:bg-rose-100 flex items-center justify-center gap-1.5 hover:-translate-y-0.5 transition-all duration-200 shadow-2xs"
                 >
-                  🛡️ Scan Red-Flags
+                  <IconAlertShield className="w-3.5 h-3.5 text-rose-700" />
+                  <span>Scan Red-Flags</span>
                 </button>
               )}
             </div>

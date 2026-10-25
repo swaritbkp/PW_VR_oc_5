@@ -106,5 +106,41 @@
     "file": "public/art/wedding-retro-sangeet.png",
     "generated_at": "2026-10-25T01:25:22+00:00",
     "hash": "b27a35d6743c353d"
+  },
+  "cat-venue": {
+    "hash": "ee1527437e05445c",
+    "file": "public/art/cat-venue.png",
+    "bytes": 1777,
+    "generated_at": "2026-10-25T05:56:34.213Z"
+  },
+  "cat-food": {
+    "hash": "240cd9dd392e7ea7",
+    "file": "public/art/cat-food.png",
+    "bytes": 1719,
+    "generated_at": "2026-10-25T05:56:34.216Z"
+  },
+  "cat-decor": {
+    "hash": "c4e09c423697571f",
+    "file": "public/art/cat-decor.png",
+    "bytes": 1727,
+    "generated_at": "2026-10-25T05:56:34.219Z"
+  },
+  "cat-media": {
+    "hash": "23764d2416abb569",
+    "file": "public/art/cat-media.png",
+    "bytes": 1866,
+    "generated_at": "2026-10-25T05:56:34.221Z"
+  },
+  "cat-music": {
+    "hash": "8c9a84beb3010c8f",
+    "file": "public/art/cat-music.png",
+    "bytes": 1751,
+    "generated_at": "2026-10-25T05:56:34.224Z"
+  },
+  "cat-logistics": {
+    "hash": "b8017b6efa832de1",
+    "file": "public/art/cat-logistics.png",
+    "bytes": 1699,
+    "generated_at": "2026-10-25T05:56:34.226Z"
   }
 }

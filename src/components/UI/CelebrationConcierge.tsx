@@ -2,6 +2,14 @@
 
 import React from 'react';
 import type { EventType } from '@/lib/plan/types';
+import {
+  IconCompass,
+  IconDossier,
+  IconShieldBolt,
+  IconSliders,
+  IconSparkles,
+  IconTimeline,
+} from './JashnIcons';
 
 export interface CelebrationConciergeProps {
   readonly eventType: EventType;
@@ -64,33 +72,37 @@ export function CelebrationConcierge({
             <button
               type="button"
               onClick={onOpenChaos}
-              className="px-3 py-1.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-800 text-xs font-bold transition-all shadow-2xs hover:border-amber-300"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-800 text-xs font-bold hover:-translate-y-0.5 transition-all duration-200 shadow-2xs hover:border-amber-300"
             >
-              🐒 Chaos Monkey
+              <IconShieldBolt className="w-3.5 h-3.5 text-amber-600" />
+              <span>Chaos Monkey</span>
             </button>
           )}
           {onOpenDossier && (
             <button
               type="button"
               onClick={onOpenDossier}
-              className="px-3 py-1.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-800 text-xs font-bold transition-all shadow-2xs hover:border-amber-300"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-800 text-xs font-bold hover:-translate-y-0.5 transition-all duration-200 shadow-2xs hover:border-amber-300"
             >
-              📜 Executive Dossier
+              <IconDossier className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Executive Dossier</span>
             </button>
           )}
           <button
             type="button"
             onClick={onOpenPlanB}
-            className="px-3 py-1.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-800 text-xs font-bold transition-all shadow-2xs hover:border-amber-300"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-800 text-xs font-bold hover:-translate-y-0.5 transition-all duration-200 shadow-2xs hover:border-amber-300"
           >
-            🛡️ Simulate Plan B
+            <IconShieldBolt className="w-3.5 h-3.5 text-teal-600" />
+            <span>Simulate Plan B</span>
           </button>
           <button
             type="button"
             onClick={onOpenWhatIf}
-            className="px-3 py-1.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-800 text-xs font-bold transition-all shadow-2xs hover:border-amber-300"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-800 text-xs font-bold hover:-translate-y-0.5 transition-all duration-200 shadow-2xs hover:border-amber-300"
           >
-            ⚖️ What-If Sliders
+            <IconSliders className="w-3.5 h-3.5 text-stone-600" />
+            <span>What-If Sliders</span>
           </button>
         </div>
       </div>
@@ -102,13 +114,14 @@ export function CelebrationConcierge({
         <button
           type="button"
           onClick={() => onSelectTab('roadmap')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold hover:-translate-y-0.5 transition-all duration-200 ${
             activeTab === 'roadmap'
               ? 'bg-amber-600 text-white shadow-sm'
-              : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200/80'
+              : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200/80 shadow-2xs'
           }`}
         >
-          <span>✨ Celebration Roadmap</span>
+          <IconSparkles className="w-3.5 h-3.5" />
+          <span>Celebration Roadmap</span>
           <span
             className={`text-[10px] px-1.5 py-0.5 rounded-full ${
               activeTab === 'roadmap'
@@ -123,13 +136,14 @@ export function CelebrationConcierge({
         <button
           type="button"
           onClick={() => onSelectTab('vendors')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold hover:-translate-y-0.5 transition-all duration-200 ${
             activeTab === 'vendors'
               ? 'bg-amber-600 text-white shadow-sm'
-              : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200/80'
+              : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200/80 shadow-2xs'
           }`}
         >
-          <span>📍 Find Nearby Vendors</span>
+          <IconCompass className="w-3.5 h-3.5" />
+          <span>Find Nearby Vendors</span>
           <span
             className={`text-[10px] px-1.5 py-0.5 rounded-full ${
               activeTab === 'vendors'
@@ -144,13 +158,14 @@ export function CelebrationConcierge({
         <button
           type="button"
           onClick={() => onSelectTab('graph')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold hover:-translate-y-0.5 transition-all duration-200 ${
             activeTab === 'graph'
               ? 'bg-amber-600 text-white shadow-sm'
-              : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200/80'
+              : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200/80 shadow-2xs'
           }`}
         >
-          <span>📅 Timeline &amp; CPM Graph</span>
+          <IconTimeline className="w-3.5 h-3.5" />
+          <span>Timeline &amp; CPM Graph</span>
           <span
             className={`text-[10px] px-1.5 py-0.5 rounded-full ${
               activeTab === 'graph' ? 'bg-amber-700 text-amber-100' : 'bg-stone-100 text-stone-600'
