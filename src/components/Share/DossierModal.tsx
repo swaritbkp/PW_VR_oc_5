@@ -136,6 +136,9 @@ function renderModalFooter(onClose: () => void) {
   );
 }
 
+/**
+ * Executive Celebration Dossier modal formatted with print styles for family elders and stakeholders.
+ */
 export function DossierModal({ plan, onClose }: DossierModalProps): React.JSX.Element {
   const dossier = useMemo(() => generateExecutiveDossier(plan), [plan]);
 

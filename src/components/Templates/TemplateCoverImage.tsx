@@ -10,6 +10,9 @@ interface TemplateCoverImageProps {
   readonly accent: string;
 }
 
+/**
+ * Cover image container with editorial art fallbacks for event templates in the template gallery.
+ */
 export function TemplateCoverImage({
   templateId,
   title,

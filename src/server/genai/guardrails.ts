@@ -67,14 +67,7 @@ function verifyDependencies(tasks: readonly DagTask[]): string | null {
   return null;
 }
 
-/** Verifies that the task graph is acyclic and reaches the sink. */
-export function checkDagOrder(
-  tasks: readonly DagTask[],
-  sinkId?: string,
-): { ok: boolean; error?: string } {
-  const depErr = verifyDependencies(tasks);
-  if (depErr) return { ok: false, error: depErr };
-
+function traverseDag(tasks: readonly DagTask[]): number {
   const inDegree = new Map<string, number>();
   const adj = new Map<string, string[]>();
   tasks.forEach((t) => {
@@ -88,7 +81,8 @@ export function checkDagOrder(
   const queue = tasks.filter((t) => t.dependsOn.length === 0).map((t) => t.id);
   let visited = 0;
   while (queue.length > 0) {
-    const cur = queue.shift()!;
+    const cur = queue.shift();
+    if (!cur) break;
     visited++;
     for (const nxt of adj.get(cur) ?? []) {
       const remaining = (inDegree.get(nxt) ?? 1) - 1;
@@ -96,7 +90,18 @@ export function checkDagOrder(
       if (remaining === 0) queue.push(nxt);
     }
   }
+  return visited;
+}
 
+/** Verifies that the task graph is acyclic and reaches the sink. */
+export function checkDagOrder(
+  tasks: readonly DagTask[],
+  sinkId?: string,
+): { ok: boolean; error?: string } {
+  const depErr = verifyDependencies(tasks);
+  if (depErr) return { ok: false, error: depErr };
+
+  const visited = traverseDag(tasks);
   if (visited !== tasks.length) return { ok: false, error: 'Cyclic dependency detected' };
   if (sinkId && !tasks.some((t) => t.id === sinkId)) {
     return { ok: false, error: `Sink ${sinkId} missing from graph` };

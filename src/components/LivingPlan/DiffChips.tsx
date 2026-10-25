@@ -7,6 +7,9 @@ export interface DiffChipsProps {
   readonly dirtyIds?: readonly string[];
 }
 
+/**
+ * Renders visual badges highlighting modified parameter chips and dirty-set affected task IDs.
+ */
 export function DiffChips({ diffs, dirtyIds }: DiffChipsProps): React.JSX.Element {
   if (diffs.length === 0 && (!dirtyIds || dirtyIds.length === 0)) {
     return <div className="text-xs text-stone-400 italic">No modifications detected.</div>;

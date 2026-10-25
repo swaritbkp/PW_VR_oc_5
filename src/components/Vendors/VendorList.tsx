@@ -19,10 +19,10 @@ export interface VendorListProps {
 
 function handleManualSubmit(e: React.FormEvent<HTMLFormElement>, onAdd: (vendor: Vendor) => void) {
   e.preventDefault();
-  const form = e.currentTarget;
-  const name = (form.elements.namedItem('vName') as HTMLInputElement).value;
-  const phone = (form.elements.namedItem('vPhone') as HTMLInputElement).value;
-  const address = (form.elements.namedItem('vAddr') as HTMLInputElement).value;
+  const formData = new FormData(e.currentTarget);
+  const name = String(formData.get('vName') || '').trim();
+  const phone = String(formData.get('vPhone') || '').trim();
+  const address = String(formData.get('vAddr') || '').trim();
   if (!name) return;
   onAdd({
     placeId: `manual_${Date.now()}`,
@@ -123,19 +123,10 @@ function renderFallbackBanner(
   );
 }
 
-export function VendorList({
-  vendors,
-  rankedVendors,
-  selectedNeed,
-  city,
-  selections,
-  isLoading,
-  fallback,
-  onSelectVendor,
-  onManualAdd,
-}: VendorListProps): React.JSX.Element {
-  const [showManualForm, setShowManualForm] = useState(false);
-
+function useVendorMaps(
+  rankedVendors?: readonly { vendor: Vendor; score: number }[],
+  selections?: readonly VendorSelection[],
+) {
   const scoreMap = useMemo(() => {
     const map = new Map<string, number>();
     if (rankedVendors) {
@@ -152,6 +143,43 @@ export function VendorList({
     return map;
   }, [selections]);
 
+  return { scoreMap, statusMap };
+}
+
+function VendorListHeader({
+  selectedNeed,
+  city,
+}: {
+  readonly selectedNeed: string;
+  readonly city: string;
+}): React.JSX.Element {
+  return (
+    <div className="flex items-center justify-between">
+      <h3 className="font-bold text-stone-900 text-sm capitalize">
+        {selectedNeed.replace('_', ' ')} in {city}
+      </h3>
+      <span className="text-[11px] text-stone-400 font-medium">Powered by Google</span>
+    </div>
+  );
+}
+
+/**
+ * List view of ranked celebration vendors with graceful fallback, loading skeletons, and manual entry support.
+ */
+export function VendorList({
+  vendors,
+  rankedVendors,
+  selectedNeed,
+  city,
+  selections,
+  isLoading,
+  fallback,
+  onSelectVendor,
+  onManualAdd,
+}: VendorListProps): React.JSX.Element {
+  const [showManualForm, setShowManualForm] = useState(false);
+  const { scoreMap, statusMap } = useVendorMaps(rankedVendors, selections);
+
   if (isLoading) {
     return (
       <div className="p-8 text-center text-xs text-stone-500 animate-pulse" aria-live="polite">
@@ -162,15 +190,8 @@ export function VendorList({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-bold text-stone-900 text-sm capitalize">
-          {selectedNeed.replace('_', ' ')} in {city}
-        </h3>
-        <span className="text-[11px] text-stone-400 font-medium">Powered by Google</span>
-      </div>
-
+      <VendorListHeader selectedNeed={selectedNeed} city={city} />
       {fallback && renderFallbackBanner(fallback, showManualForm, setShowManualForm, onManualAdd)}
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {vendors.map((vendor) => (
           <VendorCard

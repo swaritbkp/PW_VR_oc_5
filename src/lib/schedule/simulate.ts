@@ -44,7 +44,39 @@ export function sampleTriangular(a: number, c: number, b: number, u: number): nu
 
 function quantile(sorted: Float64Array, q: number): number {
   const index = Math.min(sorted.length - 1, Math.max(0, Math.ceil(q * sorted.length) - 1));
-  return sorted[index] as number;
+  return sorted[index] ?? 0;
+}
+
+interface PlanItem {
+  readonly task: TaskInput;
+  readonly deps: readonly number[];
+}
+
+function runSimulations(
+  plan: readonly PlanItem[],
+  options: SimulationOptions,
+): { durations: Float64Array; onTime: number } {
+  const rng = createRng(options.seed);
+  const durations = new Float64Array(options.runs);
+  const finish = new Float64Array(plan.length);
+  let onTime = 0;
+  for (let run = 0; run < options.runs; run += 1) {
+    let longest = 0;
+    plan.forEach(({ task, deps }, i) => {
+      const sampled = task.done
+        ? 0
+        : sampleTriangular(task.optimistic, task.mostLikely, task.pessimistic, rng());
+      let start = task.notBefore ?? 0;
+      for (const d of deps) start = Math.max(start, finish[d] ?? 0);
+      const fin = start + sampled;
+      finish[i] = fin;
+      longest = Math.max(longest, fin);
+    });
+    durations[run] = longest;
+    if (longest <= options.availableDays) onTime += 1;
+  }
+  durations.sort();
+  return { durations, onTime };
 }
 
 /**
@@ -59,30 +91,14 @@ export function simulate(
   if (!ordered.ok) return ordered;
   const byId = new Map(tasks.map((t) => [t.id, t]));
   const index = new Map(ordered.value.map((id, i) => [id, i]));
-  const plan = ordered.value.map((id) => {
-    const task = byId.get(id) as TaskInput;
-    return { task, deps: task.dependsOn.map((d) => index.get(d) as number) };
-  });
-
-  const rng = createRng(options.seed);
-  const durations = new Float64Array(options.runs);
-  const finish = new Float64Array(plan.length);
-  let onTime = 0;
-  for (let run = 0; run < options.runs; run += 1) {
-    let longest = 0;
-    plan.forEach(({ task, deps }, i) => {
-      const sampled = task.done
-        ? 0
-        : sampleTriangular(task.optimistic, task.mostLikely, task.pessimistic, rng());
-      let start = task.notBefore ?? 0;
-      for (const d of deps) start = Math.max(start, finish[d] as number);
-      finish[i] = start + sampled;
-      longest = Math.max(longest, finish[i] as number);
-    });
-    durations[run] = longest;
-    if (longest <= options.availableDays) onTime += 1;
+  const plan: PlanItem[] = [];
+  for (const id of ordered.value) {
+    const task = byId.get(id);
+    if (!task) continue;
+    plan.push({ task, deps: task.dependsOn.map((d) => index.get(d) ?? 0) });
   }
-  durations.sort();
+
+  const { durations, onTime } = runSimulations(plan, options);
   return {
     ok: true,
     value: {

@@ -137,6 +137,68 @@ function renderSimulationResults(res: DisruptionResult, scenario: DisruptionScen
   );
 }
 
+function DisruptionDrawerHeader({ onClose }: { readonly onClose: () => void }): React.JSX.Element {
+  return (
+    <div className="flex items-start justify-between">
+      <div>
+        <h3 className="font-bold text-stone-900 text-base">Disruption Simulator</h3>
+        <p className="text-xs text-stone-500">Test graph resilience against real-world incidents.</p>
+      </div>
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close disruption simulator"
+        className="p-1 text-stone-400 hover:text-stone-700 text-sm"
+      >
+        ✕
+      </button>
+    </div>
+  );
+}
+
+function DisruptionDrawerFooter({
+  simResult,
+  onSimulate,
+}: {
+  readonly simResult: DisruptionResult | null;
+  readonly onSimulate?: (result: DisruptionResult | null) => void;
+}): React.JSX.Element {
+  return (
+    <div className="pt-4 border-t border-stone-200 flex gap-2">
+      <button
+        type="button"
+        onClick={() => onSimulate?.(simResult)}
+        className="flex-1 py-2 px-3 text-xs font-bold rounded-xl bg-amber-800 text-white hover:bg-amber-900 shadow-sm"
+      >
+        Highlight Ghost Path
+      </button>
+      <button
+        type="button"
+        onClick={() => onSimulate?.(null)}
+        className="py-2 px-3 text-xs font-semibold rounded-xl bg-stone-100 text-stone-700 hover:bg-stone-200"
+      >
+        Reset
+      </button>
+    </div>
+  );
+}
+
+function ChaosLauncherButton({ onOpenChaos }: { readonly onOpenChaos?: () => void }): React.JSX.Element | null {
+  if (!onOpenChaos) return null;
+  return (
+    <button
+      type="button"
+      onClick={onOpenChaos}
+      className="w-full py-2 px-3 text-xs font-bold rounded-xl bg-amber-500/10 border border-amber-500 text-amber-900 hover:bg-amber-500/20 shadow-2xs flex items-center justify-center gap-1.5"
+    >
+      <span>🐒</span> Launch Chaos Monkey (Compound Stress-Test)
+    </button>
+  );
+}
+
+/**
+ * Drawer presenting single-disruption Plan B simulations with deterministic CPM schedule re-calculation.
+ */
 export function DisruptionDrawer({
   tasks,
   availableDays,
@@ -148,10 +210,7 @@ export function DisruptionDrawer({
   const [selectedScenario, setSelectedScenario] = useState<DisruptionScenario>(DISRUPTIONS[0]);
 
   const simResult = useMemo(() => {
-    const res = simulateDisruption(tasks, selectedScenario, {
-      availableDays,
-      backedUp: backedUpNeeds,
-    });
+    const res = simulateDisruption(tasks, selectedScenario, { availableDays, backedUp: backedUpNeeds });
     return res.ok ? res.value : null;
   }, [tasks, selectedScenario, availableDays, backedUpNeeds]);
 
@@ -162,54 +221,12 @@ export function DisruptionDrawer({
       className="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-2xl border-l border-stone-200 p-6 flex flex-col justify-between z-50 overflow-y-auto"
     >
       <div className="space-y-4">
-        <div className="flex items-start justify-between">
-          <div>
-            <h3 className="font-bold text-stone-900 text-base">Disruption Simulator</h3>
-            <p className="text-xs text-stone-500">
-              Test graph resilience against real-world incidents.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close disruption simulator"
-            className="p-1 text-stone-400 hover:text-stone-700 text-sm"
-          >
-            ✕
-          </button>
-        </div>
-
-        {onOpenChaos && (
-          <button
-            type="button"
-            onClick={onOpenChaos}
-            className="w-full py-2 px-3 text-xs font-bold rounded-xl bg-amber-500/10 border border-amber-500 text-amber-900 hover:bg-amber-500/20 shadow-2xs flex items-center justify-center gap-1.5"
-          >
-            <span>🐒</span> Launch Chaos Monkey (Compound Stress-Test)
-          </button>
-        )}
-
+        <DisruptionDrawerHeader onClose={onClose} />
+        <ChaosLauncherButton onOpenChaos={onOpenChaos} />
         {renderScenarioSelector(selectedScenario.id, setSelectedScenario)}
-
         {simResult && renderSimulationResults(simResult, selectedScenario)}
       </div>
-
-      <div className="pt-4 border-t border-stone-200 flex gap-2">
-        <button
-          type="button"
-          onClick={() => onSimulate?.(simResult)}
-          className="flex-1 py-2 px-3 text-xs font-bold rounded-xl bg-amber-800 text-white hover:bg-amber-900 shadow-sm"
-        >
-          Highlight Ghost Path
-        </button>
-        <button
-          type="button"
-          onClick={() => onSimulate?.(null)}
-          className="py-2 px-3 text-xs font-semibold rounded-xl bg-stone-100 text-stone-700 hover:bg-stone-200"
-        >
-          Reset
-        </button>
-      </div>
+      <DisruptionDrawerFooter simResult={simResult} onSimulate={onSimulate} />
     </div>
   );
 }

@@ -51,6 +51,17 @@ function CountdownCard({ daysLeft }: { readonly daysLeft: number }): React.JSX.E
   );
 }
 
+function EmptyNextActionCard(): React.JSX.Element {
+  return (
+    <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 shadow-xs flex flex-col justify-center">
+      <span className="text-xs font-bold text-emerald-900">Next Action</span>
+      <p className="text-xs text-emerald-800 mt-1">
+        All ready tasks are completed! Celebration is prepared.
+      </p>
+    </div>
+  );
+}
+
 function NextActionCard({
   task,
   onSelectTask,
@@ -59,28 +70,20 @@ function NextActionCard({
   readonly onSelectTask?: (id: string) => void;
 }): React.JSX.Element {
   if (!task) {
-    return (
-      <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 shadow-xs flex flex-col justify-center">
-        <span className="text-xs font-bold text-emerald-900">Next Action</span>
-        <p className="text-xs text-emerald-800 mt-1">
-          All ready tasks are completed! Celebration is prepared.
-        </p>
-      </div>
-    );
+    return <EmptyNextActionCard />;
   }
   const isCrit = task.totalFloat <= 0;
+  const badgeClass = isCrit
+    ? 'bg-amber-50 text-amber-800 border border-amber-200'
+    : 'bg-emerald-50 text-emerald-800 border border-emerald-200';
+  const badgeText = isCrit ? 'Needs Decision' : `Flexible: +${Math.round(task.totalFloat)}d`;
+
   return (
     <div className="flex flex-col justify-between p-3.5 rounded-2xl bg-white border border-stone-200/80 shadow-xs">
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold text-stone-600">Next Best Action</span>
-        <span
-          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-            isCrit
-              ? 'bg-amber-50 text-amber-800 border border-amber-200'
-              : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-          }`}
-        >
-          {isCrit ? 'Needs Decision' : `Flexible: +${Math.round(task.totalFloat)}d`}
+        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeClass}`}>
+          {badgeText}
         </span>
       </div>
       <p className="text-sm font-bold text-stone-900 truncate my-1">{task.name}</p>
@@ -134,6 +137,9 @@ function AlertList({ alerts }: { readonly alerts: readonly Alert[] }): React.JSX
   );
 }
 
+/**
+ * Executive Command Center displaying the readiness gauge, budget allocation donut, next critical action, and live alerts.
+ */
 export function CommandCenter({
   daysLeft,
   probabilityOnTime: prob,

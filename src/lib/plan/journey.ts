@@ -61,54 +61,54 @@ function findActiveIndex(completions: readonly boolean[]): number {
   return firstIncomplete === -1 ? TOTAL_STEPS - 1 : firstIncomplete;
 }
 
+const STEP_TEMPLATES = [
+  {
+    id: 'vision_intake' as const,
+    title: 'Choose Vision & Intake',
+    shortTitle: '1. Vision',
+    description: 'Select an authentic template and set celebration parameters.',
+    actionId: 'templates' as const,
+    actionLabel: 'Browse Templates',
+  },
+  {
+    id: 'critical_path' as const,
+    title: 'Calibrate Critical Path',
+    shortTitle: '2. Critical Path',
+    description: 'Inspect CPM timeline, float, and initial milestone deliverables.',
+    actionId: 'graph' as const,
+    actionLabel: 'View Event Graph',
+  },
+  {
+    id: 'vet_vendors' as const,
+    title: 'Scout, Negotiate & Vet Vendors',
+    shortTitle: '3. Vendors',
+    description: 'Discover nearby verified vendors and apply negotiation strategies.',
+    actionId: 'vendors' as const,
+    actionLabel: 'Scout Vendors',
+  },
+  {
+    id: 'resilience_plan_b' as const,
+    title: 'Fortify Plan B & Run Chaos Monkey',
+    shortTitle: '4. Resilience',
+    description: 'Hold backup vendors and stress-test schedule against compound incidents.',
+    actionId: 'chaos' as const,
+    actionLabel: 'Trigger Chaos Monkey',
+  },
+  {
+    id: 'export_package' as const,
+    title: 'Share & Export Portable .jashn',
+    shortTitle: '5. Export & Share',
+    description: 'Export verifiable .jashn event file, iCal, or Executive Dossier.',
+    actionId: 'export_jashn' as const,
+    actionLabel: 'Export .jashn File',
+  },
+];
+
 function buildStepDefinitions(
   completions: readonly boolean[],
   activeIdx: number,
 ): readonly GuidedStep[] {
-  const defs = [
-    {
-      id: 'vision_intake' as const,
-      title: 'Choose Vision & Intake',
-      shortTitle: '1. Vision',
-      description: 'Select an authentic template and set celebration parameters.',
-      actionId: 'templates' as const,
-      actionLabel: 'Browse Templates',
-    },
-    {
-      id: 'critical_path' as const,
-      title: 'Calibrate Critical Path',
-      shortTitle: '2. Critical Path',
-      description: 'Inspect CPM timeline, float, and initial milestone deliverables.',
-      actionId: 'graph' as const,
-      actionLabel: 'View Event Graph',
-    },
-    {
-      id: 'vet_vendors' as const,
-      title: 'Scout, Negotiate & Vet Vendors',
-      shortTitle: '3. Vendors',
-      description: 'Discover nearby verified vendors and apply negotiation strategies.',
-      actionId: 'vendors' as const,
-      actionLabel: 'Scout Vendors',
-    },
-    {
-      id: 'resilience_plan_b' as const,
-      title: 'Fortify Plan B & Run Chaos Monkey',
-      shortTitle: '4. Resilience',
-      description: 'Hold backup vendors and stress-test schedule against compound incidents.',
-      actionId: 'chaos' as const,
-      actionLabel: 'Trigger Chaos Monkey',
-    },
-    {
-      id: 'export_package' as const,
-      title: 'Share & Export Portable .jashn',
-      shortTitle: '5. Export & Share',
-      description: 'Export verifiable .jashn event file, iCal, or Executive Dossier.',
-      actionId: 'export_jashn' as const,
-      actionLabel: 'Export .jashn File',
-    },
-  ];
-
-  return defs.map((d, i) => ({
+  return STEP_TEMPLATES.map((d, i) => ({
     ...d,
     stepNumber: i + 1,
     isComplete: completions[i],

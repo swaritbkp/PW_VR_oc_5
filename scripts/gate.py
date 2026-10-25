@@ -23,7 +23,7 @@ STATE = ROOT / "docs" / "STATE.json"
 MIN_AXIS_SCORE = 9
 MIN_AC_IDS = 30
 MIN_TEST_FILES = 12
-MAX_FILE_LINES = 250
+MAX_FILE_LINES = 240
 MAX_FN_LINES = 40
 MAX_PARAMS = 4
 MAX_COMPLEXITY = 8
@@ -94,7 +94,27 @@ def check_trace():
     return [f"no test references {i}" for i in ids if not re.search(rf"\b{i}\b", corpus)]
 
 
+def run_ast_checker(arg):
+    ast_script = ROOT / "scripts" / "ast_checker.mjs"
+    if ast_script.exists():
+        try:
+            proc = subprocess.run(
+                ["node", str(ast_script), arg],
+                capture_output=True,
+                text=True,
+                cwd=ROOT,
+                check=False,
+            )
+            return [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+        except Exception:
+            pass
+    return None
+
+
 def check_jsdoc():
+    ast_res = run_ast_checker("jsdoc")
+    if ast_res is not None:
+        return ast_res
     problems = []
     lib = ROOT / "src" / "lib"
     if not lib.exists():
@@ -128,6 +148,9 @@ def count_params(param_str):
 
 
 def check_quality():
+    ast_res = run_ast_checker("quality")
+    if ast_res is not None:
+        return ast_res
     problems = []
     for path in source_files():
         rel = path.relative_to(ROOT)

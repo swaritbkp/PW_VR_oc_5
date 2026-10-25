@@ -147,6 +147,30 @@ const CATEGORY_BANDS: Record<EventType, Partial<Record<TaskCategory, [number, nu
   },
 };
 
+const VALID_CATEGORIES = new Set<string>([
+  'venue',
+  'food',
+  'decor',
+  'media',
+  'entertainment',
+  'attire',
+  'invites',
+  'logistics',
+  'planning',
+  'milestone',
+  'permits',
+]);
+
+function isTaskCategory(val: string): val is TaskCategory {
+  return VALID_CATEGORIES.has(val);
+}
+
+function evaluateBandStatus(sharePct: number, range: readonly [number, number]): 'low' | 'high' | 'ok' {
+  if (sharePct < range[0]) return 'low';
+  if (sharePct > range[1]) return 'high';
+  return 'ok';
+}
+
 /** Checks category expenditure shares against domain heuristics. */
 export function bandCheck(
   lines: readonly ComputedBudgetLine[],
@@ -160,12 +184,13 @@ export function bandCheck(
     catTotals.set(l.category, (catTotals.get(l.category) ?? 0) + l.totalInr);
   }
   const results: BandCheckResult[] = [];
-  for (const [cat, range] of Object.entries(bands) as [TaskCategory, [number, number]][]) {
-    const spend = catTotals.get(cat) ?? 0;
+  for (const [key, range] of Object.entries(bands)) {
+    if (!isTaskCategory(key) || !range) continue;
+    const spend = catTotals.get(key) ?? 0;
     const sharePct = Math.round((spend / totalSpend) * PERCENT_BASE);
     const [minPct, maxPct] = range;
-    const status = sharePct < minPct ? 'low' : sharePct > maxPct ? 'high' : 'ok';
-    results.push({ category: cat, sharePct, minPct, maxPct, status });
+    const status = evaluateBandStatus(sharePct, range);
+    results.push({ category: key, sharePct, minPct, maxPct, status });
   }
   return results;
 }

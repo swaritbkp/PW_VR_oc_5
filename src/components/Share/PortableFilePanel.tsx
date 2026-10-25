@@ -13,55 +13,36 @@ export interface PortableFilePanelProps {
   readonly onImportPlan: (plan: PlanState, selections: readonly VendorSelection[]) => void;
 }
 
-function renderDropZone(
-  onFileSelect: (content: string) => void,
-  isDragging: boolean,
-  setIsDragging: (v: boolean) => void,
-) {
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => onFileSelect(reader.result as string);
-      reader.readAsText(file);
-    }
+function readFileAsText(file: File | undefined, onText: (content: string) => void) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    if (typeof reader.result === 'string') onText(reader.result);
   };
+  reader.readAsText(file);
+}
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => onFileSelect(reader.result as string);
-      reader.readAsText(file);
-    }
-  };
+function triggerDownload(content: string, filename: string) {
+  const blob = new Blob([content], { type: 'application/json' });
+  if (typeof URL.createObjectURL === 'function') {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+}
 
+function DropZoneFileInput({ onFileSelect }: { readonly onFileSelect: (content: string) => void }): React.JSX.Element {
   return (
-    <div
-      onDragOver={(e) => {
-        e.preventDefault();
-        setIsDragging(true);
-      }}
-      onDragLeave={() => setIsDragging(false)}
-      onDrop={handleDrop}
-      className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all ${
-        isDragging
-          ? 'border-amber-500 bg-amber-500/10'
-          : 'border-stone-300 hover:border-amber-400 bg-stone-50/50'
-      }`}
-    >
-      <IconUploadFile className="w-8 h-8 mx-auto text-amber-600 mb-2" />
-      <p className="text-xs font-bold text-stone-800">Drop your .jashn file here or browse</p>
-      <p className="text-[11px] text-stone-500 mt-1">
-        AC30-compliant schema validation (max 256 KB)
-      </p>
+    <>
       <input
         type="file"
         id="jashn-file-input"
         accept=".jashn,.json"
-        onChange={handleInputChange}
+        onChange={(e) => readFileAsText(e.target.files?.[0], onFileSelect)}
         className="hidden"
       />
       <label
@@ -70,11 +51,49 @@ function renderDropZone(
       >
         Select File
       </label>
+    </>
+  );
+}
+
+function DropZone({
+  onFileSelect,
+  isDragging,
+  setIsDragging,
+}: {
+  readonly onFileSelect: (content: string) => void;
+  readonly isDragging: boolean;
+  readonly setIsDragging: (v: boolean) => void;
+}): React.JSX.Element {
+  const containerClass = isDragging
+    ? 'border-amber-500 bg-amber-500/10'
+    : 'border-stone-300 hover:border-amber-400 bg-stone-50/50';
+
+  return (
+    <div
+      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+      onDragLeave={() => setIsDragging(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setIsDragging(false);
+        readFileAsText(e.dataTransfer.files[0], onFileSelect);
+      }}
+      className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all ${containerClass}`}
+    >
+      <IconUploadFile className="w-8 h-8 mx-auto text-amber-600 mb-2" />
+      <p className="text-xs font-bold text-stone-800">Drop your .jashn file here or browse</p>
+      <p className="text-[11px] text-stone-500 mt-1">AC30-compliant schema validation (max 256 KB)</p>
+      <DropZoneFileInput onFileSelect={onFileSelect} />
     </div>
   );
 }
 
-function renderValidationSummary(imported: ImportedPlan, onApply: () => void) {
+function ValidationSummary({
+  imported,
+  onApply,
+}: {
+  readonly imported: ImportedPlan;
+  readonly onApply: () => void;
+}): React.JSX.Element {
   return (
     <div className="p-3.5 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-2">
       <div className="flex items-center gap-2 text-emerald-900 font-bold text-xs">
@@ -82,8 +101,7 @@ function renderValidationSummary(imported: ImportedPlan, onApply: () => void) {
         <span>Verified AC30-compliant .jashn package</span>
       </div>
       <p className="text-[11px] text-emerald-800">
-        Restored {imported.restoredTaskCount} tasks and {imported.restoredVendorCount} vendor
-        selections. Checksum validated.
+        Restored {imported.restoredTaskCount} tasks and {imported.restoredVendorCount} vendor selections. Checksum validated.
       </p>
       <button
         type="button"
@@ -96,31 +114,64 @@ function renderValidationSummary(imported: ImportedPlan, onApply: () => void) {
   );
 }
 
-export function PortableFilePanel({
+function PortableFileHeader({ onClose }: { readonly onClose: () => void }): React.JSX.Element {
+  return (
+    <div className="flex items-center justify-between border-b border-stone-200 pb-3">
+      <div>
+        <h2 id="portable-panel-title" className="text-base font-bold text-stone-900 flex items-center gap-2">
+          <span>📦</span> Save &amp; Load .jashn Event Package
+        </h2>
+        <p className="text-xs text-stone-500">Portable offline living plans with AC30 data safety</p>
+      </div>
+      <button
+        type="button"
+        onClick={onClose}
+        className="p-1 text-stone-400 hover:text-stone-700 text-sm font-bold"
+      >
+        ✕
+      </button>
+    </div>
+  );
+}
+
+function ExportBox({
   plan,
-  vendorSelections = [],
-  onClose,
-  onImportPlan,
-}: PortableFilePanelProps): React.JSX.Element {
+  vendorSelections,
+  onExport,
+}: {
+  readonly plan: PlanState;
+  readonly vendorSelections: readonly VendorSelection[];
+  readonly onExport: () => void;
+}): React.JSX.Element {
+  return (
+    <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-300/80 space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-bold text-stone-900">Current Celebration State</span>
+        <span className="text-[11px] font-semibold text-amber-900">
+          {plan.tasks.length} tasks • {vendorSelections.length} vendors
+        </span>
+      </div>
+      <button
+        type="button"
+        onClick={onExport}
+        className="w-full py-2.5 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-xs"
+      >
+        <IconDownloadFile className="w-4 h-4" />
+        <span>Export Portable .jashn File</span>
+      </button>
+    </div>
+  );
+}
+
+function usePortableFile(plan: PlanState, vendorSelections: readonly VendorSelection[]) {
   const [imported, setImported] = useState<ImportedPlan | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
   const handleExport = () => {
     const jsonStr = exportJashnFile(plan, vendorSelections);
-    const blob = new Blob([jsonStr], { type: 'application/json' });
-    if (typeof URL.createObjectURL === 'function') {
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      const slug = `${plan.intake.eventType}-${plan.intake.city}`
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-');
-      link.href = url;
-      link.setAttribute('download', `${slug}-plan.jashn`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+    const slug = `${plan.intake.eventType}-${plan.intake.city}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    triggerDownload(jsonStr, `${slug}-plan.jashn`);
   };
 
   const handleRawContent = (raw: string) => {
@@ -129,11 +180,25 @@ export function PortableFilePanel({
     if (res.ok) {
       setImported(res.value);
     } else {
-      setErrorMsg(
-        `Import failed: ${res.error.error} ${res.error.details ? `(${res.error.details})` : ''}`,
-      );
+      const errDetails = res.error.details ? ` (${res.error.details})` : '';
+      setErrorMsg(`Import failed: ${res.error.error}${errDetails}`);
     }
   };
+
+  return { imported, errorMsg, isDragging, setIsDragging, handleExport, handleRawContent };
+}
+
+/**
+ * Manages portable `.jashn` event package exporting, checksum verification, and drag-and-drop loading.
+ */
+export function PortableFilePanel({
+  plan,
+  vendorSelections = [],
+  onClose,
+  onImportPlan,
+}: PortableFilePanelProps): React.JSX.Element {
+  const { imported, errorMsg, isDragging, setIsDragging, handleExport, handleRawContent } =
+    usePortableFile(plan, vendorSelections);
 
   return (
     <div
@@ -143,62 +208,23 @@ export function PortableFilePanel({
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/60 backdrop-blur-xs"
     >
       <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto border border-stone-200">
-        <div className="flex items-center justify-between border-b border-stone-200 pb-3">
-          <div>
-            <h2
-              id="portable-panel-title"
-              className="text-base font-bold text-stone-900 flex items-center gap-2"
-            >
-              <span>📦</span> Save &amp; Load .jashn Event Package
-            </h2>
-            <p className="text-xs text-stone-500">
-              Portable offline living plans with AC30 data safety
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1 text-stone-400 hover:text-stone-700 text-sm font-bold"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-300/80 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-stone-900">Current Celebration State</span>
-            <span className="text-[11px] font-semibold text-amber-900">
-              {plan.tasks.length} tasks • {vendorSelections.length} vendors
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={handleExport}
-            className="w-full py-2.5 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-xs"
-          >
-            <IconDownloadFile className="w-4 h-4" />
-            <span>Export Portable .jashn File</span>
-          </button>
-        </div>
-
+        <PortableFileHeader onClose={onClose} />
+        <ExportBox plan={plan} vendorSelections={vendorSelections} onExport={handleExport} />
         <div className="space-y-2">
-          <h3 className="text-xs font-bold text-stone-800">
-            Restore or Import Celebration Package
-          </h3>
-          {renderDropZone(handleRawContent, isDragging, setIsDragging)}
+          <h3 className="text-xs font-bold text-stone-800">Restore or Import Celebration Package</h3>
+          <DropZone onFileSelect={handleRawContent} isDragging={isDragging} setIsDragging={setIsDragging} />
         </div>
-
         {errorMsg && (
           <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl font-medium">
             {errorMsg}
           </div>
         )}
-
-        {imported &&
-          renderValidationSummary(imported, () => {
-            onImportPlan(imported.plan, imported.vendorSelections);
-            onClose();
-          })}
+        {imported && (
+          <ValidationSummary
+            imported={imported}
+            onApply={() => { onImportPlan(imported.plan, imported.vendorSelections); onClose(); }}
+          />
+        )}
       </div>
     </div>
   );

@@ -79,6 +79,51 @@ function LanguagePill(): React.JSX.Element {
   );
 }
 
+const NAV_ITEMS = [
+  {
+    modal: 'templates' as const,
+    label: 'Templates',
+    icon: IconSparkles,
+    iconClass: 'text-amber-600',
+    btnClass: 'bg-stone-100 text-stone-700 hover:bg-stone-200 border-stone-200/60',
+  },
+  {
+    modal: 'whatif' as const,
+    label: 'What-If Sliders',
+    icon: IconSliders,
+    iconClass: 'text-stone-600',
+    btnClass: 'bg-stone-100 text-stone-700 hover:bg-stone-200 border-stone-200/60',
+  },
+  {
+    modal: 'chaos' as const,
+    label: 'Chaos Monkey',
+    icon: IconShieldBolt,
+    iconClass: 'text-amber-600',
+    btnClass: 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100 shadow-xs',
+  },
+  {
+    modal: 'portable' as const,
+    label: 'Save / Load .jashn',
+    icon: IconUploadFile,
+    iconClass: 'text-amber-300',
+    btnClass: 'bg-stone-900 text-white hover:bg-stone-800 shadow-xs',
+  },
+  {
+    modal: 'share' as const,
+    label: 'Share & Export',
+    icon: IconDownloadFile,
+    iconClass: 'text-emerald-600',
+    btnClass: 'bg-emerald-50 text-emerald-900 border-emerald-300 hover:bg-emerald-100 shadow-xs',
+  },
+  {
+    modal: 'audit' as const,
+    label: 'Audit',
+    icon: IconAlertShield,
+    iconClass: 'text-stone-600',
+    btnClass: 'bg-stone-100 text-stone-600 hover:bg-stone-200 border-stone-200/60',
+  },
+];
+
 function NavButtons({
   onOpen,
 }: {
@@ -86,58 +131,27 @@ function NavButtons({
 }): React.JSX.Element {
   return (
     <nav aria-label="Planning actions" className="flex flex-wrap items-center gap-2">
-      <button
-        type="button"
-        onClick={() => onOpen('templates')}
-        className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-semibold rounded-full bg-stone-100 text-stone-700 hover:bg-stone-200 hover:-translate-y-0.5 transition-all duration-200 border border-stone-200/60"
-      >
-        <IconSparkles className="w-3.5 h-3.5 text-amber-600" />
-        <span>Templates</span>
-      </button>
-      <button
-        type="button"
-        onClick={() => onOpen('whatif')}
-        className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-semibold rounded-full bg-stone-100 text-stone-700 hover:bg-stone-200 hover:-translate-y-0.5 transition-all duration-200 border border-stone-200/60"
-      >
-        <IconSliders className="w-3.5 h-3.5 text-stone-600" />
-        <span>What-If Sliders</span>
-      </button>
-      <button
-        type="button"
-        onClick={() => onOpen('chaos')}
-        className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-semibold rounded-full bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 hover:-translate-y-0.5 transition-all duration-200 shadow-xs"
-      >
-        <IconShieldBolt className="w-3.5 h-3.5 text-amber-600" />
-        <span>Chaos Monkey</span>
-      </button>
-      <button
-        type="button"
-        onClick={() => onOpen('portable')}
-        className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-semibold rounded-full bg-stone-900 text-white hover:bg-stone-800 hover:-translate-y-0.5 transition-all duration-200 shadow-xs"
-      >
-        <IconUploadFile className="w-3.5 h-3.5 text-amber-300" />
-        <span>Save / Load .jashn</span>
-      </button>
-      <button
-        type="button"
-        onClick={() => onOpen('share')}
-        className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-900 border border-emerald-300 hover:bg-emerald-100 hover:-translate-y-0.5 transition-all duration-200 shadow-xs"
-      >
-        <IconDownloadFile className="w-3.5 h-3.5 text-emerald-600" />
-        <span>Share &amp; Export</span>
-      </button>
-      <button
-        type="button"
-        onClick={() => onOpen('audit')}
-        className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-semibold rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 hover:-translate-y-0.5 transition-all duration-200 border border-stone-200/60"
-      >
-        <IconAlertShield className="w-3.5 h-3.5 text-stone-600" />
-        <span>Audit</span>
-      </button>
+      {NAV_ITEMS.map((item) => {
+        const Icon = item.icon;
+        return (
+          <button
+            key={item.modal}
+            type="button"
+            onClick={() => onOpen(item.modal)}
+            className={`inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-semibold rounded-full hover:-translate-y-0.5 transition-all duration-200 border ${item.btnClass}`}
+          >
+            <Icon className={`w-3.5 h-3.5 ${item.iconClass}`} />
+            <span>{item.label}</span>
+          </button>
+        );
+      })}
     </nav>
   );
 }
 
+/**
+ * Main application header displaying the celebration emblem, current event details, and primary modal triggers.
+ */
 export function AppHeader({ title, city, onOpen }: AppHeaderProps): React.JSX.Element {
   return (
     <header className="relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-3xl bg-white/90 backdrop-blur-xl border border-stone-200/80 shadow-lg shadow-stone-900/5">

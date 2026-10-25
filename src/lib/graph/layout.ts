@@ -1,6 +1,24 @@
 import { offsetToDate } from '../dates';
 import type { PlanTask, TaskCategory } from '../plan/types';
 import type { Schedule, ScheduledTask } from '../schedule/types';
+import type {
+  GraphLane,
+  GraphTick,
+  LayoutOptions,
+  GraphNode,
+  GraphEdge,
+  GraphLayout,
+  Placed,
+} from './types';
+
+export type {
+  GraphLane,
+  GraphTick,
+  LayoutOptions,
+  GraphNode,
+  GraphEdge,
+  GraphLayout,
+};
 
 // prettier-ignore
 const LANE_ORDER: readonly TaskCategory[] = [
@@ -20,81 +38,7 @@ const MEDIUM_STEP = 7;
 const LONG_STEP = 14;
 const VERY_LONG_STEP = 30;
 
-export interface GraphLane {
-  readonly lane: TaskCategory;
-  readonly y: number;
-  readonly height: number;
-}
-export interface GraphTick {
-  readonly x: number;
-  readonly offsetDays: number;
-  readonly date: string | null;
-}
-
-export interface LayoutOptions {
-  /** Plan start date, YYYY-MM-DD. */
-  readonly startDate: string;
-  readonly availableDays: number;
-  readonly todayOffset?: number;
-  readonly dayWidth?: number;
-  readonly nodeHeight?: number;
-  readonly rowGap?: number;
-  readonly laneGap?: number;
-  readonly minNodeWidth?: number;
-  readonly padding?: number;
-  /** Task ids that have a backup vendor or plan. */
-  readonly backedUpTaskIds?: ReadonlySet<string>;
-}
-
-export interface GraphNode {
-  readonly id: string;
-  readonly name: string;
-  readonly lane: TaskCategory;
-  readonly x: number;
-  readonly y: number;
-  readonly w: number;
-  readonly h: number;
-  readonly milestone: boolean;
-  readonly critical: boolean;
-  readonly floatDays: number;
-  readonly done: boolean;
-  readonly started: boolean;
-  readonly hasBackup: boolean;
-  readonly startDate: string | null;
-  readonly endDate: string | null;
-  /** Latest date the task can start without moving the event, including spare buffer. */
-  readonly mustStartBy: string | null;
-}
-
-export interface GraphEdge {
-  readonly from: string;
-  readonly to: string;
-  readonly critical: boolean;
-  readonly x1: number;
-  readonly y1: number;
-  readonly x2: number;
-  readonly y2: number;
-}
-
-export interface GraphLayout {
-  readonly nodes: readonly GraphNode[];
-  readonly edges: readonly GraphEdge[];
-  readonly lanes: readonly GraphLane[];
-  readonly ticks: readonly GraphTick[];
-  readonly todayX: number;
-  readonly eventX: number;
-  readonly width: number;
-  readonly height: number;
-}
-
 type Config = typeof DEFAULTS;
-
-interface Placed {
-  readonly task: ScheduledTask;
-  readonly x: number;
-  readonly w: number;
-  readonly row: number;
-}
 
 /** Calendar tick spacing in days for a plan of this length. */
 export function tickStepDays(totalDays: number): number {
@@ -169,21 +113,23 @@ function toNode(p: Placed, ctx: NodeContext): GraphNode {
   };
 }
 
-function buildEdges(nodes: readonly GraphNode[], schedule: Schedule): GraphEdge[] {
-  const byId = new Map(nodes.map((n) => [n.id, n]));
-  const taskById = new Map(schedule.tasks.map((t) => [t.id, t]));
+function buildEdges(nodes: readonly GraphNode[], schedule: Schedule): readonly GraphEdge[] {
+  const nodeMap = new Map(nodes.map((n) => [n.id, n]));
   const edges: GraphEdge[] = [];
   for (const task of schedule.tasks) {
-    const to = byId.get(task.id);
+    const to = nodeMap.get(task.id);
+    if (!to) continue;
     for (const depId of task.dependsOn) {
-      const from = byId.get(depId);
-      const dep = taskById.get(depId);
-      if (!from || !to || !dep) continue;
-      const tight = Math.abs(dep.earliestFinish - task.earliestStart) <= EPSILON;
+      const from = nodeMap.get(depId);
+      if (!from) continue;
+      const critical =
+        task.critical &&
+        from.critical &&
+        Math.abs(from.floatDays - to.floatDays) <= EPSILON;
       edges.push({
         from: from.id,
         to: to.id,
-        critical: dep.critical && task.critical && tight,
+        critical,
         x1: from.x + from.w,
         y1: from.y + from.h / 2,
         x2: to.x,
@@ -194,7 +140,7 @@ function buildEdges(nodes: readonly GraphNode[], schedule: Schedule): GraphEdge[
   return edges;
 }
 
-function buildTicks(options: LayoutOptions, cfg: Config, totalDays: number): GraphTick[] {
+function buildTicks(options: LayoutOptions, cfg: Config, totalDays: number): readonly GraphTick[] {
   const step = tickStepDays(totalDays);
   const ticks: GraphTick[] = [];
   for (let offset = 0; offset <= totalDays; offset += step) {

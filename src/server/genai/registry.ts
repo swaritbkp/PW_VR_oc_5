@@ -43,6 +43,10 @@ const REPAIR_SYSTEM = `You are Jashn's JSON Repair agent.
 The previous JSON output failed validation with the listed errors.
 Return corrected, strictly valid JSON conforming to the schema. Output only the JSON.`;
 
+function sanitizeUserData(val: string): string {
+  return val.replace(/<\/?user_data>/gi, '');
+}
+
 function buildCoreUserPrompt(ctx: PlannerCoreContext): string {
   const { intake, template, baselineTasks } = ctx;
   const sampleTasks = baselineTasks
@@ -50,27 +54,34 @@ function buildCoreUserPrompt(ctx: PlannerCoreContext): string {
     .map((t) => `${t.id}: ${t.name} [${t.optimistic}, ${t.mostLikely}, ${t.pessimistic}]`)
     .join('; ');
 
+  const safeCity = sanitizeUserData(intake.city);
+  const safeDate = sanitizeUserData(intake.date);
+  const safeStyle = sanitizeUserData(intake.style || 'None specified');
+  const safeNonNeg = sanitizeUserData(intake.nonNegotiables.join(', ') || 'None');
+
   return `Template: ${template.title} (${template.eventType})
 Baseline tasks: ${sampleTasks}
 <user_data>
-City: ${intake.city}
-Event Date: ${intake.date}
+City: ${safeCity}
+Event Date: ${safeDate}
 Guests: ${intake.guests}
 Budget INR: ${intake.budgetInr}
 Language: ${intake.language}
-Style: ${intake.style || 'None specified'}
-Non-negotiables: ${intake.nonNegotiables.join(', ') || 'None'}
+Style: ${safeStyle}
+Non-negotiables: ${safeNonNeg}
 </user_data>`;
 }
 
 function buildExtrasUserPrompt(ctx: PlannerCoreContext): string {
   const { intake, template } = ctx;
+  const safeCity = sanitizeUserData(intake.city);
+  const safeStyle = sanitizeUserData(intake.style || 'None specified');
   return `Generate celebration ideas, vendor questions, assumptions, and risks for:
-Event: ${template.title} (${template.eventType}) in ${intake.city}
+Event: ${template.title} (${template.eventType}) in ${safeCity}
 <user_data>
 Guests: ${intake.guests}
 Budget INR: ${intake.budgetInr}
-Style: ${intake.style || 'None specified'}
+Style: ${safeStyle}
 Language: ${intake.language}
 </user_data>`;
 }
@@ -85,32 +96,40 @@ ${ctx.previousOutput}
 Please fix all schema errors and return valid JSON.`;
 }
 
-export const PROMPT_REGISTRY: Record<string, PromptDefinition<never>> = {
+function isPlannerCoreContext(val: unknown): val is PlannerCoreContext {
+  return typeof val === 'object' && val !== null && 'intake' in val;
+}
+
+function isPlannerRepairContext(val: unknown): val is PlannerRepairContext {
+  return typeof val === 'object' && val !== null && 'errors' in val;
+}
+
+export const PROMPT_REGISTRY: Record<string, PromptDefinition<unknown>> = {
   'planner-core': {
     id: 'planner-core',
     semver: '1.0.0',
     systemInstruction: CORE_SYSTEM,
-    build: buildCoreUserPrompt,
+    build: (input: unknown) => (isPlannerCoreContext(input) ? buildCoreUserPrompt(input) : ''),
   },
   'planner-extras': {
     id: 'planner-extras',
     semver: '1.0.0',
     systemInstruction: EXTRAS_SYSTEM,
-    build: buildExtrasUserPrompt,
+    build: (input: unknown) => (isPlannerCoreContext(input) ? buildExtrasUserPrompt(input) : ''),
   },
   'planner-repair': {
     id: 'planner-repair',
     semver: '1.0.0',
     systemInstruction: REPAIR_SYSTEM,
-    build: buildRepairPrompt,
+    build: (input: unknown) => (isPlannerRepairContext(input) ? buildRepairPrompt(input) : ''),
   },
 };
 
 /** Retrieves a prompt definition by id from the versioned registry. */
-export function getPromptDefinition<T = unknown>(id: string): PromptDefinition<T> {
+export function getPromptDefinition(id: string): PromptDefinition<unknown> {
   const def = PROMPT_REGISTRY[id];
   if (!def) {
     throw new Error(`Prompt definition not found: ${id}`);
   }
-  return def as PromptDefinition<T>;
+  return def;
 }

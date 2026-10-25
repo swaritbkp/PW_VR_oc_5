@@ -1,9 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
-import { formatInr } from '@/lib/format';
+import React, { useMemo, useState } from 'react';
 import { IntakeSchema, type IntakeInput } from '@/lib/plan/schemas';
 import type { EventType } from '@/lib/plan/types';
+import {
+  CityDateInputs,
+  EventTypeSelector,
+  GuestBudgetInputs,
+  LanguageSelector,
+  StyleNonNegotiablesInputs,
+} from './IntakeFormSections';
 
 export interface IntakeSheetProps {
   readonly initialValues?: Partial<IntakeInput>;
@@ -20,228 +26,182 @@ function parseNonNegotiables(raw: string): string[] {
     .slice(0, 5);
 }
 
-const EVENT_TYPES: readonly EventType[] = ['wedding', 'birthday', 'community'];
-const LANGS = [
-  { code: 'en' as const, label: 'English' },
-  { code: 'hi' as const, label: 'हिंदी' },
-  { code: 'pa' as const, label: 'ਪੰਜਾਬੀ' },
-];
-
-function renderTypeBtn(t: EventType, active: boolean, onClick: () => void) {
-  const cls = active
-    ? 'bg-amber-800 text-white border-amber-800'
-    : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100';
+function FormActionButtons({
+  isSubmitting,
+  onCancel,
+}: {
+  readonly isSubmitting?: boolean;
+  readonly onCancel?: () => void;
+}): React.JSX.Element {
   return (
-    <button
-      key={t}
-      type="button"
-      onClick={onClick}
-      className={`py-2 px-3 text-xs font-semibold rounded-lg capitalize border transition-colors ${cls}`}
-    >
-      {t}
-    </button>
+    <div className="flex gap-2 pt-2 border-t border-stone-100">
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="flex-1 py-2.5 px-4 bg-amber-800 text-white font-bold text-xs rounded-xl hover:bg-amber-900 transition-colors shadow-sm disabled:opacity-50"
+      >
+        {isSubmitting ? 'Generating Adapted Living Plan...' : 'Generate Living Event Graph'}
+      </button>
+      {onCancel && (
+        <button
+          type="button"
+          onClick={onCancel}
+          className="py-2.5 px-4 bg-stone-100 text-stone-700 font-semibold text-xs rounded-xl hover:bg-stone-200 transition-colors"
+        >
+          Cancel
+        </button>
+      )}
+    </div>
   );
 }
 
-function renderLangBtn(l: (typeof LANGS)[number], active: boolean, onClick: () => void) {
-  const cls = active
-    ? 'bg-amber-800 text-white border-amber-800'
-    : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100';
+function getDefaultLogistics(init?: Partial<IntakeInput>) {
+  return {
+    eventType: init?.eventType ?? 'wedding',
+    city: init?.city ?? 'Chandigarh',
+    date: init?.date ?? '2026-12-15',
+  };
+}
+
+function getDefaultFinancials(init?: Partial<IntakeInput>) {
+  return {
+    guests: String(init?.guests ?? 250),
+    budgetInr: String(init?.budgetInr ?? 2500000),
+    style: init?.style ?? '',
+  };
+}
+
+function getDefaultCultural(init?: Partial<IntakeInput>) {
+  return {
+    rawNn: init?.nonNegotiables ? init.nonNegotiables.join(', ') : '',
+    language: init?.language ?? 'en',
+  };
+}
+
+function getInitialIntakeValues(init?: Partial<IntakeInput>) {
+  return {
+    ...getDefaultLogistics(init),
+    ...getDefaultFinancials(init),
+    ...getDefaultCultural(init),
+  };
+}
+
+function buildIntakeCandidate(
+  state: ReturnType<typeof getInitialIntakeValues>,
+  templateId?: string,
+) {
+  return {
+    eventType: state.eventType,
+    templateId,
+    city: state.city.trim(),
+    date: state.date,
+    guests: Number.parseInt(state.guests, 10) || 0,
+    budgetInr: Number.parseInt(state.budgetInr, 10) || 0,
+    style: state.style.trim() || undefined,
+    nonNegotiables: parseNonNegotiables(state.rawNn),
+    language: state.language,
+  };
+}
+
+function validateAndSubmitIntake(
+  candidate: Record<string, unknown>,
+  setErrorMsg: (msg: string | null) => void,
+  onSubmit: (data: IntakeInput) => void,
+) {
+  setErrorMsg(null);
+  const parsed = IntakeSchema.safeParse(candidate);
+  if (!parsed.success) {
+    setErrorMsg(parsed.error.issues[0]?.message ?? 'Invalid intake data');
+    return;
+  }
+  onSubmit(parsed.data);
+}
+
+function useIntakeForm(
+  initialValues: Partial<IntakeInput> | undefined,
+  onSubmit: (data: IntakeInput) => void,
+) {
+  const defaults = useMemo(() => getInitialIntakeValues(initialValues), [initialValues]);
+  const [eventType, setEventType] = useState<EventType>(defaults.eventType);
+  const [city, setCity] = useState(defaults.city);
+  const [date, setDate] = useState(defaults.date);
+  const [guests, setGuests] = useState(defaults.guests);
+  const [budgetInr, setBudgetInr] = useState(defaults.budgetInr);
+  const [style, setStyle] = useState(defaults.style);
+  const [rawNn, setRawNn] = useState(defaults.rawNn);
+  const [language, setLanguage] = useState<'en' | 'hi' | 'pa'>(defaults.language);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const candidate = buildIntakeCandidate(
+      { eventType, city, date, guests, budgetInr, style, rawNn, language },
+      initialValues?.templateId,
+    );
+    validateAndSubmitIntake(candidate, setErrorMsg, onSubmit);
+  };
+
+  return {
+    eventType, setEventType,
+    city, setCity,
+    date, setDate,
+    guests, setGuests,
+    budgetInr, setBudgetInr,
+    style, setStyle,
+    rawNn, setRawNn,
+    language, setLanguage,
+    errorMsg,
+    handleSubmit,
+  };
+}
+
+function IntakeHeader() {
   return (
-    <button
-      key={l.code}
-      type="button"
-      onClick={onClick}
-      className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${cls}`}
-    >
-      {l.label}
-    </button>
+    <div>
+      <h3 className="font-bold text-stone-900 text-base">Celebration Details</h3>
+      <p className="text-xs text-stone-500">Provide the non-negotiables for your living event plan.</p>
+    </div>
   );
 }
 
+/**
+ * Interactive intake form capturing event parameters, budget, date, city, and cultural non-negotiables.
+ */
 export function IntakeSheet({
   initialValues,
   onSubmit,
   onCancel,
   isSubmitting,
 }: IntakeSheetProps): React.JSX.Element {
-  const [eventType, setEventType] = useState<EventType>(initialValues?.eventType ?? 'wedding');
-  const [city, setCity] = useState(initialValues?.city ?? 'Chandigarh');
-  const [date, setDate] = useState(initialValues?.date ?? '2026-12-15');
-  const [guests, setGuests] = useState(String(initialValues?.guests ?? 250));
-  const [budgetInr, setBudgetInr] = useState(String(initialValues?.budgetInr ?? 2500000));
-  const [style, setStyle] = useState(initialValues?.style ?? '');
-  const [rawNn, setRawNn] = useState(initialValues?.nonNegotiables?.join(', ') ?? '');
-  const [language, setLanguage] = useState<'en' | 'hi' | 'pa'>(initialValues?.language ?? 'en');
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg(null);
-    const candidate = {
-      eventType,
-      templateId: initialValues?.templateId,
-      city: city.trim(),
-      date,
-      guests: parseInt(guests, 10) || 0,
-      budgetInr: parseInt(budgetInr, 10) || 0,
-      style: style.trim() || undefined,
-      nonNegotiables: parseNonNegotiables(rawNn),
-      language,
-    };
-    const parsed = IntakeSchema.safeParse(candidate);
-    if (!parsed.success) {
-      setErrorMsg(parsed.error.issues[0]?.message ?? 'Invalid intake data');
-      return;
-    }
-    onSubmit(parsed.data);
-  };
+  const form = useIntakeForm(initialValues, onSubmit);
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={form.handleSubmit}
       className="space-y-4 p-6 bg-white rounded-2xl border border-stone-200 shadow-sm max-w-xl mx-auto"
     >
-      <div>
-        <h3 className="font-bold text-stone-900 text-base">Celebration Details</h3>
-        <p className="text-xs text-stone-500">
-          Provide the non-negotiables for your living event plan.
-        </p>
-      </div>
-
-      {errorMsg && (
-        <div
-          role="alert"
-          className="p-3 bg-red-50 border border-red-200 text-red-800 text-xs rounded-xl"
-        >
-          {errorMsg}
+      <IntakeHeader />
+      {form.errorMsg && (
+        <div role="alert" className="p-3 bg-red-50 border border-red-200 text-red-800 text-xs rounded-xl">
+          {form.errorMsg}
         </div>
       )}
-
-      <div>
-        <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-          Celebration Type
-        </label>
-        <div className="grid grid-cols-3 gap-2">
-          {EVENT_TYPES.map((t) => renderTypeBtn(t, eventType === t, () => setEventType(t)))}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label htmlFor="city-input" className="block text-xs font-semibold text-stone-700 mb-1">
-            City
-          </label>
-          <input
-            id="city-input"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            required
-            className="w-full p-2 text-xs border border-stone-200 rounded-lg"
-          />
-        </div>
-        <div>
-          <label htmlFor="date-input" className="block text-xs font-semibold text-stone-700 mb-1">
-            Event Date
-          </label>
-          <input
-            id="date-input"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-            className="w-full p-2 text-xs border border-stone-200 rounded-lg"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label htmlFor="guests-input" className="block text-xs font-semibold text-stone-700 mb-1">
-            Guest Count
-          </label>
-          <input
-            id="guests-input"
-            type="number"
-            min="1"
-            value={guests}
-            onChange={(e) => setGuests(e.target.value)}
-            required
-            className="w-full p-2 text-xs border border-stone-200 rounded-lg"
-          />
-        </div>
-        <div>
-          <label htmlFor="budget-input" className="block text-xs font-semibold text-stone-700 mb-1">
-            Budget (₹ INR)
-          </label>
-          <input
-            id="budget-input"
-            type="number"
-            min="1000"
-            value={budgetInr}
-            onChange={(e) => setBudgetInr(e.target.value)}
-            required
-            className="w-full p-2 text-xs border border-stone-200 rounded-lg"
-          />
-          <p className="text-[10px] text-amber-800 font-mono mt-0.5">
-            {formatInr(parseInt(budgetInr, 10) || 0)}
-          </p>
-        </div>
-      </div>
-
-      <div>
-        <label htmlFor="style-input" className="block text-xs font-semibold text-stone-700 mb-1">
-          Theme & Style Notes
-        </label>
-        <input
-          id="style-input"
-          value={style}
-          onChange={(e) => setStyle(e.target.value)}
-          placeholder="e.g. Traditional rustic courtyard with marigold"
-          className="w-full p-2 text-xs border border-stone-200 rounded-lg"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="nn-input" className="block text-xs font-semibold text-stone-700 mb-1">
-          Non-Negotiables (comma separated, max 5)
-        </label>
-        <input
-          id="nn-input"
-          value={rawNn}
-          onChange={(e) => setRawNn(e.target.value)}
-          placeholder="e.g. Pure vegetarian menu, Live dhol at entry, Drone photography"
-          className="w-full p-2 text-xs border border-stone-200 rounded-lg"
-        />
-      </div>
-
-      <div>
-        <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-          Planning Language
-        </label>
-        <div className="flex gap-2">
-          {LANGS.map((l) => renderLangBtn(l, language === l.code, () => setLanguage(l.code)))}
-        </div>
-      </div>
-
-      <div className="flex gap-2 pt-2 border-t border-stone-100">
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="flex-1 py-2.5 px-4 bg-amber-800 text-white font-bold text-xs rounded-xl hover:bg-amber-900 transition-colors shadow-sm disabled:opacity-50"
-        >
-          {isSubmitting ? 'Generating Adapted Living Plan...' : 'Generate Living Event Graph'}
-        </button>
-        {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="py-2.5 px-4 bg-stone-100 text-stone-700 font-semibold text-xs rounded-xl hover:bg-stone-200 transition-colors"
-          >
-            Cancel
-          </button>
-        )}
-      </div>
+      <EventTypeSelector eventType={form.eventType} onChange={form.setEventType} />
+      <CityDateInputs city={form.city} date={form.date} onCityChange={form.setCity} onDateChange={form.setDate} />
+      <GuestBudgetInputs
+        guests={form.guests}
+        budgetInr={form.budgetInr}
+        onGuestsChange={form.setGuests}
+        onBudgetChange={form.setBudgetInr}
+      />
+      <StyleNonNegotiablesInputs
+        style={form.style}
+        rawNn={form.rawNn}
+        onStyleChange={form.setStyle}
+        onNnChange={form.setRawNn}
+      />
+      <LanguageSelector language={form.language} onChange={form.setLanguage} />
+      <FormActionButtons isSubmitting={isSubmitting} onCancel={onCancel} />
     </form>
   );
 }

@@ -54,6 +54,9 @@ function renderAuditRows(metadata: AuditMetadata) {
   );
 }
 
+/**
+ * Displays the transparent GenAI audit panel showing prompt semver, model hash, and schema compliance.
+ */
 export function AuditPanel({ metadata, onClose }: AuditPanelProps): React.JSX.Element {
   return (
     <div

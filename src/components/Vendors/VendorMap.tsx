@@ -60,6 +60,9 @@ function renderPin(pin: PinCoordinate, isSelected: boolean, onSelect?: (v: Vendo
   );
 }
 
+/**
+ * Interactive map representation rendering nearby vendor pinpoints relative to the celebration city center.
+ */
 export function VendorMap({
   center,
   vendors,

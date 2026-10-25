@@ -16,7 +16,7 @@ import { evaluate as evaluateSentinels } from '../../lib/schedule/sentinel';
 import { daysBetween } from '../../lib/dates';
 import type { IntakeInput } from '../../lib/plan/schemas';
 import type { PlanTask } from '../../lib/plan/types';
-import type { Plan, ModelClient, GeneratePlanOptions, PlanGenerationResult } from './types';
+import type { Plan, ModelClient, GeneratePlanOptions, PlanGenerationResult, PlanMeta } from './types';
 
 export * from './types';
 
@@ -66,8 +66,8 @@ function parseCoreJson(
       success: false,
       errors: zRes.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`),
     };
-  } catch (e) {
-    return { success: false, errors: [(e as Error).message] };
+  } catch (e: unknown) {
+    return { success: false, errors: [e instanceof Error ? e.message : 'JSON parse failure'] };
   }
 }
 
@@ -135,13 +135,41 @@ function resolveTemplate(intake: IntakeInput) {
   return found ?? templatesFor(intake.eventType)[0];
 }
 
+function toPlanTask(t: PlannerCoreOutput['tasks'][number]): PlanTask {
+  return {
+    id: t.id,
+    name: t.name,
+    optimistic: t.optimistic,
+    mostLikely: t.mostLikely,
+    pessimistic: t.pessimistic,
+    dependsOn: t.dependsOn,
+    category: t.category,
+    drivers: t.drivers,
+    why: t.why,
+    vendorNeed: t.vendorNeed,
+    bookingFor: t.bookingFor,
+    optional: t.optional,
+  };
+}
+
+function buildPlanMeta(repaired: boolean): PlanMeta {
+  return {
+    id: `plan_${Date.now()}`,
+    promptVersions: { 'planner-core': '1.0.0', 'planner-extras': '1.0.0' },
+    agentVersion: AGENT_VERSION,
+    model: getGeminiModel(),
+    createdAt: new Date().toISOString(),
+    validationOutcomes: { coreRepaired: repaired, guardrailsPassed: true },
+  };
+}
+
 function buildPlanArtifact(
   intake: IntakeInput,
   core: PlannerCoreOutput,
   extras: PlannerExtrasOutput,
   repaired: boolean,
 ): Plan {
-  const tasks = core.tasks as PlanTask[];
+  const tasks: PlanTask[] = core.tasks.map(toPlanTask);
   const schedRes = computeSchedule(tasks);
   if (!schedRes.ok) throw new Error(`Schedule calculation error: ${schedRes.error.message}`);
   const schedule = schedRes.value;
@@ -158,14 +186,7 @@ function buildPlanArtifact(
   });
 
   return {
-    meta: {
-      id: `plan_${Date.now()}`,
-      promptVersions: { 'planner-core': '1.0.0', 'planner-extras': '1.0.0' },
-      agentVersion: AGENT_VERSION,
-      model: getGeminiModel(),
-      createdAt: new Date().toISOString(),
-      validationOutcomes: { coreRepaired: repaired, guardrailsPassed: true },
-    },
+    meta: buildPlanMeta(repaired),
     intake,
     tasks,
     budgetLines: core.budgetLines,
@@ -177,12 +198,17 @@ function buildPlanArtifact(
   };
 }
 
+function resolveModelClient(client?: ModelClient): ModelClient | null {
+  if (client) return client;
+  return getGeminiClient();
+}
+
 /** Generates a living celebration plan using parallel Gemini structured calls and code engines. */
 export async function generatePlan(
   intake: IntakeInput,
   options: GeneratePlanOptions = {},
 ): Promise<PlanGenerationResult> {
-  const client = (options.client ?? getGeminiClient()) as ModelClient | null;
+  const client = resolveModelClient(options.client);
   if (!client) {
     return {
       ok: false,
@@ -204,7 +230,7 @@ export async function generatePlan(
     const plan = buildPlanArtifact(intake, coreRes.data, extras, coreRes.repaired);
     return { ok: true, plan };
   } catch (err: unknown) {
-    const msg = (err as Error).message || 'Generation failed';
+    const msg = err instanceof Error ? err.message : 'Generation failed';
     const code = msg === 'TIMEOUT' ? 'TIMEOUT' : 'GENERATION_FAILED';
     return { ok: false, code, error: msg };
   }

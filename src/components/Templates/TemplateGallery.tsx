@@ -12,19 +12,8 @@ export interface TemplateGalleryProps {
 }
 
 const MONTH_NAMES = [
-  '',
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
+  '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ];
 
 function renderBestMonths(months: readonly number[]) {
@@ -91,6 +80,45 @@ function renderTemplateCard(template: EventTemplate, onSelect: (t: EventTemplate
   );
 }
 
+function TemplateGalleryHeader({
+  filterType,
+  onFilterChange,
+}: {
+  readonly filterType: EventType | 'all';
+  readonly onFilterChange: (t: EventType | 'all') => void;
+}) {
+  const filterOptions: readonly (EventType | 'all')[] = ['all', 'wedding', 'birthday', 'community'];
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <h3 className="font-bold text-stone-900 text-lg">Curated Celebration Templates</h3>
+        <p className="text-xs text-stone-500">
+          12 culturally authentic, tested starting points adapted for Indian celebrations.
+        </p>
+      </div>
+      <div className="flex items-center gap-2">
+        {filterOptions.map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => onFilterChange(t)}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg capitalize transition-colors ${
+              filterType === t
+                ? 'bg-amber-800 text-white shadow-sm'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+            }`}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Curated template gallery supporting filtering by event type, keyword search, and starter plan selection.
+ */
 export function TemplateGallery({
   onSelectTemplate,
   initialEventType,
@@ -111,31 +139,7 @@ export function TemplateGallery({
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h3 className="font-bold text-stone-900 text-lg">Curated Celebration Templates</h3>
-          <p className="text-xs text-stone-500">
-            12 culturally authentic, tested starting points adapted for Indian celebrations.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {(['all', 'wedding', 'birthday', 'community'] as const).map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => setFilterType(t)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg capitalize transition-colors ${
-                filterType === t
-                  ? 'bg-amber-800 text-white shadow-sm'
-                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-              }`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-      </div>
-
+      <TemplateGalleryHeader filterType={filterType} onFilterChange={setFilterType} />
       <input
         type="text"
         placeholder="Filter by keyword (e.g. marigold, langar, pool)..."
@@ -143,7 +147,6 @@ export function TemplateGallery({
         onChange={(e) => setSearchQuery(e.target.value)}
         className="w-full p-2.5 text-xs rounded-xl border border-stone-200 focus:ring-1 focus:ring-amber-500 focus:outline-none"
       />
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map((t) => renderTemplateCard(t, onSelectTemplate))}
       </div>

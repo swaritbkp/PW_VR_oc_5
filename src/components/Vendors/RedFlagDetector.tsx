@@ -77,12 +77,114 @@ function renderFlagItem(flag: DetectedRedFlag, index: number) {
   );
 }
 
+function RedFlagHeader({ onClose }: { readonly onClose: () => void }) {
+  return (
+    <div className="flex items-center justify-between border-b border-stone-200 pb-3">
+      <div>
+        <h2 id="red-flag-title" className="text-lg font-bold text-stone-900 flex items-center gap-2">
+          <span>🛡️</span> Vendor Contract Red-Flag Detector
+        </h2>
+        <p className="text-xs text-stone-500">Automated predatory clause parser & consumer protection</p>
+      </div>
+      <button
+        type="button"
+        onClick={onClose}
+        className="text-stone-400 hover:text-stone-700 text-sm font-bold p-1 rounded-lg"
+      >
+        ✕
+      </button>
+    </div>
+  );
+}
+
+function RedFlagPresets({ onSelectText }: { readonly onSelectText: (text: string) => void }) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-semibold text-stone-700">Quick Test Scenarios:</span>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {PRESETS.map((preset, idx) => (
+          <button
+            key={`preset-${idx}`}
+            type="button"
+            onClick={() => onSelectText(preset.text)}
+            className="text-[11px] bg-stone-100 hover:bg-stone-200 text-stone-800 font-medium px-2 py-1 rounded-lg border border-stone-200 transition-colors"
+          >
+            {preset.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ContractTextInput({
+  text,
+  onChange,
+}: {
+  readonly text: string;
+  readonly onChange: (t: string) => void;
+}) {
+  return (
+    <div className="space-y-1">
+      <label htmlFor="vendor-quote-textarea" className="text-xs font-semibold text-stone-700">
+        Paste Vendor Quotation / Contract Terms:
+      </label>
+      <textarea
+        id="vendor-quote-textarea"
+        rows={3}
+        value={text}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Paste vendor payment terms, advance conditions, cancellation clauses..."
+        className="w-full text-xs border border-stone-300 rounded-xl p-2.5 focus:ring-amber-500 font-mono"
+      />
+    </div>
+  );
+}
+
+function RedFlagAnalysisResults({ analysis }: { readonly analysis: ReturnType<typeof analyzeVendorQuote> }) {
+  return (
+    <>
+      {renderRiskBadge(analysis.safetyScore, analysis.riskLevel)}
+      <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 text-xs text-stone-800">
+        <p className="font-semibold">Inspection Summary:</p>
+        <p>{analysis.summaryRecommendation}</p>
+      </div>
+      {analysis.flags.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="text-xs font-semibold text-stone-800">
+            Detected Predatory Clauses ({analysis.flags.length})
+          </h3>
+          <div className="space-y-2">{analysis.flags.map((flag, i) => renderFlagItem(flag, i))}</div>
+        </div>
+      )}
+    </>
+  );
+}
+
+function ScannerCloseButton({ onClose }: { readonly onClose: () => void }) {
+  return (
+    <div className="flex justify-end pt-2">
+      <button
+        type="button"
+        onClick={onClose}
+        className="bg-stone-900 text-white text-xs font-semibold px-4 py-2 rounded-xl hover:bg-stone-800 transition-colors"
+      >
+        Close Scanner
+      </button>
+    </div>
+  );
+}
+
+/**
+ * Predatory contract clause scanner analyzing vendor quotes against consumer protection rules.
+ */
 export function RedFlagDetector({
   initialText = PRESETS[0].text,
   onClose,
 }: RedFlagDetectorProps): React.JSX.Element {
   const [contractText, setContractText] = useState(initialText);
-
   const analysis = useMemo(() => analyzeVendorQuote(contractText), [contractText]);
 
   return (
@@ -93,86 +195,11 @@ export function RedFlagDetector({
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/60 backdrop-blur-xs"
     >
       <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto border border-stone-200">
-        <div className="flex items-center justify-between border-b border-stone-200 pb-3">
-          <div>
-            <h2
-              id="red-flag-title"
-              className="text-lg font-bold text-stone-900 flex items-center gap-2"
-            >
-              <span>🛡️</span> Vendor Contract Red-Flag Detector
-            </h2>
-            <p className="text-xs text-stone-500">
-              Automated predatory clause parser & consumer protection
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-stone-400 hover:text-stone-700 text-sm font-bold p-1 rounded-lg"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-stone-700">Quick Test Scenarios:</span>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {PRESETS.map((preset, idx) => (
-              <button
-                key={`preset-${idx}`}
-                type="button"
-                onClick={() => setContractText(preset.text)}
-                className="text-[11px] bg-stone-100 hover:bg-stone-200 text-stone-800 font-medium px-2 py-1 rounded-lg border border-stone-200 transition-colors"
-              >
-                {preset.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-1">
-          <label htmlFor="vendor-quote-textarea" className="text-xs font-semibold text-stone-700">
-            Paste Vendor Quotation / Contract Terms:
-          </label>
-          <textarea
-            id="vendor-quote-textarea"
-            rows={3}
-            value={contractText}
-            onChange={(e) => setContractText(e.target.value)}
-            placeholder="Paste vendor payment terms, advance conditions, cancellation clauses..."
-            className="w-full text-xs border border-stone-300 rounded-xl p-2.5 focus:ring-amber-500 font-mono"
-          />
-        </div>
-
-        {renderRiskBadge(analysis.safetyScore, analysis.riskLevel)}
-
-        <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 text-xs text-stone-800">
-          <p className="font-semibold">Inspection Summary:</p>
-          <p>{analysis.summaryRecommendation}</p>
-        </div>
-
-        {analysis.flags.length > 0 && (
-          <div className="space-y-2">
-            <h3 className="text-xs font-semibold text-stone-800">
-              Detected Predatory Clauses ({analysis.flags.length})
-            </h3>
-            <div className="space-y-2">
-              {analysis.flags.map((flag, i) => renderFlagItem(flag, i))}
-            </div>
-          </div>
-        )}
-
-        <div className="flex justify-end pt-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="bg-stone-900 text-white text-xs font-semibold px-4 py-2 rounded-xl hover:bg-stone-800 transition-colors"
-          >
-            Close Scanner
-          </button>
-        </div>
+        <RedFlagHeader onClose={onClose} />
+        <RedFlagPresets onSelectText={setContractText} />
+        <ContractTextInput text={contractText} onChange={setContractText} />
+        <RedFlagAnalysisResults analysis={analysis} />
+        <ScannerCloseButton onClose={onClose} />
       </div>
     </div>
   );

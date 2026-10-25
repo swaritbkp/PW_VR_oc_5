@@ -1,6 +1,6 @@
 import { computeSchedule } from '../schedule/cpm';
 import { probabilityOnTime } from '../schedule/pert';
-import type { GraphError, Result } from '../schedule/types';
+import type { GraphError, Result, Schedule } from '../schedule/types';
 import type { PlanTask, VendorNeedId } from '../plan/types';
 import { DISRUPTIONS, isCovered } from './disruptions';
 import type { DisruptionEffect, DisruptionScenario, SimulationContext } from './disruptions';
@@ -88,6 +88,74 @@ function calculateCompoundMetrics(
   return { netAvailable: context.availableDays + netAvailableDelta, budgetPct };
 }
 
+function buildChaosSummaries(
+  scenarios: readonly DisruptionScenario[],
+  backedUp: ReadonlySet<VendorNeedId>,
+): readonly ChaosScenarioSummary[] {
+  return scenarios.map((sc) => ({
+    scenarioId: sc.id,
+    title: sc.title,
+    covered: isCovered(sc, backedUp),
+    slipDays: sc.effects.reduce(
+      (acc, e) => acc + (isCovered(sc, backedUp) ? e.slipDaysWithBackup : e.slipDays),
+      0,
+    ),
+  }));
+}
+
+interface ChaosMetrics {
+  readonly origDur: number;
+  readonly dispDur: number;
+  readonly netAvailable: number;
+  readonly remBuffer: number;
+  readonly origProb: number;
+  readonly dispProb: number;
+  readonly budgetPct: number;
+  readonly newlyCrit: readonly string[];
+}
+
+function assembleChaosResult(
+  metrics: ChaosMetrics,
+  availableDays: number,
+  scenarios: readonly DisruptionScenario[],
+  backedUp: ReadonlySet<VendorNeedId>,
+): CompoundDisruptionResult {
+  return {
+    scenariosApplied: buildChaosSummaries(scenarios, backedUp),
+    originalDurationDays: metrics.origDur,
+    disruptedDurationDays: metrics.dispDur,
+    netSlippageDays: metrics.dispDur - metrics.origDur,
+    originalBufferDays: availableDays - metrics.origDur,
+    remainingBufferDays: metrics.remBuffer,
+    originalProbability: metrics.origProb,
+    disruptedProbability: metrics.dispProb,
+    totalBudgetImpactPct: metrics.budgetPct,
+    criticalPathShifted: metrics.newlyCrit.length > 0,
+    newlyCriticalTaskIds: metrics.newlyCrit,
+    recoveryActions: buildRecoveryProtocols(scenarios),
+    catastrophicFailure: metrics.remBuffer < 0 || metrics.dispProb < 0.2,
+  };
+}
+
+function computeChaosMetrics(
+  before: Schedule,
+  after: Schedule,
+  scenarios: readonly DisruptionScenario[],
+  context: SimulationContext,
+): ChaosMetrics {
+  const { netAvailable, budgetPct } = calculateCompoundMetrics(scenarios, context);
+  const origDur = before.projectDuration;
+  const dispDur = after.projectDuration;
+  const remBuffer = netAvailable - dispDur;
+  const origProb = probabilityOnTime(before, context.availableDays);
+  const dispProb = probabilityOnTime(after, netAvailable);
+
+  const prevCritical = new Set(before.criticalPath);
+  const newlyCrit = after.criticalPath.filter((id: string) => !prevCritical.has(id));
+
+  return { origDur, dispDur, netAvailable, remBuffer, origProb, dispProb, budgetPct, newlyCrit };
+}
+
 /**
  * Simulates compound simultaneous disruptions on the Event Graph schedule,
  * recalculating CPM critical path and dynamic buffer burn.
@@ -108,42 +176,9 @@ export function simulateChaosCascade(
   const after = computeSchedule(disruptedTasks);
   if (!after.ok) return after;
 
-  const { netAvailable, budgetPct } = calculateCompoundMetrics(scenarios, context);
-  const origDur = before.value.projectDuration;
-  const dispDur = after.value.projectDuration;
-  const remBuffer = netAvailable - dispDur;
-  const origProb = probabilityOnTime(before.value, context.availableDays);
-  const dispProb = probabilityOnTime(after.value, netAvailable);
-
-  const prevCritical = new Set(before.value.criticalPath);
-  const newlyCrit = after.value.criticalPath.filter((id) => !prevCritical.has(id));
-
-  const summaries: ChaosScenarioSummary[] = scenarios.map((sc) => ({
-    scenarioId: sc.id,
-    title: sc.title,
-    covered: isCovered(sc, context.backedUp),
-    slipDays: sc.effects.reduce(
-      (acc, e) => acc + (isCovered(sc, context.backedUp) ? e.slipDaysWithBackup : e.slipDays),
-      0,
-    ),
-  }));
-
+  const metrics = computeChaosMetrics(before.value, after.value, scenarios, context);
   return {
     ok: true,
-    value: {
-      scenariosApplied: summaries,
-      originalDurationDays: origDur,
-      disruptedDurationDays: dispDur,
-      netSlippageDays: dispDur - origDur,
-      originalBufferDays: context.availableDays - origDur,
-      remainingBufferDays: remBuffer,
-      originalProbability: origProb,
-      disruptedProbability: dispProb,
-      totalBudgetImpactPct: budgetPct,
-      criticalPathShifted: newlyCrit.length > 0,
-      newlyCriticalTaskIds: newlyCrit,
-      recoveryActions: buildRecoveryProtocols(scenarios),
-      catastrophicFailure: remBuffer < 0 || dispProb < 0.2,
-    },
+    value: assembleChaosResult(metrics, context.availableDays, scenarios, context.backedUp),
   };
 }

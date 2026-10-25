@@ -111,6 +111,9 @@ function renderRiskCard(risk: RankedRisk, onSelect?: (r: RankedRisk) => void) {
   );
 }
 
+/**
+ * Displays the ranked celebration risk register scored by probability and schedule severity.
+ */
 export function RiskRegister({ context, onSelectRisk }: RiskRegisterProps): React.JSX.Element {
   const risks = useMemo(() => rankRisks(context), [context]);
   const score = useMemo(() => resilienceScore(risks), [risks]);

@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { resolveCityCoordinates } from '@/lib/geo/cities';
+import { stripControlChars } from '@/lib/format';
 import { checkRateLimit } from '@/server/security/rateLimit';
 
-const CityQuerySchema = z.string().min(1).max(60);
+const CityQuerySchema = z.string().transform(stripControlChars).pipe(z.string().min(1).max(60));
 
 const STATUS_OK = 200;
 const STATUS_BAD_REQUEST = 400;

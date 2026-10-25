@@ -1,6 +1,7 @@
 import React from 'react';
 import type { IconProps } from './iconTypes';
 
+/** Sliders icon for parameter adjustments and what-if simulation. */
 export function IconSliders({ className = 'w-4 h-4' }: IconProps): React.JSX.Element {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -41,6 +42,7 @@ export function IconSliders({ className = 'w-4 h-4' }: IconProps): React.JSX.Ele
   );
 }
 
+/** Dossier document icon for executive summary reports. */
 export function IconDossier({ className = 'w-4 h-4' }: IconProps): React.JSX.Element {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -62,6 +64,7 @@ export function IconDossier({ className = 'w-4 h-4' }: IconProps): React.JSX.Ele
   );
 }
 
+/** Download icon for saving portable .jashn event files. */
 export function IconDownloadFile({ className = 'w-4 h-4' }: IconProps): React.JSX.Element {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -84,6 +87,7 @@ export function IconDownloadFile({ className = 'w-4 h-4' }: IconProps): React.JS
   );
 }
 
+/** Upload icon for importing portable .jashn event files. */
 export function IconUploadFile({ className = 'w-4 h-4' }: IconProps): React.JSX.Element {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -106,6 +110,7 @@ export function IconUploadFile({ className = 'w-4 h-4' }: IconProps): React.JSX.
   );
 }
 
+/** Undo icon for reverting to the previous plan revision. */
 export function IconUndo({ className = 'w-4 h-4' }: IconProps): React.JSX.Element {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -127,6 +132,7 @@ export function IconUndo({ className = 'w-4 h-4' }: IconProps): React.JSX.Elemen
   );
 }
 
+/** Check circle icon for completed task status. */
 export function IconCheckCircle({ className = 'w-4 h-4' }: IconProps): React.JSX.Element {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">

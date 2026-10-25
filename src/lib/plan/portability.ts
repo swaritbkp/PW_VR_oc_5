@@ -86,12 +86,49 @@ function parseJsonSafe(raw: string): Result<unknown, PortabilityErrorDetail> {
   }
 }
 
+function isRecord(val: unknown): val is Record<string, unknown> {
+  return typeof val === 'object' && val !== null;
+}
+
+function toImportedTask(t: z.infer<typeof PlanTaskSchema>): PlanTask {
+  return {
+    id: t.id,
+    name: t.name,
+    optimistic: t.optimistic,
+    mostLikely: t.mostLikely,
+    pessimistic: t.pessimistic,
+    dependsOn: t.dependsOn,
+    category: t.category,
+    drivers: t.drivers,
+    why: t.why,
+    vendorNeed: t.vendorNeed,
+    bookingFor: t.bookingFor,
+    optional: t.optional,
+    done: t.done,
+    started: t.started,
+  };
+}
+
+function toImportedBudgetLine(b: z.infer<typeof BudgetLineSchema>): BudgetLine {
+  return {
+    id: b.id,
+    category: b.category,
+    name: b.name,
+    unit: b.unit,
+    rateInr: b.rateInr,
+    quantity: b.quantity ?? 1,
+    drivers: b.drivers,
+    locked: b.locked,
+    notes: b.notes,
+  };
+}
+
 function buildImportedPlan(payload: z.infer<typeof JashnPayloadSchema>): ImportedPlan {
   const plan: PlanState = {
     id: payload.id,
     intake: payload.intake,
-    tasks: payload.tasks as unknown as readonly PlanTask[],
-    budgetLines: payload.budgetLines as unknown as readonly BudgetLine[],
+    tasks: payload.tasks.map(toImportedTask),
+    budgetLines: payload.budgetLines.map(toImportedBudgetLine),
     targetDays: payload.targetDays ?? 90,
   };
   return {
@@ -150,25 +187,21 @@ export function importJashnFile(rawJson: string): Result<ImportedPlan, Portabili
   if (!jsonRes.ok) return jsonRes;
   const parsed = jsonRes.value;
 
-  if (
-    typeof parsed !== 'object' ||
-    parsed === null ||
-    (parsed as { format?: string }).format !== 'jashn-event-v1'
-  ) {
+  if (!isRecord(parsed) || parsed.format !== 'jashn-event-v1') {
     return err({
       error: 'UNSUPPORTED_FORMAT',
       details: 'Not a valid jashn-event-v1 package envelope',
     });
   }
 
-  const rawEnvelope = parsed as { checksum?: string; payload?: unknown };
-  const validation = JashnPayloadSchema.safeParse(rawEnvelope.payload);
+  const checksum = typeof parsed.checksum === 'string' ? parsed.checksum : '';
+  const validation = JashnPayloadSchema.safeParse(parsed.payload);
   if (!validation.success) {
     return err({ error: 'SCHEMA_VALIDATION_FAILED', details: validation.error.message });
   }
 
   const expectedChecksum = calculateChecksum(JSON.stringify(validation.data));
-  if (rawEnvelope.checksum !== expectedChecksum) {
+  if (checksum !== expectedChecksum) {
     return err({ error: 'CHECKSUM_MISMATCH', details: 'Package integrity check failed.' });
   }
 

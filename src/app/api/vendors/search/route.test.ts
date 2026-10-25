@@ -151,4 +151,23 @@ describe('Vendor Search Route (AC20, AC21, AC27)', () => {
     expect(data.fallback.reason).toBe('UPSTREAM_ERROR');
     expect(data.fallback.mapsSearchUrl).toContain('google.com/maps/search');
   });
+
+  it('rejects payloads exceeding the 8 KB limit with 413 Payload Too Large', async () => {
+    const hugeCity = 'A'.repeat(8193);
+    const req = new Request('http://localhost:3000/api/vendors/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        need: 'venue',
+        eventType: 'wedding',
+        city: hugeCity,
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(413);
+    const data = await res.json();
+    expect(data.ok).toBe(false);
+    expect(data.error).toContain('8 KB');
+  });
 });

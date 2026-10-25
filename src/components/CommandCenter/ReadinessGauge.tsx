@@ -2,10 +2,48 @@
 
 import React from 'react';
 
+interface GaugeCircleProps {
+  readonly radius: number;
+  readonly circ: number;
+  readonly strokeColor: string;
+  readonly strokeDashoffset: number;
+  readonly pct: number;
+}
+
+function GaugeCircle({ radius, circ, strokeColor, strokeDashoffset, pct }: GaugeCircleProps) {
+  return (
+    <div className="relative w-22 h-22 flex items-center justify-center my-1">
+      <svg className="w-22 h-22 -rotate-90 transform" viewBox="0 0 80 80">
+        <circle cx="40" cy="40" r={radius} stroke="#F1F5F9" strokeWidth="7" fill="none" />
+        <circle
+          cx="40"
+          cy="40"
+          r={radius}
+          stroke={strokeColor}
+          strokeWidth="7"
+          strokeDasharray={circ}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          fill="none"
+          className="transition-all duration-500 ease-out"
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+        <span className="text-xl font-black tabular-nums tracking-tight text-stone-900">{pct}%</span>
+        <span className="text-[9px] font-bold text-stone-400 uppercase tracking-wider">Feasible</span>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Renders an animated SVG circular gauge showing Monte Carlo probability of delivering the celebration on time.
+ */
 export function ReadinessGauge({
   probability,
 }: {
   readonly probability: number;
+  readonly probabilityOnTime?: number;
 }): React.JSX.Element {
   const pct = Math.min(100, Math.max(0, Math.round(probability * 100)));
   const radius = 32;
@@ -27,31 +65,13 @@ export function ReadinessGauge({
           {pct >= 80 ? 'On Track' : 'Needs Attention'}
         </span>
       </div>
-      <div className="relative w-22 h-22 flex items-center justify-center my-1">
-        <svg className="w-22 h-22 -rotate-90 transform" viewBox="0 0 80 80">
-          <circle cx="40" cy="40" r={radius} stroke="#F1F5F9" strokeWidth="7" fill="none" />
-          <circle
-            cx="40"
-            cy="40"
-            r={radius}
-            stroke={strokeColor}
-            strokeWidth="7"
-            strokeDasharray={circ}
-            strokeDashoffset={strokeDashoffset}
-            strokeLinecap="round"
-            fill="none"
-            className="transition-all duration-500 ease-out"
-          />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <span className="text-xl font-black tabular-nums tracking-tight text-stone-900">
-            {pct}%
-          </span>
-          <span className="text-[9px] font-bold text-stone-400 uppercase tracking-wider">
-            Feasible
-          </span>
-        </div>
-      </div>
+      <GaugeCircle
+        radius={radius}
+        circ={circ}
+        strokeColor={strokeColor}
+        strokeDashoffset={strokeDashoffset}
+        pct={pct}
+      />
       <p className="text-[11px] font-medium text-stone-500 text-center">
         {pct >= 85 ? 'High confidence buffer' : 'Buffer tightened by dependencies'}
       </p>

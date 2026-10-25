@@ -3,6 +3,7 @@
 import React from 'react';
 import { mapsDirectionsUrl, normalisePhoneIN, telLink } from '@/lib/vendors/contact';
 import type { Vendor } from '@/lib/vendors/types';
+import { IconAlertShield, IconScale } from '../UI/JashnIcons';
 
 interface ContactLinksProps {
   readonly vendor: Vendor;
@@ -80,11 +81,75 @@ function WebLinks({ vendor }: { readonly vendor: Vendor }): React.JSX.Element {
   );
 }
 
+/**
+ * Direct telephone, WhatsApp, Google Maps, and website action buttons for a selected vendor.
+ */
 export function ContactLinks({ vendor, phoneObj, waUrl }: ContactLinksProps): React.JSX.Element {
   return (
     <div className="grid grid-cols-2 gap-2">
       <DirectCalls phoneObj={phoneObj} waUrl={waUrl} />
       <WebLinks vendor={vendor} />
+    </div>
+  );
+}
+
+function ToolButtons({
+  vendor,
+  onOpenNegotiation,
+  onOpenRedFlags,
+}: {
+  readonly vendor: Vendor;
+  readonly onOpenNegotiation?: (vendor: Vendor) => void;
+  readonly onOpenRedFlags?: () => void;
+}): React.JSX.Element | null {
+  if (!onOpenNegotiation && !onOpenRedFlags) return null;
+  return (
+    <div className="grid grid-cols-2 gap-2 mt-2">
+      {onOpenNegotiation && (
+        <button
+          type="button"
+          onClick={() => onOpenNegotiation(vendor)}
+          className="py-1.5 px-2 text-[11px] font-semibold rounded-lg bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 flex items-center justify-center gap-1.5 hover:-translate-y-0.5 transition-all duration-200 shadow-2xs"
+        >
+          <IconScale className="w-3.5 h-3.5 text-amber-800" />
+          <span>Negotiation Coach</span>
+        </button>
+      )}
+      {onOpenRedFlags && (
+        <button
+          type="button"
+          onClick={onOpenRedFlags}
+          className="py-1.5 px-2 text-[11px] font-semibold rounded-lg bg-rose-50 text-rose-900 border border-rose-200 hover:bg-rose-100 flex items-center justify-center gap-1.5 hover:-translate-y-0.5 transition-all duration-200 shadow-2xs"
+        >
+          <IconAlertShield className="w-3.5 h-3.5 text-rose-700" />
+          <span>Scan Red-Flags</span>
+        </button>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Direct contact action buttons including telephone, WhatsApp, map links, and optional negotiation/red-flags tools.
+ */
+export function ContactDirectActions({
+  vendor,
+  phoneObj,
+  waUrl,
+  onOpenNegotiation,
+  onOpenRedFlags,
+}: {
+  readonly vendor: Vendor;
+  readonly phoneObj: ReturnType<typeof normalisePhoneIN>;
+  readonly waUrl: string | null;
+  readonly onOpenNegotiation?: (vendor: Vendor) => void;
+  readonly onOpenRedFlags?: () => void;
+}): React.JSX.Element {
+  return (
+    <div>
+      <h4 className="text-xs font-semibold text-stone-700 mb-2">Direct Actions</h4>
+      <ContactLinks vendor={vendor} phoneObj={phoneObj} waUrl={waUrl} />
+      <ToolButtons vendor={vendor} onOpenNegotiation={onOpenNegotiation} onOpenRedFlags={onOpenRedFlags} />
     </div>
   );
 }

@@ -98,6 +98,37 @@ function renderHeaderSection(progressPct: number, isTourActive: boolean, onToggl
   );
 }
 
+function CoachNudgeFooter({
+  prompt,
+  nextAction,
+  onTriggerAction,
+}: {
+  readonly prompt: string;
+  readonly nextAction: { readonly actionId: GuidedActionId; readonly label: string };
+  readonly onTriggerAction: (actionId: GuidedActionId) => void;
+}): React.JSX.Element {
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2.5 bg-amber-500/5 rounded-2xl border border-amber-200/60">
+      <p className="text-xs text-stone-700 font-medium flex items-center gap-2">
+        <span className="text-amber-600 font-bold">Coach Nudge:</span>
+        <span>{prompt}</span>
+      </p>
+      <button
+        type="button"
+        onClick={() => onTriggerAction(nextAction.actionId)}
+        className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-all shadow-xs hover:-translate-y-0.5 whitespace-nowrap"
+      >
+        <span>Guide Me:</span>
+        <span>{nextAction.label}</span>
+        <span>&rarr;</span>
+      </button>
+    </div>
+  );
+}
+
+/**
+ * Top navigation tracker evaluating the 5-step event planning journey with interactive Demo Tour mode.
+ */
 export function GuidedJourneyBar({
   journey,
   onTriggerAction,
@@ -129,21 +160,11 @@ export function GuidedJourneyBar({
         )}
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2.5 bg-amber-500/5 rounded-2xl border border-amber-200/60">
-        <p className="text-xs text-stone-700 font-medium flex items-center gap-2">
-          <span className="text-amber-600 font-bold">Coach Nudge:</span>
-          <span>{journey.nextGuidedPrompt}</span>
-        </p>
-        <button
-          type="button"
-          onClick={() => onTriggerAction(journey.nextAction.actionId)}
-          className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-all shadow-xs hover:-translate-y-0.5 whitespace-nowrap"
-        >
-          <span>Guide Me:</span>
-          <span>{journey.nextAction.label}</span>
-          <span>&rarr;</span>
-        </button>
-      </div>
+      <CoachNudgeFooter
+        prompt={journey.nextGuidedPrompt}
+        nextAction={journey.nextAction}
+        onTriggerAction={onTriggerAction}
+      />
     </nav>
   );
 }

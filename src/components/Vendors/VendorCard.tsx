@@ -72,6 +72,70 @@ function renderMeta(vendor: Vendor, score?: number) {
   );
 }
 
+function VendorCardHeader({
+  vendor,
+  score,
+  currentStatus,
+}: {
+  readonly vendor: Vendor;
+  readonly score?: number;
+  readonly currentStatus?: VendorStatus;
+}): React.JSX.Element {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-start gap-3">
+        <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-lg shrink-0 shadow-2xs select-none">
+          {getVendorIcon(vendor)}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <h4 className="font-bold text-stone-900 text-sm leading-snug truncate">
+              {vendor.name}
+            </h4>
+            {renderBadge(currentStatus)}
+          </div>
+          <p className="text-xs text-stone-500 line-clamp-1">{vendor.address}</p>
+        </div>
+      </div>
+      {renderMeta(vendor, score)}
+    </div>
+  );
+}
+
+function VendorCardFooterButtons({
+  vendor,
+  onSelect,
+  onOpenDetails,
+}: {
+  readonly vendor: Vendor;
+  readonly onSelect?: (vendor: Vendor) => void;
+  readonly onOpenDetails?: (vendor: Vendor) => void;
+}): React.JSX.Element {
+  return (
+    <div className="flex items-center gap-2 pt-2 border-t border-stone-100">
+      <button
+        type="button"
+        onClick={() => onSelect?.(vendor)}
+        className="flex-1 py-1.5 px-3 rounded-xl text-xs font-semibold bg-amber-800 text-white hover:bg-amber-900 transition-colors focus:ring-2 focus:ring-amber-500 focus:outline-none shadow-xs active:scale-98"
+      >
+        Contact & Book
+      </button>
+      {onOpenDetails && (
+        <button
+          type="button"
+          onClick={() => onOpenDetails(vendor)}
+          className="py-1.5 px-3 rounded-xl text-xs font-medium border border-stone-200 text-stone-700 hover:bg-stone-50 transition-colors"
+        >
+          Details
+        </button>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Card displaying an individual verified Google Places vendor with rating, price level, and contact trigger.
+ */
 export function VendorCard({
   vendor,
   score,
@@ -85,42 +149,12 @@ export function VendorCard({
       className="p-4 rounded-2xl border border-stone-200/90 bg-white hover:border-amber-400 hover:shadow-md transition-all flex flex-col justify-between gap-3 shadow-2xs"
       data-testid={`vendor-card-${vendor.placeId}`}
     >
-      <div className="space-y-2">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-lg shrink-0 shadow-2xs select-none">
-            {getVendorIcon(vendor)}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <h4 className="font-bold text-stone-900 text-sm leading-snug truncate">
-                {vendor.name}
-              </h4>
-              {renderBadge(currentStatus)}
-            </div>
-            <p className="text-xs text-stone-500 line-clamp-1">{vendor.address}</p>
-          </div>
-        </div>
-        {renderMeta(vendor, score)}
-      </div>
-
-      <div className="flex items-center gap-2 pt-2 border-t border-stone-100">
-        <button
-          type="button"
-          onClick={() => onSelect?.(vendor)}
-          className="flex-1 py-1.5 px-3 rounded-xl text-xs font-semibold bg-amber-800 text-white hover:bg-amber-900 transition-colors focus:ring-2 focus:ring-amber-500 focus:outline-none shadow-xs active:scale-98"
-        >
-          Contact & Book
-        </button>
-        {onOpenDetails && (
-          <button
-            type="button"
-            onClick={() => onOpenDetails(vendor)}
-            className="py-1.5 px-3 rounded-xl text-xs font-medium border border-stone-200 text-stone-700 hover:bg-stone-50 transition-colors"
-          >
-            Details
-          </button>
-        )}
-      </div>
+      <VendorCardHeader vendor={vendor} score={score} currentStatus={currentStatus} />
+      <VendorCardFooterButtons
+        vendor={vendor}
+        onSelect={onSelect}
+        onOpenDetails={onOpenDetails}
+      />
     </div>
   );
 }

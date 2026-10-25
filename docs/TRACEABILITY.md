@@ -39,3 +39,4 @@ Portable .jashn Event File (AC5, AC30) | lib/plan/portability.ts, components/Sha
 Nano Banana Custom Art Pipeline (AC28) | scripts/generate_nanobanana_assets.mjs, assets/manifest.json, components/NodeInspector/NodeInspector.tsx | scripts/test_flow_assets.py
 Celebration Budget Ledger (AC1, AC3) | components/Budget/BudgetLedger.tsx, components/Budget/BudgetTableRow.tsx | components/Budget/BudgetLedger.test.tsx
 Interactive PERT Duration Editor (AC3, AC9) | components/NodeInspector/NodeEstimatesForm.tsx, lib/plan/propagate.ts | components/NodeInspector/NodeInspector.test.tsx, lib/plan/propagate.test.ts
+42: AST Quality & Security Remediation (AC5, AC7, AC20, AC30) | scripts/gate.py, scripts/ast_checker.mjs, lib/security-headers.ts, app/api/vendors/search/route.ts, app/api/health/route.ts, app/layout.tsx | lib/security-headers.test.ts, app/api/vendors/search/route.test.ts, app/api/health/route.test.ts, vitest-axe audits

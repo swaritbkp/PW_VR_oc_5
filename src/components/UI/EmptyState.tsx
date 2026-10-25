@@ -33,6 +33,23 @@ const CONFIGS: Record<EmptyStateType, { title: string; message: string; defaultA
     },
   };
 
+function EmptyStateImage({
+  type,
+  alt,
+}: {
+  readonly type: EmptyStateType;
+  readonly alt: string;
+}): React.JSX.Element {
+  return (
+    <div className="w-64 h-36 rounded-2xl overflow-hidden shadow-sm relative border border-stone-200/60 bg-white">
+      <img src={`/art/empty-${type}.png`} alt={alt} className="w-full h-full object-cover" />
+    </div>
+  );
+}
+
+/**
+ * Accessible empty-state placeholder with cultural artwork and contextual call-to-action button.
+ */
 export function EmptyState({
   type,
   title,
@@ -51,13 +68,7 @@ export function EmptyState({
       className="p-8 text-center bg-stone-50/70 rounded-3xl border border-stone-200/80 flex flex-col items-center justify-center gap-3 my-4 shadow-xs"
       data-testid={`empty-state-${type}`}
     >
-      <div className="w-64 h-36 rounded-2xl overflow-hidden shadow-sm relative border border-stone-200/60 bg-white">
-        <img
-          src={`/art/empty-${type}.png`}
-          alt={finalTitle}
-          className="w-full h-full object-cover"
-        />
-      </div>
+      <EmptyStateImage type={type} alt={finalTitle} />
       <div className="max-w-md space-y-1 mt-1">
         <h4 className="font-bold text-stone-900 text-sm">{finalTitle}</h4>
         <p className="text-xs text-stone-600 leading-relaxed">{finalMessage}</p>

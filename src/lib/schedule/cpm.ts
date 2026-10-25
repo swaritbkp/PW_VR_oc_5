@@ -42,7 +42,8 @@ function sortTopologically(
   const queue = tasks.filter((t) => t.dependsOn.length === 0).map((t) => t.id);
   const order: string[] = [];
   for (let head = 0; head < queue.length; head += 1) {
-    const id = queue[head] as string;
+    const id = queue[head];
+    if (!id) continue;
     order.push(id);
     for (const next of dependents.get(id) ?? []) {
       const left = (remaining.get(next) ?? 0) - 1;
@@ -77,12 +78,16 @@ function forwardPass(
 ): ReadonlyMap<string, Timing> {
   const timings = new Map<string, Timing>();
   for (const id of order) {
-    const task = byId.get(id) as TaskInput;
+    const task = byId.get(id);
+    if (!task) continue;
     const est = task.done
       ? { expected: 0, sigma: 0 }
       : pertEstimate(task.optimistic, task.mostLikely, task.pessimistic);
     let es = task.notBefore ?? 0;
-    for (const dep of task.dependsOn) es = Math.max(es, (timings.get(dep) as Timing).ef);
+    for (const dep of task.dependsOn) {
+      const depTiming = timings.get(dep);
+      if (depTiming) es = Math.max(es, depTiming.ef);
+    }
     timings.set(id, { ...est, es, ef: es + est.expected });
   }
   return timings;
@@ -96,10 +101,16 @@ function backwardPass(
 ): ReadonlyMap<string, number> {
   const latestFinish = new Map<string, number>(order.map((id) => [id, projectDuration]));
   for (let i = order.length - 1; i >= 0; i -= 1) {
-    const id = order[i] as string;
-    const latestStart = (latestFinish.get(id) as number) - (timings.get(id) as Timing).expected;
-    for (const dep of (byId.get(id) as TaskInput).dependsOn) {
-      latestFinish.set(dep, Math.min(latestFinish.get(dep) as number, latestStart));
+    const id = order[i];
+    if (!id) continue;
+    const t = timings.get(id);
+    const task = byId.get(id);
+    const lf = latestFinish.get(id) ?? projectDuration;
+    if (!t || !task) continue;
+    const latestStart = lf - t.expected;
+    for (const dep of task.dependsOn) {
+      const depLf = latestFinish.get(dep) ?? projectDuration;
+      latestFinish.set(dep, Math.min(depLf, latestStart));
     }
   }
   return latestFinish;
@@ -143,8 +154,8 @@ export function computeSchedule(tasks: readonly TaskInput[]): Result<Schedule, G
   const latestFinish = backwardPass(ordered.value, byId, timings, projectDuration);
 
   const scheduled: ScheduledTask[] = tasks.map((task) => {
-    const t = timings.get(task.id) as Timing;
-    const lf = latestFinish.get(task.id) as number;
+    const t = timings.get(task.id) ?? { expected: 0, sigma: 0, es: 0, ef: 0 };
+    const lf = latestFinish.get(task.id) ?? t.ef;
     const totalFloat = lf - t.expected - t.es;
     return {
       ...task,

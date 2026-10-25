@@ -44,6 +44,58 @@ const PHASES: readonly PhaseGroup[] = [
   },
 ];
 
+function TaskCardHeader({
+  task,
+  isDone,
+}: {
+  readonly task: PlanTask;
+  readonly isDone: boolean;
+}): React.JSX.Element {
+  return (
+    <>
+      <div className="flex items-center gap-1.5 mb-1">
+        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-stone-100 text-stone-700">
+          {task.category}
+        </span>
+        {isDone && (
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+            ✓ Ready
+          </span>
+        )}
+      </div>
+      <h4 className="font-bold text-stone-900 text-sm leading-snug group-hover:text-amber-800 transition-colors">
+        {task.name}
+      </h4>
+      <p className="text-xs text-stone-500 mt-0.5 line-clamp-1">{task.why}</p>
+    </>
+  );
+}
+
+function TaskCardFooter({
+  task,
+  isDone,
+  onFindVendor,
+}: {
+  readonly task: PlanTask;
+  readonly isDone: boolean;
+  readonly onFindVendor?: (need: string) => void;
+}): React.JSX.Element {
+  return (
+    <div className="mt-3 pt-2.5 border-t border-stone-100 flex items-center justify-between text-xs">
+      <span className="text-stone-500 font-medium">Est. {task.mostLikely} days</span>
+      {task.vendorNeed && !isDone && (
+        <button
+          type="button"
+          onClick={() => onFindVendor?.(task.vendorNeed || '')}
+          className="text-[11px] font-bold text-amber-800 hover:text-amber-900 bg-amber-100/70 hover:bg-amber-100 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+        >
+          Find Vendors &rarr;
+        </button>
+      )}
+    </div>
+  );
+}
+
 function TaskCard({
   task,
   isSelected,
@@ -56,49 +108,49 @@ function TaskCard({
   readonly onFindVendor?: (need: string) => void;
 }): React.JSX.Element {
   const isDone = Boolean(task.done);
+  const cardBorderClass = isSelected
+    ? 'border-amber-500 bg-amber-50/70 shadow-md ring-2 ring-amber-300'
+    : isDone
+      ? 'border-emerald-200 bg-emerald-50/40 hover:border-emerald-300'
+      : 'border-stone-200/90 bg-white hover:border-stone-400 hover:shadow-xs';
+
   return (
-    <div
-      className={`p-4 rounded-2xl border flex flex-col justify-between transition-all duration-200 ${
-        isSelected
-          ? 'border-amber-500 bg-amber-50/70 shadow-md ring-2 ring-amber-300'
-          : isDone
-            ? 'border-emerald-200 bg-emerald-50/40 hover:border-emerald-300'
-            : 'border-stone-200/90 bg-white hover:border-stone-400 hover:shadow-xs'
-      }`}
-    >
+    <div className={`p-4 rounded-2xl border flex flex-col justify-between transition-all duration-200 ${cardBorderClass}`}>
       <button
         type="button"
         onClick={onSelect}
         className="text-left w-full group focus:outline-none"
       >
-        <div className="flex items-center gap-1.5 mb-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-stone-100 text-stone-700">
-            {task.category}
-          </span>
-          {isDone && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-              ✓ Ready
-            </span>
-          )}
-        </div>
-        <h4 className="font-bold text-stone-900 text-sm leading-snug group-hover:text-amber-800 transition-colors">
-          {task.name}
-        </h4>
-        <p className="text-xs text-stone-500 mt-0.5 line-clamp-1">{task.why}</p>
+        <TaskCardHeader task={task} isDone={isDone} />
       </button>
+      <TaskCardFooter task={task} isDone={isDone} onFindVendor={onFindVendor} />
+    </div>
+  );
+}
 
-      <div className="mt-3 pt-2.5 border-t border-stone-100 flex items-center justify-between text-xs">
-        <span className="text-stone-500 font-medium">Est. {task.mostLikely} days</span>
-        {task.vendorNeed && !isDone && (
-          <button
-            type="button"
-            onClick={() => onFindVendor?.(task.vendorNeed as string)}
-            className="text-[11px] font-bold text-amber-800 hover:text-amber-900 bg-amber-100/70 hover:bg-amber-100 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
-          >
-            Find Vendors &rarr;
-          </button>
-        )}
+function PhaseHeader({
+  phase,
+  doneCount,
+  totalCount,
+}: {
+  readonly phase: PhaseGroup;
+  readonly doneCount: number;
+  readonly totalCount: number;
+}): React.JSX.Element {
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-1 border-b border-stone-200">
+      <div>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-stone-200/80 text-stone-800">
+            {phase.badge}
+          </span>
+          <h3 className="font-bold text-stone-900 text-base">{phase.title}</h3>
+        </div>
+        <p className="text-xs text-stone-500 mt-0.5">{phase.description}</p>
       </div>
+      <span className="text-xs font-semibold text-stone-600">
+        {doneCount}/{totalCount} Done
+      </span>
     </div>
   );
 }
@@ -122,21 +174,7 @@ function PhaseSection({
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-1 border-b border-stone-200">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-stone-200/80 text-stone-800">
-              {phase.badge}
-            </span>
-            <h3 className="font-bold text-stone-900 text-base">{phase.title}</h3>
-          </div>
-          <p className="text-xs text-stone-500 mt-0.5">{phase.description}</p>
-        </div>
-        <span className="text-xs font-semibold text-stone-600">
-          {doneCount}/{phaseTasks.length} Done
-        </span>
-      </div>
-
+      <PhaseHeader phase={phase} doneCount={doneCount} totalCount={phaseTasks.length} />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {phaseTasks.map((t) => (
           <TaskCard
@@ -152,6 +190,9 @@ function PhaseSection({
   );
 }
 
+/**
+ * Chronological 4-phase milestone roadmap rendering intuitive task cards across the celebration lifecycle.
+ */
 export function CelebrationRoadmap({
   tasks,
   selectedTaskId,

@@ -80,7 +80,7 @@ export interface AppModalsProps {
   readonly onUpdateBudgetLines?: (lines: readonly BudgetLine[], reason: string) => void;
 }
 
-function renderAuditModal(onClose: () => void) {
+function RenderAuditModal({ onClose }: { readonly onClose: () => void }): React.JSX.Element {
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
       <div className="max-w-md w-full">
@@ -99,20 +99,20 @@ function renderAuditModal(onClose: () => void) {
   );
 }
 
-function renderTemplateModal(
-  currentPlan: PlanState,
-  onClose: () => void,
-  setVersionStore: React.Dispatch<React.SetStateAction<VersionStore>>,
-) {
+function RenderTemplateModal({
+  currentPlan,
+  onClose,
+  setVersionStore,
+}: {
+  readonly currentPlan: PlanState;
+  readonly onClose: () => void;
+  readonly setVersionStore: React.Dispatch<React.SetStateAction<VersionStore>>;
+}): React.JSX.Element {
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
       <div className="max-w-4xl w-full bg-white p-6 rounded-2xl max-h-[90vh] overflow-y-auto space-y-4">
         <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-stone-400 hover:text-stone-700 text-sm"
-          >
+          <button type="button" onClick={onClose} className="text-stone-400 hover:text-stone-700 text-sm">
             ✕ Close
           </button>
         </div>
@@ -133,15 +133,7 @@ function renderTemplateModal(
   );
 }
 
-interface FeatureModalOptions {
-  readonly activeModal: ModalType;
-  readonly currentPlan: PlanState;
-  readonly onClose: () => void;
-  readonly onImportPlan?: (plan: PlanState, selections: readonly VendorSelection[]) => void;
-  readonly onUpdateBudgetLines?: (lines: readonly BudgetLine[], reason: string) => void;
-}
-
-function renderFeatureModal(opts: FeatureModalOptions) {
+function RenderFeatureModal(opts: AppModalsProps): React.JSX.Element | null {
   const { activeModal, currentPlan, onClose, onImportPlan, onUpdateBudgetLines } = opts;
   if (activeModal === 'chaos') {
     return (
@@ -161,9 +153,7 @@ function renderFeatureModal(opts: FeatureModalOptions) {
       <PortableFilePanel
         plan={currentPlan}
         onClose={onClose}
-        onImportPlan={(np, sel) => {
-          if (onImportPlan) onImportPlan(np, sel);
-        }}
+        onImportPlan={(np, sel) => onImportPlan?.(np, sel)}
       />
     );
   }
@@ -181,28 +171,8 @@ function renderFeatureModal(opts: FeatureModalOptions) {
   return null;
 }
 
-export function AppModals({
-  activeModal,
-  currentPlan,
-  versionStore,
-  onClose,
-  setVersionStore,
-  onOpenModal,
-  onImportPlan,
-  onUpdateBudgetLines,
-}: AppModalsProps): React.JSX.Element | null {
-  if (activeModal === 'none') return null;
-  const feature = renderFeatureModal({
-    activeModal,
-    currentPlan,
-    onClose,
-    onImportPlan,
-    onUpdateBudgetLines,
-  });
-  if (feature) return feature;
-  if (activeModal === 'audit') return renderAuditModal(onClose);
-  if (activeModal === 'templates')
-    return renderTemplateModal(currentPlan, onClose, setVersionStore);
+function RenderDrawerModal(opts: AppModalsProps): React.JSX.Element {
+  const { activeModal, currentPlan, versionStore, onClose, setVersionStore, onOpenModal } = opts;
   if (activeModal === 'share') {
     return (
       <ShareSheet
@@ -237,4 +207,25 @@ export function AppModals({
       onUndo={() => setVersionStore(undo)}
     />
   );
+}
+
+/**
+ * Container rendering whichever modal dialog or slide-over drawer is currently active.
+ */
+export function AppModals(props: AppModalsProps): React.JSX.Element | null {
+  const { activeModal, onClose } = props;
+  if (activeModal === 'none') return null;
+  if (activeModal === 'audit') return <RenderAuditModal onClose={onClose} />;
+  if (activeModal === 'templates') {
+    return (
+      <RenderTemplateModal
+        currentPlan={props.currentPlan}
+        onClose={onClose}
+        setVersionStore={props.setVersionStore}
+      />
+    );
+  }
+  const feature = RenderFeatureModal(props);
+  if (feature) return feature;
+  return RenderDrawerModal(props);
 }

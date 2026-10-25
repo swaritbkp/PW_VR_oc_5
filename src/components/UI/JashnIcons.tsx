@@ -2,7 +2,9 @@ import React from 'react';
 import type { IconProps } from './iconTypes';
 
 export type { IconProps };
+export * from './JashnFeatureIcons';
 
+/** Sparkles icon for celebration highlights and guided action prompts. */
 export function IconSparkles({ className = 'w-4 h-4' }: IconProps): React.JSX.Element {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -22,6 +24,7 @@ export function IconSparkles({ className = 'w-4 h-4' }: IconProps): React.JSX.El
   );
 }
 
+/** Timeline icon for the CPM Event Graph and milestone roadmap. */
 export function IconTimeline({ className = 'w-4 h-4' }: IconProps): React.JSX.Element {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -62,6 +65,7 @@ export function IconTimeline({ className = 'w-4 h-4' }: IconProps): React.JSX.El
   );
 }
 
+/** Compass icon for vendor discovery and location-aware search. */
 export function IconCompass({ className = 'w-4 h-4' }: IconProps): React.JSX.Element {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -87,6 +91,7 @@ export function IconCompass({ className = 'w-4 h-4' }: IconProps): React.JSX.Ele
   );
 }
 
+/** Shield bolt icon for resilience testing and Plan B disruption simulation. */
 export function IconShieldBolt({ className = 'w-4 h-4' }: IconProps): React.JSX.Element {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -108,6 +113,7 @@ export function IconShieldBolt({ className = 'w-4 h-4' }: IconProps): React.JSX.
   );
 }
 
+/** Scale icon for vendor contract negotiation and balancing costs. */
 export function IconScale({ className = 'w-4 h-4' }: IconProps): React.JSX.Element {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -124,6 +130,7 @@ export function IconScale({ className = 'w-4 h-4' }: IconProps): React.JSX.Eleme
   );
 }
 
+/** Alert shield icon for vendor red-flag warnings and contract cautions. */
 export function IconAlertShield({ className = 'w-4 h-4' }: IconProps): React.JSX.Element {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -139,5 +146,3 @@ export function IconAlertShield({ className = 'w-4 h-4' }: IconProps): React.JSX
     </svg>
   );
 }
-
-export * from './JashnFeatureIcons';

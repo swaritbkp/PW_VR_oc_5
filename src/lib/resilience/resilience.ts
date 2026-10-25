@@ -68,21 +68,21 @@ export function backupAlerts(
   tasks: readonly PlanTask[],
   backedUp: ReadonlySet<VendorNeedId>,
 ): Alert[] {
-  const need = new Map(tasks.map((t) => [t.id, t.bookingFor]));
-  return schedule.tasks
-    .filter(
-      (t) =>
-        t.critical &&
-        !t.done &&
-        need.get(t.id) !== undefined &&
-        !backedUp.has(need.get(t.id) as VendorNeedId),
-    )
-    .map((t) => ({
-      ruleId: 'R6_NO_BACKUP' as const,
-      severity: 'warning' as const,
-      taskId: t.id,
-      params: { need: need.get(t.id) as string },
-    }));
+  const need = new Map<string, VendorNeedId | undefined>(tasks.map((t) => [t.id, t.bookingFor]));
+  const alerts: Alert[] = [];
+  for (const t of schedule.tasks) {
+    if (!t.critical || t.done) continue;
+    const bookingNeed = need.get(t.id);
+    if (bookingNeed !== undefined && !backedUp.has(bookingNeed)) {
+      alerts.push({
+        ruleId: 'R6_NO_BACKUP',
+        severity: 'warning',
+        taskId: t.id,
+        params: { need: bookingNeed },
+      });
+    }
+  }
+  return alerts;
 }
 
 /** R7: seasonal risks for the event date (weather for outdoor events, peak-season crowding). */

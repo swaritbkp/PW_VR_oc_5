@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { stripControlChars } from '../format';
 
 export const VendorNeedEnum = z.enum([
   'venue',
@@ -29,7 +30,7 @@ export const LatLngSchema = z.object({
 export const VendorSearchRequestSchema = z.object({
   need: VendorNeedEnum,
   eventType: EventTypeEnum,
-  city: z.string().min(1).max(60),
+  city: z.string().transform(stripControlChars).pipe(z.string().min(1).max(60)),
   center: LatLngSchema.optional(),
   radiusMeters: z.number().positive().max(50_000).optional(),
   maxPriceLevel: z.number().int().min(0).max(4).optional(),
@@ -38,7 +39,7 @@ export const VendorSearchRequestSchema = z.object({
 export type VendorSearchRequest = z.infer<typeof VendorSearchRequestSchema>;
 
 export const VendorDetailsRequestSchema = z.object({
-  placeId: z.string().min(1).max(200),
+  placeId: z.string().transform(stripControlChars).pipe(z.string().min(1).max(200)),
 });
 
 export type VendorDetailsRequest = z.infer<typeof VendorDetailsRequestSchema>;

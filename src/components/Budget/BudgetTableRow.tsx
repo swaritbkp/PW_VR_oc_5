@@ -12,6 +12,40 @@ export interface BudgetTableRowProps {
   readonly onDelete: (id: string) => void;
 }
 
+interface RowActionsProps {
+  readonly id: string;
+  readonly name: string;
+  readonly locked?: boolean;
+  readonly onToggleLock: (id: string) => void;
+  readonly onDelete: (id: string) => void;
+}
+
+function RowActions({ id, name, locked, onToggleLock, onDelete }: RowActionsProps) {
+  return (
+    <td className="p-2.5 text-center space-x-1">
+      <button
+        type="button"
+        onClick={() => onToggleLock(id)}
+        aria-label={locked ? `Unlock ${name}` : `Lock ${name}`}
+        className={`p-1 rounded-md text-xs ${locked ? 'bg-amber-100 text-amber-900' : 'text-stone-400 hover:text-stone-700'}`}
+      >
+        {locked ? '🔒' : '🔓'}
+      </button>
+      <button
+        type="button"
+        onClick={() => onDelete(id)}
+        aria-label={`Delete ${name}`}
+        className="p-1 rounded-md text-stone-400 hover:text-red-600 text-xs"
+      >
+        ✕
+      </button>
+    </td>
+  );
+}
+
+/**
+ * Renders an editable line-item row within the Celebration Budget Ledger table.
+ */
 export function BudgetTableRow({
   line: l,
   guests,
@@ -38,24 +72,13 @@ export function BudgetTableRow({
         />
       </td>
       <td className="p-2.5 text-right font-bold text-stone-900">{formatInr(lineTotal)}</td>
-      <td className="p-2.5 text-center space-x-1">
-        <button
-          type="button"
-          onClick={() => onToggleLock(l.id)}
-          aria-label={l.locked ? `Unlock ${l.name}` : `Lock ${l.name}`}
-          className={`p-1 rounded-md text-xs ${l.locked ? 'bg-amber-100 text-amber-900' : 'text-stone-400 hover:text-stone-700'}`}
-        >
-          {l.locked ? '🔒' : '🔓'}
-        </button>
-        <button
-          type="button"
-          onClick={() => onDelete(l.id)}
-          aria-label={`Delete ${l.name}`}
-          className="p-1 rounded-md text-stone-400 hover:text-red-600 text-xs"
-        >
-          ✕
-        </button>
-      </td>
+      <RowActions
+        id={l.id}
+        name={l.name}
+        locked={l.locked}
+        onToggleLock={onToggleLock}
+        onDelete={onDelete}
+      />
     </tr>
   );
 }

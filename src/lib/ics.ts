@@ -90,3 +90,23 @@ export function buildIcs(events: readonly IcsEvent[], options: IcsOptions): stri
   ];
   return lines.map(foldLine).join(CRLF) + CRLF;
 }
+
+/** Builds an iCalendar string from a plan intake date and task list. */
+export function buildPlanIcs(
+  eventType: string,
+  eventDate: string,
+  tasks: readonly { readonly id: string; readonly name: string; readonly category?: string; readonly why?: string }[],
+): string {
+  const events: readonly IcsEvent[] = tasks.map((t) => ({
+    uid: `task_${t.id}@jashn.ai`,
+    title: t.name,
+    date: eventDate,
+    description: `Task: ${t.name}. Category: ${t.category ?? ''}. Why: ${t.why ?? ''}`,
+    remindDaysBefore: [1, 3],
+  }));
+
+  return buildIcs(events, {
+    calendarName: `Jashn - ${eventType} Plan`,
+    stamp: '20261024T120000Z',
+  });
+}

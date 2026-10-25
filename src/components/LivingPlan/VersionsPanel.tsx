@@ -10,35 +10,47 @@ export interface VersionsPanelProps {
   readonly onUndo?: () => void;
 }
 
+function VersionItemDetails({
+  version,
+  isCurrent,
+}: {
+  readonly version: PlanVersion;
+  readonly isCurrent: boolean;
+}): React.JSX.Element {
+  return (
+    <div className="space-y-0.5">
+      <div className="flex items-center gap-2">
+        <span className="font-bold font-mono text-stone-900">{version.id}</span>
+        {isCurrent && (
+          <span className="px-1.5 py-0.2 text-[10px] font-bold bg-amber-600 text-white rounded">
+            Current
+          </span>
+        )}
+      </div>
+      <p className="text-stone-600 font-medium">{version.description}</p>
+      <span className="text-[10px] text-stone-400">
+        {new Date(version.timestamp).toLocaleTimeString()}
+      </span>
+    </div>
+  );
+}
+
 function renderVersionItem(
   version: PlanVersion,
   isCurrent: boolean,
   onRestore: (id: string) => void,
 ) {
+  const containerClass = isCurrent
+    ? 'bg-amber-50 border-amber-300 ring-1 ring-amber-400'
+    : 'bg-white border-stone-200 hover:border-stone-300';
+
   return (
     <div
       key={version.id}
-      className={`p-3 rounded-xl border text-xs flex justify-between items-center transition-all ${
-        isCurrent
-          ? 'bg-amber-50 border-amber-300 ring-1 ring-amber-400'
-          : 'bg-white border-stone-200 hover:border-stone-300'
-      }`}
+      className={`p-3 rounded-xl border text-xs flex justify-between items-center transition-all ${containerClass}`}
       data-testid={`version-item-${version.id}`}
     >
-      <div className="space-y-0.5">
-        <div className="flex items-center gap-2">
-          <span className="font-bold font-mono text-stone-900">{version.id}</span>
-          {isCurrent && (
-            <span className="px-1.5 py-0.2 text-[10px] font-bold bg-amber-600 text-white rounded">
-              Current
-            </span>
-          )}
-        </div>
-        <p className="text-stone-600 font-medium">{version.description}</p>
-        <span className="text-[10px] text-stone-400">
-          {new Date(version.timestamp).toLocaleTimeString()}
-        </span>
-      </div>
+      <VersionItemDetails version={version} isCurrent={isCurrent} />
 
       {!isCurrent && (
         <button
@@ -53,6 +65,9 @@ function renderVersionItem(
   );
 }
 
+/**
+ * Displays revision history timeline with one-click restore and undo capability across plan versions.
+ */
 export function VersionsPanel({ store, onRestore, onUndo }: VersionsPanelProps): React.JSX.Element {
   const undoAvailable = canUndo(store);
 

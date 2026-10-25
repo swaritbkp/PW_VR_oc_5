@@ -15,9 +15,11 @@ import { checkRateLimit } from '@/server/security/rateLimit';
 
 const CACHE_TTL_MS = 600_000;
 const MAX_CACHE_ENTRIES = 200;
+const MAX_BODY_BYTES = 8192;
 const STATUS_OK = 200;
 const STATUS_BAD_REQUEST = 400;
 const STATUS_TOO_MANY_REQUESTS = 429;
+const STATUS_PAYLOAD_TOO_LARGE = 413;
 
 interface CacheEntry {
   readonly timestamp: number;
@@ -124,9 +126,22 @@ async function parseSearchBody(
   | { ok: true; input: VendorSearchRequest }
   | { ok: false; status: number; message: string; details?: unknown }
 > {
+  let rawText = '';
+  try {
+    rawText = await req.text();
+  } catch {
+    return { ok: false, status: STATUS_BAD_REQUEST, message: 'Invalid JSON' };
+  }
+  if (rawText.length > MAX_BODY_BYTES) {
+    return {
+      ok: false,
+      status: STATUS_PAYLOAD_TOO_LARGE,
+      message: 'Request body exceeds 8 KB limit',
+    };
+  }
   let body: unknown;
   try {
-    body = await req.json();
+    body = JSON.parse(rawText);
   } catch {
     return { ok: false, status: STATUS_BAD_REQUEST, message: 'Invalid JSON' };
   }
@@ -156,6 +171,12 @@ async function cacheIfSuccess(key: string, res: NextResponse): Promise<void> {
   }
 }
 
+/**
+ * Handles POST requests to search and rank nearby celebration vendors via Google Places.
+ *
+ * @param req - Incoming HTTP request with search criteria
+ * @returns Ranked vendor list or structured fallback
+ */
 export async function POST(req: Request): Promise<Response> {
   const ip = getClientIp(req);
   const rate = checkRateLimit(ip, { limit: 30 });
