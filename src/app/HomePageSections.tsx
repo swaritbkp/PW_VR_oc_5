@@ -46,7 +46,7 @@ function WorkspaceBottomSection({ state }: { readonly state: HomePageState }): R
   const { currentPlan, activeTab } = state;
 
   return (
-    <>
+    <section id="event-graph" aria-label="Event workspace" className="space-y-4">
       {state.commandData && (
         <CommandCenter
           daysLeft={currentPlan.targetDays}
@@ -73,7 +73,7 @@ function WorkspaceBottomSection({ state }: { readonly state: HomePageState }): R
         vendorCategory={state.vendorCategory}
         onBookVendor={state.handleBookVendor}
       />
-    </>
+    </section>
   );
 }
 

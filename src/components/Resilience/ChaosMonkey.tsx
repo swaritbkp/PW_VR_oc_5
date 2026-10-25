@@ -87,10 +87,13 @@ function RenderResultMetrics({
   readonly catastrophic: boolean;
   readonly prob: number;
 }): React.JSX.Element {
+  const roundedSlippage = Math.round(slippage);
+  const roundedBuffer = Math.round(remainingBuffer);
+  const slipDisplay = roundedSlippage > 0 ? `+${roundedSlippage}d` : `${roundedSlippage}d`;
   return (
     <div className="grid grid-cols-3 gap-2">
-      <MetricCard title="Net Slippage" value={`+${slippage}d`} valueClass="text-rose-700" />
-      <MetricCard title="Remaining Buffer" value={`${remainingBuffer}d`} />
+      <MetricCard title="Net Slippage" value={slipDisplay} valueClass="text-rose-700" />
+      <MetricCard title="Remaining Buffer" value={`${roundedBuffer}d`} />
       <MetricCard title="On-Time Probability" value={`${Math.round(prob * 100)}%`} />
       {catastrophic && (
         <div className="col-span-3 p-2.5 bg-rose-500/10 border border-rose-500 text-rose-800 rounded-xl text-xs font-semibold flex items-center gap-2">

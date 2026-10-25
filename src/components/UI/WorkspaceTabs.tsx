@@ -115,7 +115,7 @@ function WorkspaceGraphView({
   const showCanvas = viewMode === 'graph' && layout !== null;
 
   return (
-    <div className="w-full space-y-3">
+    <div id="cpm-graph-canvas" className="w-full space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-bold text-stone-900 uppercase tracking-wide flex items-center gap-2">
           <span>CPM Event Graph Timeline</span>

@@ -17,6 +17,27 @@ describe('AppHeader Component', () => {
     expect(handleOpen).toHaveBeenCalledWith('whatif');
   });
 
+  it('toggles language between English, Hindi, and Punjabi updating nav labels and badges', () => {
+    const handleOpen = vi.fn();
+    render(<AppHeader title="Phulkari courtyard wedding" city="Chandigarh" onOpen={handleOpen} />);
+
+    expect(screen.getByText('Living Graph')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Templates/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'हिन्दी' }));
+    expect(screen.getByText('जीवंत ग्राफ़')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /टेम्पलेट्स/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /केओस मंकी/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'ਪੰਜਾਬੀ' }));
+    expect(screen.getByText('ਜੀਵੰਤ ਗ੍ਰਾਫ਼')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /ਟੈਂਪਲੇਟਸ/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /ਕਿਓਸ ਮੰਕੀ/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(screen.getByText('Living Graph')).toBeInTheDocument();
+  });
+
   it('passes automated accessibility audit with zero violations', async () => {
     const { container } = render(
       <AppHeader title="Phulkari courtyard wedding" city="Chandigarh" onOpen={vi.fn()} />,
