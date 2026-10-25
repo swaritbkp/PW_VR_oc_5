@@ -10,7 +10,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     environmentMatchGlobs: [['src/components/**', 'jsdom']],
-    setupFiles: ['./src/test-setup.ts'],
+    setupFiles: ['./vitest.setup.ts'],
     include: ['src/**/*.test.{ts,tsx}', 'tests/**/*.test.{ts,tsx}'],
     coverage: {
       provider: 'v8',

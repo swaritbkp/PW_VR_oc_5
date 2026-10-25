@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import type { GraphLayout, GraphNode, GraphEdge } from '../../lib/graph/layout';
 import type { PlanTask } from '../../lib/plan/types';
 import { EventGraphList } from './EventGraphList';
+import { EventGraphCanvas } from './EventGraphCanvas';
 
 export interface EventGraphProps {
   readonly layout: GraphLayout;
@@ -16,7 +17,6 @@ export interface EventGraphProps {
 const ZOOM_STEP = 0.15;
 const MIN_ZOOM = 0.6;
 const MAX_ZOOM = 1.6;
-const CORNER_RADIUS = 6;
 
 function findNextNode(
   nodes: readonly GraphNode[],
@@ -38,97 +38,66 @@ function findNextNode(
   return undefined;
 }
 
-function renderEdges(edges: readonly GraphEdge[]) {
-  return edges.map((e) => {
-    const isCrit = e.critical;
-    const midX = (e.x1 + e.x2) / 2;
-    const d = `M ${e.x1} ${e.y1} C ${midX} ${e.y1}, ${midX} ${e.y2}, ${e.x2} ${e.y2}`;
-    return (
-      <path
-        key={`${e.from}-${e.to}`}
-        d={d}
-        fill="none"
-        stroke={isCrit ? '#DC2626' : '#94A3B8'}
-        strokeWidth={isCrit ? 3.5 : 1.5}
-        strokeOpacity={isCrit ? 0.95 : 0.6}
-        className={isCrit ? 'transition-all' : ''}
-      />
-    );
-  });
-}
-
-function renderNode(
-  node: GraphNode,
-  isSelected: boolean,
-  onClick: () => void,
-  onKeyDown: (e: React.KeyboardEvent) => void,
-) {
-  const isCrit = node.critical;
-  const fill = isSelected ? '#FEF3C7' : node.done ? '#F0FDF4' : '#FFFFFF';
-  const stroke = isSelected ? '#D97706' : isCrit ? '#DC2626' : '#64748B';
-
+function ToolbarControls({
+  viewMode,
+  zoom,
+  onToggleView,
+  onZoomChange,
+}: {
+  readonly viewMode: 'canvas' | 'list';
+  readonly zoom: number;
+  readonly onToggleView: () => void;
+  readonly onZoomChange: (delta: number | null) => void;
+}): React.JSX.Element {
   return (
-    <g
-      key={node.id}
-      tabIndex={0}
-      role="button"
-      aria-label={`${node.name}, ${node.lane}, starts ${node.startDate || 'unscheduled'}${
-        isCrit ? ', critical path' : ''
-      }`}
-      onClick={onClick}
-      onKeyDown={onKeyDown}
-      className="cursor-pointer focus:outline-none"
-      transform={`translate(${node.x}, ${node.y})`}
-    >
-      {node.hasBackup && (
-        <rect
-          x={-4}
-          y={-4}
-          width={node.w + 8}
-          height={node.h + 8}
-          rx={CORNER_RADIUS + 2}
-          fill="none"
-          stroke="#4F46E5"
-          strokeWidth={1.5}
-          strokeDasharray="4 2"
-        />
-      )}
-      <rect
-        x={0}
-        y={0}
-        width={node.w}
-        height={node.h}
-        rx={CORNER_RADIUS}
-        fill={fill}
-        stroke={stroke}
-        strokeWidth={isSelected ? 2.5 : isCrit ? 2 : 1}
-      />
-      <text
-        x={10}
-        y={20}
-        fontSize={12}
-        fontWeight={isCrit ? '600' : '500'}
-        fill="#0F172A"
-        className="pointer-events-none select-none"
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={onToggleView}
+        className="px-2.5 py-1 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 font-semibold text-xs transition-colors"
+        aria-label="Toggle list view"
       >
-        {node.name.length > 22 ? `${node.name.slice(0, 20)}...` : node.name}
-      </text>
-      <text x={10} y={34} fontSize={10} fill="#64748B" className="pointer-events-none select-none">
-        {node.startDate ? `${node.startDate}` : ''}
-        {node.floatDays > 0 ? ` • +${Math.round(node.floatDays)}d` : ' • 0d'}
-      </text>
-    </g>
+        {viewMode === 'canvas' ? 'View as List' : 'View Canvas'}
+      </button>
+      {viewMode === 'canvas' && (
+        <div className="flex items-center border border-stone-200 rounded-lg bg-white overflow-hidden shadow-2xs">
+          <button
+            type="button"
+            onClick={() => onZoomChange(-ZOOM_STEP)}
+            className="px-2 py-1 hover:bg-stone-100 text-stone-700 text-xs font-bold"
+            aria-label="Zoom out"
+          >
+            -
+          </button>
+          <button
+            type="button"
+            onClick={() => onZoomChange(null)}
+            className="px-1.5 text-[11px] font-semibold text-stone-600 tabular-nums"
+            aria-label="Reset zoom"
+          >
+            {Math.round(zoom * 100)}%
+          </button>
+          <button
+            type="button"
+            onClick={() => onZoomChange(ZOOM_STEP)}
+            className="px-2 py-1 hover:bg-stone-100 text-stone-700 text-xs font-bold"
+            aria-label="Zoom in"
+          >
+            +
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
-/** Interactive SVG Event Graph canvas with full keyboard navigation (AC7, AC16, AC19, AC29). */
 export function EventGraph({
   layout,
   tasks,
   selectedNodeId,
   onSelectNode,
   className = '',
-}: EventGraphProps) {
+}: EventGraphProps): React.JSX.Element {
   const [zoom, setZoom] = useState(1.0);
   const [viewMode, setViewMode] = useState<'canvas' | 'list'>('canvas');
 
@@ -149,78 +118,31 @@ export function EventGraph({
     [layout.nodes, layout.edges, onSelectNode],
   );
 
-  const renderedElements = useMemo(() => {
-    return (
-      <svg
-        width={layout.width * zoom}
-        height={layout.height * zoom}
-        viewBox={`0 0 ${layout.width} ${layout.height}`}
-        role="application"
-        aria-label="Event dependency and timeline graph"
-        className="touch-pan-x touch-pan-y"
-      >
-        <g>{renderEdges(layout.edges)}</g>
-        <g>
-          {layout.nodes.map((n) =>
-            renderNode(
-              n,
-              n.id === selectedNodeId,
-              () => onSelectNode(n.id),
-              (e) => handleKeyDown(e, n.id),
-            ),
-          )}
-        </g>
-      </svg>
-    );
-  }, [layout, zoom, selectedNodeId, onSelectNode, handleKeyDown]);
+  const handleZoom = (delta: number | null) => {
+    if (delta === null) setZoom(1.0);
+    else setZoom((z) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z + delta)));
+  };
 
   return (
     <div
-      className={`relative flex flex-col border border-neutral-200 rounded-xl bg-white overflow-hidden shadow-sm ${className}`}
+      className={`relative flex flex-col border border-stone-200 rounded-2xl bg-white overflow-hidden shadow-sm ${className}`}
     >
-      <div className="flex items-center justify-between px-4 py-2 border-b border-neutral-100 bg-neutral-50/70 text-xs">
-        <span className="font-semibold text-neutral-700">Event Graph Workspace</span>
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-stone-100 bg-stone-50/80 text-xs">
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setViewMode(viewMode === 'canvas' ? 'list' : 'canvas')}
-            className="px-2.5 py-1 rounded border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700"
-            aria-label="Toggle list view"
-          >
-            {viewMode === 'canvas' ? 'View as List' : 'View Canvas'}
-          </button>
-          {viewMode === 'canvas' && (
-            <div className="flex items-center gap-1 border border-neutral-300 rounded bg-white">
-              <button
-                type="button"
-                onClick={() => setZoom((z) => Math.max(MIN_ZOOM, z - ZOOM_STEP))}
-                className="px-2 py-0.5 hover:bg-neutral-100"
-                aria-label="Zoom out"
-              >
-                -
-              </button>
-              <button
-                type="button"
-                onClick={() => setZoom(1.0)}
-                className="px-1 text-[11px] text-neutral-600"
-                aria-label="Reset zoom"
-              >
-                {Math.round(zoom * 100)}%
-              </button>
-              <button
-                type="button"
-                onClick={() => setZoom((z) => Math.min(MAX_ZOOM, z + ZOOM_STEP))}
-                className="px-2 py-0.5 hover:bg-neutral-100"
-                aria-label="Zoom in"
-              >
-                +
-              </button>
-            </div>
-          )}
+          <span className="font-bold text-stone-800">Event Graph Workspace</span>
+          <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-stone-200/60 text-stone-600">
+            {layout.nodes.length} nodes &bull; {layout.edges.length} edges
+          </span>
         </div>
+        <ToolbarControls
+          viewMode={viewMode}
+          zoom={zoom}
+          onToggleView={() => setViewMode((m) => (m === 'canvas' ? 'list' : 'canvas'))}
+          onZoomChange={handleZoom}
+        />
       </div>
 
-      <div className="flex-1 overflow-auto p-4 min-h-[360px]">
+      <div className="flex-1 overflow-auto p-4 min-h-[440px] bg-[#FAF9F6]">
         {viewMode === 'list' ? (
           <EventGraphList
             nodes={layout.nodes}
@@ -229,7 +151,15 @@ export function EventGraph({
             onSelectNode={(id) => onSelectNode(id)}
           />
         ) : (
-          <div className="inline-block min-w-full">{renderedElements}</div>
+          <div className="inline-block min-w-full">
+            <EventGraphCanvas
+              layout={layout}
+              zoom={zoom}
+              selectedNodeId={selectedNodeId}
+              onSelectNode={onSelectNode}
+              onKeyDown={handleKeyDown}
+            />
+          </div>
         )}
       </div>
     </div>

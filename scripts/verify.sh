@@ -7,7 +7,7 @@ step "lint";             npm run lint --if-present -- --max-warnings 0
 step "typecheck";        npx tsc --noEmit
 step "tests + coverage"; npx vitest run --coverage
 step "dead code";        npx knip
-step "import cycles";    npx madge --circular --extensions ts,tsx src
+step "import cycles";    npx madge --circular --ts-config tsconfig.json --extensions ts,tsx src
 step "jsdoc on lib exports"; python3 scripts/gate.py jsdoc
 step "code quality limits";  python3 scripts/gate.py quality
 step "efficiency checks";    python3 scripts/gate.py efficiency

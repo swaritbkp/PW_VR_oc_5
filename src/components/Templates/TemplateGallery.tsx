@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { formatInr } from '@/lib/format';
 import { TEMPLATES, type EventTemplate } from '@/lib/templates/catalog';
 import type { EventType } from '@/lib/plan/types';
+import { TemplateCoverSvg } from './TemplateCoverSvg';
 
 export interface TemplateGalleryProps {
   readonly onSelectTemplate: (template: EventTemplate) => void;
@@ -73,16 +74,12 @@ function renderTemplateCard(template: EventTemplate, onSelect: (t: EventTemplate
     <div
       key={template.id}
       role="article"
-      className="p-5 rounded-2xl border border-stone-200 bg-white hover:border-amber-400 hover:shadow-md transition-all flex flex-col justify-between gap-4"
+      className="p-5 rounded-2xl border border-stone-200 bg-white hover:border-amber-400 hover:shadow-md transition-all flex flex-col justify-between gap-3"
       data-testid={`template-card-${template.id}`}
     >
       <div className="space-y-2">
+        <TemplateCoverSvg templateId={template.id} accent={template.accent} />
         <div className="flex items-start justify-between gap-2">
-          <span
-            className="w-3 h-3 rounded-full flex-shrink-0 mt-1"
-            style={{ backgroundColor: template.accent }}
-            aria-hidden="true"
-          />
           <h4 className="flex-1 font-bold text-stone-900 text-sm leading-snug">{template.title}</h4>
           {renderBadge(template.outdoor)}
         </div>

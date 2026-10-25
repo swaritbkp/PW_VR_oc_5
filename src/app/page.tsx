@@ -68,13 +68,14 @@ export default function HomePage(): React.JSX.Element {
     return { prob, alerts, alloc, recon, nextTask };
   }, [schedule, currentPlan]);
 
+  const activeTaskId = selectedTaskId ?? currentPlan.tasks[0]?.id ?? null;
   const selectedNode = useMemo(
-    () => layout?.nodes.find((n) => n.id === selectedTaskId),
-    [layout, selectedTaskId],
+    () => layout?.nodes.find((n) => n.id === activeTaskId),
+    [layout, activeTaskId],
   );
   const selectedTask = useMemo(
-    () => currentPlan.tasks.find((t) => t.id === selectedTaskId),
-    [currentPlan.tasks, selectedTaskId],
+    () => currentPlan.tasks.find((t) => t.id === activeTaskId),
+    [currentPlan.tasks, activeTaskId],
   );
 
   const handleUpdateTaskStatus = (id: string, done: boolean) => {
@@ -103,53 +104,73 @@ export default function HomePage(): React.JSX.Element {
         />
       )}
 
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-stone-900 uppercase tracking-wide">
-            Living Event Graph Workspace
-          </h2>
-          <div className="flex gap-1 bg-stone-200 p-1 rounded-lg text-xs">
-            <button
-              type="button"
-              onClick={() => setViewMode('graph')}
-              className={`px-2.5 py-1 rounded-md font-semibold ${viewMode === 'graph' ? 'bg-white shadow-xs' : 'text-stone-600'}`}
-            >
-              Canvas
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('list')}
-              className={`px-2.5 py-1 rounded-md font-semibold ${viewMode === 'list' ? 'bg-white shadow-xs' : 'text-stone-600'}`}
-            >
-              Timeline List
-            </button>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="lg:col-span-8 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-stone-900 uppercase tracking-wide">
+              Living Event Graph Workspace
+            </h2>
+            <div className="flex gap-1 bg-stone-200/70 p-1 rounded-xl text-xs">
+              <button
+                type="button"
+                onClick={() => setViewMode('graph')}
+                className={`px-3 py-1 rounded-lg font-bold transition-all ${
+                  viewMode === 'graph'
+                    ? 'bg-white shadow-xs text-stone-900'
+                    : 'text-stone-600 hover:text-stone-900'
+                }`}
+              >
+                Canvas
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                className={`px-3 py-1 rounded-lg font-bold transition-all ${
+                  viewMode === 'list'
+                    ? 'bg-white shadow-xs text-stone-900'
+                    : 'text-stone-600 hover:text-stone-900'
+                }`}
+              >
+                Timeline List
+              </button>
+            </div>
           </div>
+          {viewMode === 'graph' && layout ? (
+            <EventGraph
+              layout={layout}
+              tasks={currentPlan.tasks}
+              selectedNodeId={activeTaskId ?? undefined}
+              onSelectNode={(id) => setSelectedTaskId(id ?? null)}
+            />
+          ) : (
+            <EventGraphList
+              nodes={layout?.nodes ?? []}
+              tasks={currentPlan.tasks}
+              selectedNodeId={activeTaskId ?? undefined}
+              onSelectNode={(id) => setSelectedTaskId(id)}
+            />
+          )}
         </div>
-        {viewMode === 'graph' && layout ? (
-          <EventGraph
-            layout={layout}
-            tasks={currentPlan.tasks}
-            selectedNodeId={selectedTaskId ?? undefined}
-            onSelectNode={(id) => setSelectedTaskId(id ?? null)}
-          />
-        ) : (
-          <EventGraphList
-            nodes={layout?.nodes ?? []}
-            tasks={currentPlan.tasks}
-            selectedNodeId={selectedTaskId ?? undefined}
-            onSelectNode={(id) => setSelectedTaskId(id)}
-          />
-        )}
-      </div>
 
-      {selectedNode && (
-        <NodeInspector
-          node={selectedNode}
-          task={selectedTask}
-          onClose={() => setSelectedTaskId(null)}
-          onUpdateStatus={(taskId, st) => handleUpdateTaskStatus(taskId, Boolean(st.done))}
-        />
-      )}
+        <aside className="lg:col-span-4 sticky top-6">
+          {selectedNode ? (
+            <NodeInspector
+              node={selectedNode}
+              task={selectedTask}
+              onClose={() => setSelectedTaskId(null)}
+              onUpdateStatus={(taskId, st) => handleUpdateTaskStatus(taskId, Boolean(st.done))}
+            />
+          ) : (
+            <div className="p-6 rounded-2xl bg-white border border-stone-200 text-center text-xs text-stone-500 shadow-xs">
+              <p className="font-semibold text-stone-700">Select any node on the graph</p>
+              <p className="mt-1 text-stone-400">
+                Click a task or dependency edge to view details, inspect vendors, and check Plan B
+                backups.
+              </p>
+            </div>
+          )}
+        </aside>
+      </div>
 
       <AppModals
         activeModal={activeModal}
