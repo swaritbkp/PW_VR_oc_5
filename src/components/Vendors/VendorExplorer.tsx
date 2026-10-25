@@ -6,6 +6,8 @@ import type { Vendor, VendorStatus } from '@/lib/vendors/types';
 import { VendorCityBar } from './VendorCityBar';
 import { VendorCard } from './VendorCard';
 import { ContactSheet } from './ContactSheet';
+import { NegotiationCoach } from './NegotiationCoach';
+import { RedFlagDetector } from './RedFlagDetector';
 import { EmptyState } from '../UI/EmptyState';
 
 export interface VendorExplorerProps {
@@ -32,6 +34,7 @@ export function VendorExplorer({
   const [loading, setLoading] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
   const [mapsFallbackUrl, setMapsFallbackUrl] = useState<string | null>(null);
+  const [activeTool, setActiveTool] = useState<'none' | 'negotiate' | 'redflags'>('none');
 
   useEffect(() => {
     if (initialCategory) setCategory(initialCategory);
@@ -122,12 +125,28 @@ export function VendorExplorer({
           city={city}
           guests={guests}
           onClose={() => setSelectedVendor(null)}
+          onOpenNegotiation={() => setActiveTool('negotiate')}
+          onOpenRedFlags={() => setActiveTool('redflags')}
           onUpdateStatus={(v, s, q) => {
             onBookVendor?.(v, s, q);
             setSelectedVendor(null);
           }}
         />
       )}
+
+      {activeTool === 'negotiate' && selectedVendor && (
+        <NegotiationCoach
+          initialVendorName={selectedVendor.name}
+          initialCategory={category}
+          initialCity={city}
+          initialQuoteInr={selectedVendor.priceLevel ? selectedVendor.priceLevel * 100000 : 250000}
+          guestCount={guests}
+          eventDate={eventDate}
+          onClose={() => setActiveTool('none')}
+        />
+      )}
+
+      {activeTool === 'redflags' && <RedFlagDetector onClose={() => setActiveTool('none')} />}
     </div>
   );
 }

@@ -30,3 +30,7 @@ AC30 | components/Vendors/ContactSheet.tsx, lib/plan/storage.ts | components/Ven
 Formatting/Sanitisation | lib/format.ts | lib/format.test.ts
 Security Headers | lib/security-headers.ts | lib/security-headers.test.ts
 WhatsApp Summaries | lib/plan/whatsapp.ts | lib/plan/whatsapp.test.ts
+Chaos Monkey Cascade Stress-Tester (AC25, AC26) | lib/resilience/chaos.ts, components/Resilience/ChaosMonkey.tsx | lib/resilience/chaos.test.ts, components/Resilience/ChaosMonkey.test.tsx
+Cultural AI Negotiation Coach (AC22, AC23) | lib/vendors/negotiate.ts, components/Vendors/NegotiationCoach.tsx | lib/vendors/negotiate.test.ts, components/Vendors/NegotiationCoach.test.tsx
+Smart Vendor Red-Flag Detector (AC22, AC23) | lib/vendors/redflags.ts, components/Vendors/RedFlagDetector.tsx | lib/vendors/redflags.test.ts, components/Vendors/RedFlagDetector.test.tsx
+Executive Celebration Dossier Exporter (AC14, AC30) | lib/plan/dossier.ts, components/Share/DossierModal.tsx | lib/plan/dossier.test.ts, components/Share/DossierModal.test.tsx

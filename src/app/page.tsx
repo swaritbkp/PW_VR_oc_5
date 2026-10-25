@@ -115,6 +115,8 @@ export default function HomePage(): React.JSX.Element {
         onSelectTab={setActiveTab}
         onOpenPlanB={() => setActiveModal('disruption')}
         onOpenWhatIf={() => setActiveModal('whatif')}
+        onOpenChaos={() => setActiveModal('chaos')}
+        onOpenDossier={() => setActiveModal('dossier')}
       />
 
       {commandData && (
@@ -168,6 +170,7 @@ export default function HomePage(): React.JSX.Element {
         versionStore={versionStore}
         onClose={() => setActiveModal('none')}
         setVersionStore={setVersionStore}
+        onOpenModal={setActiveModal}
       />
     </main>
   );

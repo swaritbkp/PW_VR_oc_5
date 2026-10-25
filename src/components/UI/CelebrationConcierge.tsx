@@ -14,6 +14,8 @@ export interface CelebrationConciergeProps {
   readonly onSelectTab: (tab: 'roadmap' | 'vendors' | 'graph') => void;
   readonly onOpenPlanB: () => void;
   readonly onOpenWhatIf: () => void;
+  readonly onOpenChaos?: () => void;
+  readonly onOpenDossier?: () => void;
 }
 
 export function CelebrationConcierge({
@@ -27,6 +29,8 @@ export function CelebrationConcierge({
   onSelectTab,
   onOpenPlanB,
   onOpenWhatIf,
+  onOpenChaos,
+  onOpenDossier,
 }: CelebrationConciergeProps): React.JSX.Element {
   const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
 
@@ -56,6 +60,24 @@ export function CelebrationConcierge({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
+          {onOpenChaos && (
+            <button
+              type="button"
+              onClick={onOpenChaos}
+              className="px-3 py-1.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-800 text-xs font-bold transition-all shadow-2xs hover:border-amber-300"
+            >
+              🐒 Chaos Monkey
+            </button>
+          )}
+          {onOpenDossier && (
+            <button
+              type="button"
+              onClick={onOpenDossier}
+              className="px-3 py-1.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-800 text-xs font-bold transition-all shadow-2xs hover:border-amber-300"
+            >
+              📜 Executive Dossier
+            </button>
+          )}
           <button
             type="button"
             onClick={onOpenPlanB}

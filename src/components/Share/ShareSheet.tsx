@@ -8,6 +8,7 @@ import { buildWhatsAppSummary, type SupportedLanguage } from '@/lib/plan/whatsap
 export interface ShareSheetProps {
   readonly plan: PlanState;
   readonly onClose: () => void;
+  readonly onOpenDossier?: () => void;
 }
 
 function generateIcsContent(plan: PlanState): string {
@@ -51,7 +52,7 @@ function renderLanguages(current: SupportedLanguage, onChange: (l: SupportedLang
   );
 }
 
-export function ShareSheet({ plan, onClose }: ShareSheetProps): React.JSX.Element {
+export function ShareSheet({ plan, onClose, onOpenDossier }: ShareSheetProps): React.JSX.Element {
   const [lang, setLang] = useState<SupportedLanguage>('en');
   const [copied, setCopied] = useState(false);
 
@@ -129,6 +130,15 @@ export function ShareSheet({ plan, onClose }: ShareSheetProps): React.JSX.Elemen
 
         <div className="pt-3 border-t border-stone-200 space-y-2">
           <h4 className="font-bold text-stone-800 text-xs">Calendar & Print Exports</h4>
+          {onOpenDossier && (
+            <button
+              type="button"
+              onClick={onOpenDossier}
+              className="w-full py-2.5 px-3 text-xs font-semibold rounded-xl bg-amber-500/10 border border-amber-500 text-amber-900 hover:bg-amber-500/20 flex items-center justify-center gap-2"
+            >
+              <span>📜</span> View Executive Celebration Dossier
+            </button>
+          )}
           <button
             type="button"
             onClick={handleDownloadIcs}

@@ -33,7 +33,37 @@ const TemplateGallery = dynamic(
   { ssr: false },
 );
 
-export type ModalType = 'none' | 'templates' | 'whatif' | 'disruption' | 'share' | 'audit';
+const ChaosMonkey = dynamic(
+  () => import('@/components/Resilience/ChaosMonkey').then((m) => m.ChaosMonkey),
+  { ssr: false },
+);
+
+const DossierModal = dynamic(
+  () => import('@/components/Share/DossierModal').then((m) => m.DossierModal),
+  { ssr: false },
+);
+
+const NegotiationCoach = dynamic(
+  () => import('@/components/Vendors/NegotiationCoach').then((m) => m.NegotiationCoach),
+  { ssr: false },
+);
+
+const RedFlagDetector = dynamic(
+  () => import('@/components/Vendors/RedFlagDetector').then((m) => m.RedFlagDetector),
+  { ssr: false },
+);
+
+export type ModalType =
+  | 'none'
+  | 'templates'
+  | 'whatif'
+  | 'disruption'
+  | 'share'
+  | 'audit'
+  | 'chaos'
+  | 'dossier'
+  | 'negotiate'
+  | 'redflags';
 
 export interface AppModalsProps {
   readonly activeModal: ModalType;
@@ -41,6 +71,7 @@ export interface AppModalsProps {
   readonly versionStore: VersionStore;
   readonly onClose: () => void;
   readonly setVersionStore: React.Dispatch<React.SetStateAction<VersionStore>>;
+  readonly onOpenModal?: (modal: ModalType) => void;
 }
 
 function renderAuditModal(onClose: () => void) {
@@ -96,18 +127,46 @@ function renderTemplateModal(
   );
 }
 
+function renderFeatureModal(activeModal: ModalType, currentPlan: PlanState, onClose: () => void) {
+  if (activeModal === 'chaos') {
+    return (
+      <ChaosMonkey
+        tasks={currentPlan.tasks}
+        availableDays={currentPlan.targetDays}
+        backedUpNeeds={new Set<VendorNeedId>()}
+        onClose={onClose}
+      />
+    );
+  }
+  if (activeModal === 'dossier') return <DossierModal plan={currentPlan} onClose={onClose} />;
+  if (activeModal === 'negotiate') return <NegotiationCoach onClose={onClose} />;
+  if (activeModal === 'redflags') return <RedFlagDetector onClose={onClose} />;
+  return null;
+}
+
 export function AppModals({
   activeModal,
   currentPlan,
   versionStore,
   onClose,
   setVersionStore,
+  onOpenModal,
 }: AppModalsProps): React.JSX.Element | null {
   if (activeModal === 'none') return null;
+  const feature = renderFeatureModal(activeModal, currentPlan, onClose);
+  if (feature) return feature;
   if (activeModal === 'audit') return renderAuditModal(onClose);
   if (activeModal === 'templates')
     return renderTemplateModal(currentPlan, onClose, setVersionStore);
-  if (activeModal === 'share') return <ShareSheet plan={currentPlan} onClose={onClose} />;
+  if (activeModal === 'share') {
+    return (
+      <ShareSheet
+        plan={currentPlan}
+        onClose={onClose}
+        onOpenDossier={onOpenModal ? () => onOpenModal('dossier') : undefined}
+      />
+    );
+  }
   if (activeModal === 'disruption') {
     return (
       <DisruptionDrawer
@@ -115,6 +174,7 @@ export function AppModals({
         availableDays={currentPlan.targetDays}
         backedUpNeeds={new Set<VendorNeedId>()}
         onClose={onClose}
+        onOpenChaos={onOpenModal ? () => onOpenModal('chaos') : undefined}
       />
     );
   }

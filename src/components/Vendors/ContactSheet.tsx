@@ -20,6 +20,8 @@ export interface ContactSheetProps {
   readonly currentStatus?: VendorStatus;
   readonly onClose: () => void;
   readonly onUpdateStatus: (vendor: Vendor, status: VendorStatus, quoteInr?: number) => void;
+  readonly onOpenNegotiation?: (vendor: Vendor) => void;
+  readonly onOpenRedFlags?: () => void;
 }
 
 const LANGS: readonly { code: EnquiryLanguage; label: string }[] = [
@@ -101,6 +103,8 @@ export function ContactSheet({
   currentStatus,
   onClose,
   onUpdateStatus,
+  onOpenNegotiation,
+  onOpenRedFlags,
 }: ContactSheetProps): React.JSX.Element {
   const [lang, setLang] = useState<EnquiryLanguage>('en');
   const [quoteInput, setQuoteInput] = useState<string>('');
@@ -160,6 +164,28 @@ export function ContactSheet({
         <div>
           <h4 className="text-xs font-semibold text-stone-700 mb-2">Direct Actions</h4>
           <ContactLinks vendor={vendor} phoneObj={phoneObj} waUrl={waUrl} />
+          {(onOpenNegotiation || onOpenRedFlags) && (
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              {onOpenNegotiation && (
+                <button
+                  type="button"
+                  onClick={() => onOpenNegotiation(vendor)}
+                  className="py-1.5 px-2 text-[11px] font-semibold rounded-lg bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 transition-colors"
+                >
+                  🤝 Negotiation Coach
+                </button>
+              )}
+              {onOpenRedFlags && (
+                <button
+                  type="button"
+                  onClick={onOpenRedFlags}
+                  className="py-1.5 px-2 text-[11px] font-semibold rounded-lg bg-rose-50 text-rose-900 border border-rose-200 hover:bg-rose-100 transition-colors"
+                >
+                  🛡️ Scan Red-Flags
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         <div>

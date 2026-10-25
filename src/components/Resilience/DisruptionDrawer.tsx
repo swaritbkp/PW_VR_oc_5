@@ -15,6 +15,7 @@ export interface DisruptionDrawerProps {
   readonly backedUpNeeds: ReadonlySet<VendorNeedId>;
   readonly onClose: () => void;
   readonly onSimulate?: (result: DisruptionResult | null) => void;
+  readonly onOpenChaos?: () => void;
 }
 
 function renderScenarioSelector(
@@ -142,6 +143,7 @@ export function DisruptionDrawer({
   backedUpNeeds,
   onClose,
   onSimulate,
+  onOpenChaos,
 }: DisruptionDrawerProps): React.JSX.Element {
   const [selectedScenario, setSelectedScenario] = useState<DisruptionScenario>(DISRUPTIONS[0]);
 
@@ -176,6 +178,16 @@ export function DisruptionDrawer({
             ✕
           </button>
         </div>
+
+        {onOpenChaos && (
+          <button
+            type="button"
+            onClick={onOpenChaos}
+            className="w-full py-2 px-3 text-xs font-bold rounded-xl bg-amber-500/10 border border-amber-500 text-amber-900 hover:bg-amber-500/20 shadow-2xs flex items-center justify-center gap-1.5"
+          >
+            <span>🐒</span> Launch Chaos Monkey (Compound Stress-Test)
+          </button>
+        )}
 
         {renderScenarioSelector(selectedScenario.id, setSelectedScenario)}
 
