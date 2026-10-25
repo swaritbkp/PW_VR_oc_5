@@ -1,14 +1,14 @@
 # Traceability (agent maintains)
 
 AC id | module(s) | test file(s)
-AC1 | lib/budget/engine.ts | lib/budget/engine.test.ts
+AC1 | lib/budget/engine.ts, components/Budget/BudgetLedger.tsx, components/Budget/BudgetTableRow.tsx | lib/budget/engine.test.ts, components/Budget/BudgetLedger.test.tsx
 AC2, AC21 | lib/vendors/needs.ts, places.ts, server/genai/guardrails.ts | lib/vendors/vendors.test.ts, server/genai/guardrails.test.ts, server/genai/generate.test.ts
-AC3, AC4 | lib/plan/propagate.ts, lib/plan/versions.ts, components/LivingPlan/WhatIfDrawer.tsx, components/LivingPlan/VersionsPanel.tsx, components/LivingPlan/DiffChips.tsx | lib/plan/propagate.test.ts, lib/plan/versions.test.ts, components/LivingPlan/WhatIfDrawer.test.tsx
+AC3, AC4 | lib/plan/propagate.ts, lib/plan/versions.ts, components/NodeInspector/NodeEstimatesForm.tsx, components/LivingPlan/WhatIfDrawer.tsx, components/LivingPlan/VersionsPanel.tsx, components/LivingPlan/DiffChips.tsx, components/Budget/BudgetLedger.tsx | lib/plan/propagate.test.ts, lib/plan/versions.test.ts, components/NodeInspector/NodeInspector.test.tsx, components/LivingPlan/WhatIfDrawer.test.tsx, components/Budget/BudgetLedger.test.tsx
 AC4 | lib/dates.ts | lib/dates.test.ts
 AC5, AC30 | lib/plan/schemas.ts, lib/plan/storage.ts, server/security/rateLimit.ts, server/genai/registry.ts, components/Templates/IntakeSheet.tsx | lib/plan/schemas.test.ts, lib/plan/storage.test.ts, server/security/rateLimit.test.ts, app/api/plan/route.test.ts, components/Templates/IntakeSheet.test.tsx
 AC6 | server/genai/generate.ts, app/api/plan/route.ts | server/genai/generate.test.ts, app/api/plan/route.test.ts
 AC7 | components/EventGraph, components/CommandCenter, components/NodeInspector | components/EventGraph/EventGraph.test.tsx, components/CommandCenter/CommandCenter.test.tsx, components/NodeInspector/NodeInspector.test.tsx
-AC9 | lib/schedule/cpm.ts | lib/schedule/cpm.test.ts
+AC9 | lib/schedule/cpm.ts, components/NodeInspector/NodeEstimatesForm.tsx | lib/schedule/cpm.test.ts, components/NodeInspector/NodeInspector.test.tsx
 AC10 | lib/schedule/pert.ts, simulate.ts, components/CommandCenter | cpm.test.ts, simulate.test.ts, components/CommandCenter/CommandCenter.test.tsx
 AC11 | lib/schedule/replan.ts, components/LivingPlan/WhatIfDrawer.tsx | replan.test.ts, components/LivingPlan/WhatIfDrawer.test.tsx
 AC12, AC13 | lib/schedule/sentinel.ts, components/CommandCenter | sentinel.test.ts, components/CommandCenter/CommandCenter.test.tsx
@@ -37,3 +37,5 @@ Executive Celebration Dossier Exporter (AC14, AC30) | lib/plan/dossier.ts, compo
 5-Step Guided Event Journey (AC18, AC19, AC25) | lib/plan/journey.ts, components/Journey/GuidedJourneyBar.tsx | lib/plan/journey.test.ts, components/Journey/GuidedJourneyBar.test.tsx
 Portable .jashn Event File (AC5, AC30) | lib/plan/portability.ts, components/Share/PortableFilePanel.tsx | lib/plan/portability.test.ts, components/Share/PortableFilePanel.test.tsx
 Nano Banana Custom Art Pipeline (AC28) | scripts/generate_nanobanana_assets.mjs, assets/manifest.json, components/NodeInspector/NodeInspector.tsx | scripts/test_flow_assets.py
+Celebration Budget Ledger (AC1, AC3) | components/Budget/BudgetLedger.tsx, components/Budget/BudgetTableRow.tsx | components/Budget/BudgetLedger.test.tsx
+Interactive PERT Duration Editor (AC3, AC9) | components/NodeInspector/NodeEstimatesForm.tsx, lib/plan/propagate.ts | components/NodeInspector/NodeInspector.test.tsx, lib/plan/propagate.test.ts

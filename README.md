@@ -13,10 +13,13 @@ Planning celebrations in India—from an intimate Phulkari courtyard wedding in 
 
 1. **Curated Contemporary Templates**: Start from 12 culturally authentic, tested event templates or enter bespoke requirements.
 2. **Deterministic PERT/CPM Scheduling**: Schedulable DAG calculating critical paths, early/late start dates, float slack, and Monte Carlo P(ready) confidence targets (P50/P80/P90).
-3. **No Hallucinated Vendors**: Real Google Places (New) search proxied server-side with zero client key exposure; click-to-contact via `tel:` and multilingual WhatsApp (`wa.me` in English, Hindi, Punjabi) for human confirmation.
-4. **Plan B Resilience & Compound Chaos Monkey**: Stress-test plans against multi-incident disruptions (e.g., venue cancellation + monsoon downpour + caterer flake) with real-time CPM rerouting, emergency protocols, and ghost-path timeline diffs.
-5. **Living Plan Dynamics & Portability**: Interactive what-if sliders (guests, budget) with surgical dirty-set change propagation, instant single-click undo, and fully portable AC30-compliant `.jashn` event package export and import.
-6. **5-Step Guided Event Journey**: An autonomous 5-step guided journey with real-time progress tracking, AI coach nudges, 1-click stage actions, and an automated 60-second Demo Tour mode.
+3. **Interactive Task & Budget Editing**: Direct editing of task duration digits ($O \le M \le P$) and line-item costs with real-time Kahn DAG topological propagation and instant version undo.
+4. **No Hallucinated Vendors**: Real Google Places (New) search proxied server-side with zero client key exposure; click-to-contact via `tel:` and multilingual WhatsApp (`wa.me` in English, Hindi, Punjabi) for human confirmation.
+5. **Plan B Resilience & Compound Chaos Monkey**: Stress-test plans against multi-incident disruptions (e.g., venue cancellation + monsoon downpour + caterer flake) with real-time CPM rerouting, emergency protocols, and ghost-path timeline diffs.
+6. **Cultural AI Negotiation Coach**: Generates regional bargaining pitches in English, Hindi, and Punjabi with 4 strategic levers (off-peak dates, staged payments, value-adds, headcount volume) and estimated ₹ savings.
+7. **Smart Vendor Red-Flag Detector**: Automated heuristic analyzer scanning vendor quotes for 5 predatory clauses (100% advance, cash-only, uncapped fuel, curfew penalties, non-refundable deposit) with counter-clauses.
+8. **Executive Dossier & Portable `.jashn` Package**: Synthesizes a luxury printable family brief and exports versioned, checksum-verified `.jashn` packages (strictly stripping transient Places data for 100% AC30 compliance).
+9. **5-Step Guided Event Journey**: An autonomous 5-step guided journey with real-time progress tracking, AI coach nudges, 1-click stage actions, and an automated 60-second Demo Tour mode.
 
 ---
 
@@ -53,6 +56,7 @@ flowchart TD
         Layout --> Canvas["SVG Event Graph Canvas + Timeline List"]
         Sentinel --> CommandCenter["Command Center\n(P(ready) Gauge, Next Best Action)"]
         Canvas --> WhatIf["What-If Sliders & VersionStore (Undo/Revert)"]
+        Canvas --> Ledger["Celebration Budget Ledger & Editable PERT Estimates"]
     end
 ```
 
@@ -70,12 +74,12 @@ Jashn is built with relentless test-driven discipline, passing 100% of automated
 
 | Metric                         | Target            | Achieved                                  | Status   |
 | :----------------------------- | :---------------- | :---------------------------------------- | :------- |
-| **Unit & Integration Tests**   | 100+              | **215+ tests passing** (37 test suites)   | **PASS** |
+| **Unit & Integration Tests**   | 100+              | **286 tests passing** (60 test suites)    | **PASS** |
 | **Pure Lib Line Coverage**     | $\ge 90\%$        | **100%** lines covered                    | **PASS** |
-| **Pure Lib Branch Coverage**   | $\ge 85\%$        | **97.4%** branches covered                | **PASS** |
+| **Pure Lib Branch Coverage**   | $\ge 85\%$        | **97.2%** branches covered                | **PASS** |
 | **Offline ADLC GenAI Evals**   | 100%              | **15/15 scenarios passing**               | **PASS** |
 | **Acceptance Criteria Traced** | 30 / 30           | **100% (AC1 to AC30 verified in tests)**  | **PASS** |
-| **First Load JS (Next.js)**    | $< 170\text{ kB}$ | **117 kB** (with dynamic code splitting)  | **PASS** |
+| **First Load JS (Next.js)**    | $< 170\text{ kB}$ | **137 kB** (with dynamic code splitting)  | **PASS** |
 | **Accessibility (vitest-axe)** | 0 violations      | **0 WCAG 2.1 AA violations** on all views | **PASS** |
 | **Lint & Type Safety**         | 0 warnings        | **0 ESLint warnings**, strict TypeScript  | **PASS** |
 | **Dead Code (`knip`)**         | 0 unused          | **0 unused files/exports**                | **PASS** |
@@ -85,9 +89,9 @@ Jashn is built with relentless test-driven discipline, passing 100% of automated
 
 ## 4. Key Capabilities & Acceptance Criteria
 
-- **AC1 Budget Engine**: Pure deterministic budget math allocating fixed and per-head costs with explicit 10% contingency and band validation.
+- **AC1 Budget Engine & Ledger**: Pure deterministic budget math allocating fixed and per-head costs with explicit 10% contingency, editable line items, and band validation.
 - **AC2 & AC21 Vendor Discovery**: Google Places API (New) proxied through `/api/vendors/search` with Bayesian confidence ranking and Google attribution.
-- **AC3 & AC11 Living Plan**: Dirty-set change propagation recalculates only nodes sensitive to modified drivers (`guests`, `budget`, `date`, `city`).
+- **AC3 & AC11 Living Plan & PERT Editing**: Interactive task estimate inputs ($O \le M \le P$) and what-if sliders with surgical topological dirty-set propagation.
 - **AC4 Plan History & Undo**: Single-click undo and point-in-time revert across immutable snapshot revisions.
 - **AC5 & AC6 Structured GenAI**: Schema-constrained generation with 1-shot repair retry and post-parse safety guardrails.
 - **AC7, AC16 & AC19 Event Graph Canvas**: Hand-rolled responsive SVG workspace with bold critical ribbon, pan/zoom, and dual-mode mobile timeline list.
@@ -100,11 +104,11 @@ Jashn is built with relentless test-driven discipline, passing 100% of automated
 - **AC20 Location Awareness**: Automatic geographic coordinate resolution for celebration hubs across India (Chandigarh, Delhi, Ludhiana, Jaipur, etc.).
 - **AC22 Multilingual Contact**: One-tap phone calling and pre-filled WhatsApp click-to-chat in English, Hindi, and Punjabi for human dispatch.
 - **AC23 & AC24 Plan B Resilience**: Holding a backup vendor clears R6 risk alerts, raises the resilience score, and updates booking status.
-- **AC25 & AC26 Disruption Simulator**: Simulates real-world incidents (weather, cancellation, date shift) with ghost paths and before/after schedule diffs.
+- **AC25 & AC26 Disruption Simulator & Chaos Monkey**: Simulates real-world compound incidents with ghost paths, buffer collapse warnings, and emergency protocols.
 - **AC27 Graceful Degradation**: Offline/quota fallback providing direct Google Maps search deep-links and custom vendor manual entry.
-- **AC28 Static Art Pipeline**: Google Flow / Imagen static asset pipeline with SVG/CSS fallbacks ensuring zero build disruption.
+- **AC28 Static Art Pipeline**: Google Flow / Nano Banana asset pipeline with SVG/CSS fallbacks ensuring zero build disruption.
 - **AC29 Accessible Keyboard Navigation**: Arrow keys follow dependency edges; Enter inspects; Escape clears focus.
-- **AC30 Data Privacy & Ephemeral Places**: Persists only place IDs and user decisions, respecting Google Places storage terms.
+- **AC30 Data Privacy & Ephemeral Places**: Persists only place IDs and user decisions in portable `.jashn` files, respecting Google Places storage terms.
 
 ---
 
