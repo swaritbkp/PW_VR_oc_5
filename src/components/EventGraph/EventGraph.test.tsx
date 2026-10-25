@@ -105,17 +105,22 @@ describe('EventGraph component (AC7, AC16, AC19, AC29)', () => {
     expect(screen.getByRole('button', { name: /Book Caterer/i })).toBeInTheDocument();
   });
 
+  it('renders SVG canvas region immediately without loading hang', () => {
+    render(<EventGraph layout={dummyLayout} tasks={dummyTasks} onSelectNode={vi.fn()} />);
+    const region = screen.getByRole('region', { name: /Interactive celebration event timeline graph/i });
+    expect(region).toBeInTheDocument();
+    expect(screen.queryByText(/Loading graph canvas/i)).not.toBeInTheDocument();
+  });
+
   it('supports keyboard navigation following dependency edges with arrow keys (AC29)', () => {
     const handleSelect = vi.fn();
     render(<EventGraph layout={dummyLayout} tasks={dummyTasks} onSelectNode={handleSelect} />);
 
     const node1 = screen.getByRole('button', { name: /Select Venue/i });
-    // Right arrow on T1 should move focus / select successor T2
     fireEvent.keyDown(node1, { key: 'ArrowRight' });
     expect(handleSelect).toHaveBeenCalledWith('T2');
 
     const node2 = screen.getByRole('button', { name: /Book Caterer/i });
-    // Left arrow on T2 should move focus / select predecessor T1
     fireEvent.keyDown(node2, { key: 'ArrowLeft' });
     expect(handleSelect).toHaveBeenCalledWith('T1');
   });

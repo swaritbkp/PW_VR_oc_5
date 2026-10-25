@@ -7,6 +7,7 @@ import { getInitialPlan } from '@/lib/plan/initialPlan';
 import { evaluateJourney, type GuidedActionId } from '@/lib/plan/journey';
 import { propagate, type PlanState } from '@/lib/plan/propagate';
 import type { PlanTask, VendorNeedId } from '@/lib/plan/types';
+import type { IntakeInput } from '@/lib/plan/schemas';
 import { VendorNeedEnum } from '@/lib/plan/schemas';
 import { createVersionStore, pushVersion, type VersionStore } from '@/lib/plan/versions';
 import { computeSchedule } from '@/lib/schedule/cpm';
@@ -14,6 +15,8 @@ import { probabilityOnTime } from '@/lib/schedule/pert';
 import { evaluate, nextBestAction } from '@/lib/schedule/sentinel';
 import type { Vendor, VendorSelection, VendorStatus } from '@/lib/vendors/types';
 import type { ModalType } from '@/components/UI/AppModals';
+import type { AppLanguage } from '@/components/UI/AppHeader';
+import { buildAdaptedPlanFromIntake } from './planAdapter';
 
 function usePlanStoreState() {
   const [versionStore, setVersionStore] = useState(() => createVersionStore(getInitialPlan()));
@@ -147,11 +150,13 @@ function useWorkspaceUiState() {
   const [activeModal, setActiveModal] = useState<ModalType>('none');
   const [activeTab, setActiveTab] = useState<'roadmap' | 'vendors' | 'graph'>('roadmap');
   const [vendorCategory, setVendorCategory] = useState<VendorNeedId>('venue');
+  const [language, setLanguage] = useState<AppLanguage>('en');
   return {
     selectedTaskId, setSelectedTaskId,
     activeModal, setActiveModal,
     activeTab, setActiveTab,
     vendorCategory, setVendorCategory,
+    language, setLanguage,
   };
 }
 
@@ -170,6 +175,29 @@ function useWorkspaceDerived(
   );
   const doneCount = useMemo(() => tasks.filter((t) => t.done).length, [tasks]);
   return { selectedNode, selectedTask, doneCount };
+}
+
+function createIntakeHandlers(
+  planState: ReturnType<typeof usePlanStoreState>,
+  uiState: ReturnType<typeof useWorkspaceUiState>,
+) {
+  const handleOpenVendorNeed = (need: string) => {
+    const parsed = VendorNeedEnum.safeParse(need);
+    if (parsed.success) uiState.setVendorCategory(parsed.data);
+    uiState.setActiveTab('vendors');
+  };
+  const handleImportPlan = (plan: PlanState, selections: readonly VendorSelection[]) => {
+    planState.setVersionStore((s) => pushVersion(s, plan, 'Imported .jashn package'));
+    if (selections?.length) planState.setVendorSelections([...selections]);
+  };
+  const handleApplyIntake = (intake: IntakeInput) => {
+    const adapted = buildAdaptedPlanFromIntake(intake, planState.currentPlan);
+    planState.setVersionStore((s) =>
+      pushVersion(s, adapted, `Intake adapted: ${intake.city} (${intake.guests} guests)`),
+    );
+    if (intake.language) uiState.setLanguage(intake.language);
+  };
+  return { handleOpenVendorNeed, handleImportPlan, handleApplyIntake };
 }
 
 /**
@@ -191,17 +219,7 @@ export function useHomePageState() {
     planState.setVersionStore,
     planState.setVendorSelections,
   );
-
-  const handleOpenVendorNeed = (need: string) => {
-    const parsed = VendorNeedEnum.safeParse(need);
-    if (parsed.success) uiState.setVendorCategory(parsed.data);
-    uiState.setActiveTab('vendors');
-  };
-
-  const handleImportPlan = (plan: PlanState, selections: readonly VendorSelection[]) => {
-    planState.setVersionStore((s) => pushVersion(s, plan, 'Imported .jashn package'));
-    if (selections?.length) planState.setVendorSelections([...selections]);
-  };
+  const intakeHandlers = createIntakeHandlers(planState, uiState);
 
   return {
     ...planState,
@@ -209,10 +227,9 @@ export function useHomePageState() {
     ...planHandlers,
     ...uiState,
     ...derived,
+    ...intakeHandlers,
     layout,
     commandData,
-    handleOpenVendorNeed,
-    handleImportPlan,
   };
 }
 

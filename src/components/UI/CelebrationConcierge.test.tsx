@@ -40,6 +40,44 @@ describe('CelebrationConcierge Component', () => {
     expect(handleOpenWhatIf).toHaveBeenCalledTimes(1);
   });
 
+  it('renders translated greeting banner when language is Hindi or Punjabi', () => {
+    const { rerender } = render(
+      <CelebrationConcierge
+        eventType="wedding"
+        city="Chandigarh"
+        guests={250}
+        daysLeft={75}
+        doneCount={2}
+        totalCount={8}
+        activeTab="roadmap"
+        onSelectTab={vi.fn()}
+        onOpenPlanB={vi.fn()}
+        onOpenWhatIf={vi.fn()}
+        language="hi"
+      />,
+    );
+    expect(screen.getByText(/नमस्ते और सत श्री अकाल!/i)).toBeInTheDocument();
+    expect(screen.getByText(/उत्सव कंसीयर्ज/i)).toBeInTheDocument();
+
+    rerender(
+      <CelebrationConcierge
+        eventType="wedding"
+        city="Chandigarh"
+        guests={250}
+        daysLeft={75}
+        doneCount={2}
+        totalCount={8}
+        activeTab="roadmap"
+        onSelectTab={vi.fn()}
+        onOpenPlanB={vi.fn()}
+        onOpenWhatIf={vi.fn()}
+        language="pa"
+      />,
+    );
+    expect(screen.getByText(/ਨਮਸਤੇ ਅਤੇ ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ!/i)).toBeInTheDocument();
+    expect(screen.getByText(/ਜਸ਼ਨ ਕੰਸੀਅਰਜ/i)).toBeInTheDocument();
+  });
+
   it('passes automated accessibility audit with zero violations', async () => {
     const { container } = render(
       <CelebrationConcierge

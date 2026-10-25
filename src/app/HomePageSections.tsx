@@ -27,6 +27,7 @@ function WorkspaceTopSection({ state }: { readonly state: HomePageState }): Reac
         totalCount={currentPlan.tasks.length}
         activeTab={activeTab}
         onSelectTab={setActiveTab}
+        language={state.language}
         onOpenPlanB={() => {
           setSimulationRun(true);
           setActiveModal('disruption');

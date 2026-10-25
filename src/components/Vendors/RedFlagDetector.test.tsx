@@ -14,12 +14,21 @@ describe('RedFlagDetector Component (AC23)', () => {
     expect(screen.getByText(/Detected Predatory Clauses/i)).toBeInTheDocument();
   });
 
-  it('switches text when preset button is clicked', () => {
+  it('switches text when preset button is clicked and dynamically updates score', () => {
     render(<RedFlagDetector onClose={vi.fn()} />);
 
-    const standardBtn = screen.getByRole('button', { name: /Standard Fair Contract/i });
+    const standardBtn = screen.getByRole('button', { name: /Standard Safe Contract/i });
     fireEvent.click(standardBtn);
     expect(screen.getAllByText(/Safe/i).length).toBeGreaterThanOrEqual(1);
+
+    const textarea = screen.getByLabelText(/Paste Vendor Quotation/i);
+    fireEvent.change(textarea, {
+      target: {
+        value:
+          'Vendor demands 100% non-refundable cash advance 60 days prior with no rain cancellation clause and hourly fine.',
+      },
+    });
+    expect(screen.getAllByText(/High Risk/i).length).toBeGreaterThanOrEqual(1);
   });
 
   it('passes automated accessibility audit with zero violations', async () => {

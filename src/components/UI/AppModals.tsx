@@ -7,8 +7,8 @@ import type { VendorNeedId } from '@/lib/plan/types';
 import type { BudgetLine } from '@/lib/budget/engine';
 import type { VendorSelection } from '@/lib/vendors/types';
 import type { VersionStore } from '@/lib/plan/versions';
+import type { IntakeInput } from '@/lib/plan/schemas';
 import { pushVersion, restoreVersion, undo } from '@/lib/plan/versions';
-import { buildTemplateTasks } from '@/lib/templates/catalog';
 
 const WhatIfDrawer = dynamic(
   () => import('@/components/LivingPlan/WhatIfDrawer').then((m) => m.WhatIfDrawer),
@@ -26,8 +26,8 @@ const AuditPanel = dynamic(
   () => import('@/components/Audit/AuditPanel').then((m) => m.AuditPanel),
   { ssr: false },
 );
-const TemplateGallery = dynamic(
-  () => import('@/components/Templates/TemplateGallery').then((m) => m.TemplateGallery),
+const TemplateModal = dynamic(
+  () => import('@/components/Templates/TemplateModal').then((m) => m.TemplateModal),
   { ssr: false },
 );
 const ChaosMonkey = dynamic(
@@ -58,6 +58,7 @@ const BudgetLedger = dynamic(
 export type ModalType =
   | 'none'
   | 'templates'
+  | 'intake'
   | 'whatif'
   | 'disruption'
   | 'share'
@@ -78,6 +79,7 @@ export interface AppModalsProps {
   readonly onOpenModal?: (modal: ModalType) => void;
   readonly onImportPlan?: (plan: PlanState, selections: readonly VendorSelection[]) => void;
   readonly onUpdateBudgetLines?: (lines: readonly BudgetLine[], reason: string) => void;
+  readonly onApplyIntake?: (intake: IntakeInput) => void;
 }
 
 function RenderAuditModal({ onClose }: { readonly onClose: () => void }): React.JSX.Element {
@@ -93,40 +95,6 @@ function RenderAuditModal({ onClose }: { readonly onClose: () => void }): React.
             schemaValidated: true,
           }}
           onClose={onClose}
-        />
-      </div>
-    </div>
-  );
-}
-
-function RenderTemplateModal({
-  currentPlan,
-  onClose,
-  setVersionStore,
-}: {
-  readonly currentPlan: PlanState;
-  readonly onClose: () => void;
-  readonly setVersionStore: React.Dispatch<React.SetStateAction<VersionStore>>;
-}): React.JSX.Element {
-  return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div className="max-w-4xl w-full bg-white p-6 rounded-2xl max-h-[90vh] overflow-y-auto space-y-4">
-        <div className="flex justify-end">
-          <button type="button" onClick={onClose} className="text-stone-400 hover:text-stone-700 text-sm">
-            ✕ Close
-          </button>
-        </div>
-        <TemplateGallery
-          onSelectTemplate={(tmpl) => {
-            const tasks = buildTemplateTasks(tmpl);
-            const np = {
-              ...currentPlan,
-              intake: { ...currentPlan.intake, eventType: tmpl.eventType },
-              tasks,
-            };
-            setVersionStore((s) => pushVersion(s, np, `Switched to template ${tmpl.title}`));
-            onClose();
-          }}
         />
       </div>
     </div>
@@ -216,12 +184,14 @@ export function AppModals(props: AppModalsProps): React.JSX.Element | null {
   const { activeModal, onClose } = props;
   if (activeModal === 'none') return null;
   if (activeModal === 'audit') return <RenderAuditModal onClose={onClose} />;
-  if (activeModal === 'templates') {
+  if (activeModal === 'templates' || activeModal === 'intake') {
     return (
-      <RenderTemplateModal
+      <TemplateModal
         currentPlan={props.currentPlan}
         onClose={onClose}
         setVersionStore={props.setVersionStore}
+        onApplyIntake={props.onApplyIntake}
+        initialView={activeModal === 'intake' ? 'intake' : 'gallery'}
       />
     );
   }

@@ -8,40 +8,41 @@ export interface RedFlagDetectorProps {
   readonly onClose: () => void;
 }
 
-const PRESETS: readonly { readonly label: string; readonly text: string }[] = [
+const PRESETS: readonly { readonly label: string; readonly text: string; readonly safe?: boolean }[] = [
   {
-    label: 'Predatory Caterer (Advance & Fuel)',
-    text: 'Payment terms: 100% advance required 14 days before the event. Diesel for generator billed at actuals with no cap.',
+    label: 'Predatory Contract (100% Advance & No Rain Refund)',
+    text: 'Vendor demands 100% non-refundable cash advance 60 days prior with no rain cancellation clause and ₹50,000/hr overtime penalty.',
+  },
+  {
+    label: 'Standard Safe Contract (Milestone Tokens)',
+    text: '20% booking token, 50% on event day, 100% force majeure weather refund and signed GST contract.',
+    safe: true,
   },
   {
     label: 'Strict Farmhouse (Curfew & Cash)',
     text: 'No written agreement needed, raw cash only on venue entry. Curfew at 10 PM sharp with heavy hourly fine.',
-  },
-  {
-    label: 'Standard Fair Contract',
-    text: '25% booking token, 50% on-site setup, 25% post-completion signoff. Standard force majeure weather postponement included.',
   },
 ];
 
 function renderRiskBadge(score: number, level: string) {
   if (level === 'safe') {
     return (
-      <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-center">
+      <div id="safety-score-card" className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-center">
         <p className="text-[11px] font-bold text-emerald-800 uppercase">Safety Score</p>
-        <p className="text-xl font-bold text-emerald-700">{score}/100 • Safe</p>
+        <p className="text-xl font-bold text-emerald-700">{score}/100 • Safe (Low Risk)</p>
       </div>
     );
   }
   if (level === 'caution') {
     return (
-      <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-center">
+      <div id="safety-score-card" className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-center">
         <p className="text-[11px] font-bold text-amber-800 uppercase">Safety Score</p>
         <p className="text-xl font-bold text-amber-700">{score}/100 • Caution</p>
       </div>
     );
   }
   return (
-    <div className="p-3 bg-rose-50 rounded-xl border border-rose-200 text-center">
+    <div id="safety-score-card" className="p-3 bg-rose-50 rounded-xl border border-rose-200 text-center">
       <p className="text-[11px] font-bold text-rose-800 uppercase">Safety Score</p>
       <p className="text-xl font-bold text-rose-700">{score}/100 • High Risk</p>
     </div>
@@ -99,17 +100,20 @@ function RedFlagHeader({ onClose }: { readonly onClose: () => void }) {
 
 function RedFlagPresets({ onSelectText }: { readonly onSelectText: (text: string) => void }) {
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-stone-700">Quick Test Scenarios:</span>
-      </div>
+    <div className="space-y-1.5">
+      <span className="text-xs font-semibold text-stone-700">Quick Test Scenarios:</span>
       <div className="flex flex-wrap gap-1.5">
         {PRESETS.map((preset, idx) => (
           <button
             key={`preset-${idx}`}
+            id={preset.safe ? 'test-safe-clause-btn' : idx === 0 ? 'test-predatory-clause-btn' : undefined}
             type="button"
             onClick={() => onSelectText(preset.text)}
-            className="text-[11px] bg-stone-100 hover:bg-stone-200 text-stone-800 font-medium px-2 py-1 rounded-lg border border-stone-200 transition-colors"
+            className={`text-[11px] font-medium px-2 py-1 rounded-lg border transition-colors ${
+              preset.safe
+                ? 'bg-emerald-50 text-emerald-900 border-emerald-300 hover:bg-emerald-100'
+                : 'bg-stone-100 hover:bg-stone-200 text-stone-800 border-stone-200'
+            }`}
           >
             {preset.label}
           </button>
@@ -119,18 +123,24 @@ function RedFlagPresets({ onSelectText }: { readonly onSelectText: (text: string
   );
 }
 
-function ContractTextInput({
-  text,
-  onChange,
-}: {
+interface ContractInputProps {
   readonly text: string;
   readonly onChange: (t: string) => void;
-}) {
+  readonly onAnalyze: () => void;
+  readonly onClear: () => void;
+}
+
+function ContractTextInput({ text, onChange, onAnalyze, onClear }: ContractInputProps) {
   return (
-    <div className="space-y-1">
-      <label htmlFor="vendor-quote-textarea" className="text-xs font-semibold text-stone-700">
-        Paste Vendor Quotation / Contract Terms:
-      </label>
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label htmlFor="vendor-quote-textarea" className="text-xs font-semibold text-stone-700">
+          Paste Vendor Quotation / Contract Terms:
+        </label>
+        <button type="button" onClick={onClear} className="text-[11px] text-stone-500 hover:text-stone-800 underline">
+          Clear
+        </button>
+      </div>
       <textarea
         id="vendor-quote-textarea"
         rows={3}
@@ -139,6 +149,16 @@ function ContractTextInput({
         placeholder="Paste vendor payment terms, advance conditions, cancellation clauses..."
         className="w-full text-xs border border-stone-300 rounded-xl p-2.5 focus:ring-amber-500 font-mono"
       />
+      <div className="flex gap-2">
+        <button
+          id="analyze-contract-btn"
+          type="button"
+          onClick={onAnalyze}
+          className="py-1.5 px-3 bg-amber-800 text-white font-bold text-xs rounded-xl hover:bg-amber-900 transition-colors shadow-xs"
+        >
+          🔍 Scan &amp; Analyze Contract Clauses
+        </button>
+      </div>
     </div>
   );
 }
@@ -197,7 +217,12 @@ export function RedFlagDetector({
       <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto border border-stone-200">
         <RedFlagHeader onClose={onClose} />
         <RedFlagPresets onSelectText={setContractText} />
-        <ContractTextInput text={contractText} onChange={setContractText} />
+        <ContractTextInput
+          text={contractText}
+          onChange={setContractText}
+          onAnalyze={() => {}}
+          onClear={() => setContractText('')}
+        />
         <RedFlagAnalysisResults analysis={analysis} />
         <ScannerCloseButton onClose={onClose} />
       </div>

@@ -19,6 +19,8 @@ export default function HomePage(): React.JSX.Element {
         title={currentPlan.intake.eventType}
         city={currentPlan.intake.city}
         onOpen={setActiveModal}
+        currentLang={state.language}
+        onLanguageChange={state.setLanguage}
       />
 
       <main id="main-content" className="space-y-6" tabIndex={-1}>
@@ -33,6 +35,7 @@ export default function HomePage(): React.JSX.Element {
           onOpenModal={setActiveModal}
           onImportPlan={state.handleImportPlan}
           onUpdateBudgetLines={state.handleUpdateBudgetLines}
+          onApplyIntake={state.handleApplyIntake}
         />
       </main>
     </div>

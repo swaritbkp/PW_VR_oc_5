@@ -1,20 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import dynamic from 'next/dynamic';
 import type { GraphLayout } from '@/lib/graph/layout';
 import type { EventType, PlanTask, VendorNeedId } from '@/lib/plan/types';
 import type { Vendor, VendorStatus } from '@/lib/vendors/types';
+import { EventGraph } from '../EventGraph/EventGraph';
 import { CelebrationRoadmap } from '../EventGraph/CelebrationRoadmap';
 import { VendorExplorer } from '../Vendors/VendorExplorer';
 import { EventGraphList } from '../EventGraph/EventGraphList';
-
-const EventGraph = dynamic(() => import('../EventGraph/EventGraph').then((m) => m.EventGraph), {
-  ssr: false,
-  loading: () => (
-    <div className="p-12 text-center text-xs text-stone-400">Loading graph canvas...</div>
-  ),
-});
 
 export interface WorkspaceTabsProps {
   readonly activeTab: 'roadmap' | 'vendors' | 'graph';

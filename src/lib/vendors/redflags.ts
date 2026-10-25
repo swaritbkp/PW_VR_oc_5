@@ -33,7 +33,7 @@ const RED_FLAG_RULES: readonly PatternRule[] = [
   {
     id: 'full_advance',
     severity: 'high',
-    regex: /(100%\s*advance|full\s*payment\s*(before|in\s*advance))/i,
+    regex: /(100%(\s+\w+){0,3}\s*advance|full\s*payment\s*(before|in\s*advance))/i,
     title: '100% Upfront Advance Payment Demanded',
     explanation:
       'Paying 100% before the event leaves the host with zero financial leverage if deliverables fail.',
@@ -51,13 +51,13 @@ const RED_FLAG_RULES: readonly PatternRule[] = [
   },
   {
     id: 'non_refundable',
-    severity: 'medium',
-    regex: /(non-refundable(\s*under\s*any\s*circumstance)?|no\s*refund\s*on\s*weather)/i,
-    title: 'Blanket Non-Refundable Cancellation Clause',
+    severity: 'high',
+    regex: /(non-refundable|no\s*refund|no\s*rain\s*cancellation)/i,
+    title: 'Blanket Non-Refundable / No Weather Cancellation Clause',
     explanation:
-      'Refusal to accommodate severe force majeure (e.g., extreme monsoon/curfew) imposes unfair risk.',
+      'Refusal to accommodate severe force majeure or rain imposes total financial risk onto the host.',
     counterClause:
-      'Counter with: 80% refund or free date postponement if cancelled due to verified force majeure.',
+      'Counter with: 80% refund or free date postponement if cancelled due to weather or verified force majeure.',
   },
   {
     id: 'generator_actuals',
@@ -71,8 +71,8 @@ const RED_FLAG_RULES: readonly PatternRule[] = [
   {
     id: 'curfew_penalty',
     severity: 'medium',
-    regex: /(curfew\s*at\s*10\s*pm|overtime\s*(penalty|fee)|hourly\s*fine)/i,
-    title: 'Aggressive Curfew Overtime Penalty',
+    regex: /(curfew\s*at\s*10\s*pm|overtime\s*(penalty|fee)|hourly\s*(fine|penalty)|\/hr\s*overtime)/i,
+    title: 'Aggressive Curfew / Overtime Penalty',
     explanation:
       'Hefty per-minute or hourly overtime penalties can cause disputes during celebration extensions.',
     counterClause:
