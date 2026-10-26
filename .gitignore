@@ -9,3 +9,8 @@ assets/generated/
 __pycache__/
 *.py[cod]
 tsconfig.tsbuildinfo
+# Video recordings and outputs
+*.webm
+*.mp4
+*.mov
+jashn-demo-submission.*
