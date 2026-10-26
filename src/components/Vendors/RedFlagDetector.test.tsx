@@ -19,6 +19,7 @@ describe('RedFlagDetector Component (AC23)', () => {
 
     expect(screen.getByText(/Vendor Contract Red-Flag Detector/i)).toBeInTheDocument();
     expect(screen.getByText(/100\/100 • Safe \(Low Risk\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Guardrail Active: PII Redacted/i)).toBeInTheDocument();
   });
 
   it('switches text when preset button is clicked and dynamically updates score', () => {

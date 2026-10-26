@@ -125,9 +125,10 @@ function buildCounterClause(tactic: NegotiationTactic, lang: NegotiationLanguage
  * tailored to Indian celebration vendors across English, Hindi, and Punjabi.
  */
 export function formulateNegotiation(context: NegotiationContext): NegotiationStrategy {
+  const safeQuote = Math.max(1000, Math.min(100000000, Number.isFinite(context.originalQuoteInr) ? context.originalQuoteInr : 1000));
   const discountPct = getTacticDiscount(context.tactic);
-  const savings = Math.round(context.originalQuoteInr * (discountPct / 100));
-  const targetOffer = Math.max(0, context.originalQuoteInr - savings);
+  const savings = Math.round(safeQuote * (discountPct / 100));
+  const targetOffer = Math.max(0, safeQuote - savings);
 
   return {
     tactic: context.tactic,

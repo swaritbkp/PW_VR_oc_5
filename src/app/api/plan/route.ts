@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { IntakeSchema, type IntakeInput } from '../../../lib/plan/schemas';
 import { checkRateLimit } from '../../../server/security/rateLimit';
 import { generatePlan } from '../../../server/genai/generate';
+import { detectPromptInjection, redactPii } from '../../../lib/security/guardrails';
 
 const MAX_BODY_BYTES = 8192;
 const STATUS_OK = 200;
@@ -33,6 +34,27 @@ type BodyValidationResult =
       payload: { ok: false; code: string; error: string; details?: unknown };
     };
 
+function parseAndValidateIntake(jsonBody: unknown): BodyValidationResult {
+  const parseResult = IntakeSchema.safeParse(jsonBody);
+  if (!parseResult.success) {
+    return {
+      ok: false,
+      status: STATUS_BAD_REQUEST,
+      payload: {
+        ok: false,
+        code: 'VALIDATION_ERROR',
+        error: 'Invalid intake parameters',
+        details: parseResult.error.issues,
+      },
+    };
+  }
+  const cleanData: IntakeInput = {
+    ...parseResult.data,
+    style: parseResult.data.style ? redactPii(parseResult.data.style).text : undefined,
+  };
+  return { ok: true, data: cleanData };
+}
+
 function validateRawBody(rawText: string): BodyValidationResult {
   if (rawText.length > MAX_BODY_BYTES) {
     return {
@@ -41,22 +63,16 @@ function validateRawBody(rawText: string): BodyValidationResult {
       payload: { ok: false, code: 'PAYLOAD_TOO_LARGE', error: 'Request body exceeds 8 KB limit' },
     };
   }
+  const injection = detectPromptInjection(rawText);
+  if (injection.isInjection) {
+    return {
+      ok: false,
+      status: STATUS_BAD_REQUEST,
+      payload: { ok: false, code: 'INJECTION_DETECTED', error: 'Adversarial prompt injection rejected by guardrails' },
+    };
+  }
   try {
-    const jsonBody = JSON.parse(rawText);
-    const parseResult = IntakeSchema.safeParse(jsonBody);
-    if (!parseResult.success) {
-      return {
-        ok: false,
-        status: STATUS_BAD_REQUEST,
-        payload: {
-          ok: false,
-          code: 'VALIDATION_ERROR',
-          error: 'Invalid intake parameters',
-          details: parseResult.error.issues,
-        },
-      };
-    }
-    return { ok: true, data: parseResult.data };
+    return parseAndValidateIntake(JSON.parse(rawText));
   } catch {
     return {
       ok: false,

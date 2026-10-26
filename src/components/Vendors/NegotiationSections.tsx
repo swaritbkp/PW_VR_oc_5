@@ -63,7 +63,7 @@ function QuoteInputRow({
         type="number"
         step="10000"
         value={quoteInr}
-        onChange={(e) => setQuoteInr(Math.max(0, Number(e.target.value) || 0))}
+        onChange={(e) => setQuoteInr(Math.max(1000, Math.min(100000000, Number(e.target.value) || 1000)))}
         className="w-full text-xs border border-stone-300 rounded-lg px-2.5 py-1.5 focus:ring-amber-500"
       />
     </div>

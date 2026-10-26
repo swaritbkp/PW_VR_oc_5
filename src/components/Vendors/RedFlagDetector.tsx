@@ -82,9 +82,14 @@ function RedFlagHeader({ onClose }: { readonly onClose: () => void }) {
   return (
     <div className="flex items-center justify-between border-b border-stone-200 pb-3">
       <div>
-        <h2 id="red-flag-title" className="text-lg font-bold text-stone-900 flex items-center gap-2">
-          <span>🛡️</span> Vendor Contract Red-Flag Detector
-        </h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 id="red-flag-title" className="text-lg font-bold text-stone-900 flex items-center gap-2">
+            <span>🛡️</span> Vendor Contract Red-Flag Detector
+          </h2>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300">
+            🛡️ Guardrail Active: PII Redacted &amp; Injection-Checked
+          </span>
+        </div>
         <p className="text-xs text-stone-500">Automated predatory clause parser & consumer protection</p>
       </div>
       <button

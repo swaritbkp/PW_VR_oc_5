@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { IntakeSchema, type IntakeInput } from '@/lib/plan/schemas';
 import type { EventType } from '@/lib/plan/types';
+import { detectPromptInjection } from '@/lib/security/guardrails';
 import {
   CityDateInputs,
   EventTypeSelector,
@@ -109,6 +110,12 @@ function validateAndSubmitIntake(
   onSubmit: (data: IntakeInput) => void,
 ) {
   setErrorMsg(null);
+  const textToCheck = `${String(candidate.city ?? '')} ${String(candidate.style ?? '')}`;
+  const injection = detectPromptInjection(textToCheck);
+  if (injection.isInjection) {
+    setErrorMsg('Security Guardrail Violation: Adversarial prompt injection or script tags are prohibited.');
+    return;
+  }
   const parsed = IntakeSchema.safeParse(candidate);
   if (!parsed.success) {
     setErrorMsg(parsed.error.issues[0]?.message ?? 'Invalid intake data');

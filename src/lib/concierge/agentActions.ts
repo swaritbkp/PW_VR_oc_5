@@ -1,4 +1,5 @@
 import type { PlanTask, TaskCategory } from '../plan/types';
+import { runGuardrailPipeline, BOUNDS_LIMITS } from '../security/guardrails';
 
 export type AgentAction =
   | { readonly type: 'mutate_guests'; readonly guests: number }
@@ -28,29 +29,38 @@ export interface ParsedAgentCommand {
   readonly reply: string;
   readonly actions: readonly AgentAction[];
   readonly executionLog: readonly string[];
+  readonly guardrailBlocked?: boolean;
+  readonly guardrailReason?: string;
+  readonly piiRedacted?: boolean;
 }
 
-function parseGuestsAction(input: string): { action: AgentAction; log: string } | null {
-  const match = /(?:scale|set|change|update|guests?|to)\s*(\d{2,5})\s*guests?/i.exec(input)
-    ?? /(?:guest\s*count\s*(?:to|=)?\s*)(\d{2,5})/i.exec(input)
-    ?? /(?:scale\s+(?:to\s+)?|to\s+)(\d{2,5})\s*guests/i.exec(input);
-  if (!match) return null;
-  const guests = Math.max(1, parseInt(match[1], 10));
-  return {
-    action: { type: 'mutate_guests', guests },
-    log: `✓ Updated Guests -> ${guests}`,
-  };
+interface ParsedNumberResult<T> {
+  readonly action?: T;
+  readonly log?: string;
+  readonly outOfBounds?: boolean;
+  readonly val?: number;
 }
 
-function parseBudgetAction(input: string): { action: AgentAction; log: string } | null {
-  const match = /(?:budget|₹|rs\.?|inr)\s*(?:to|=)?\s*(\d[\d,]*)/i.exec(input);
+function parseGuestsAction(input: string): ParsedNumberResult<AgentAction> | null {
+  const match = /(?:scale|set|change|update|guests?|to)\s*(-?\d+)\s*guests?/i.exec(input)
+    ?? /(?:guest\s*count\s*(?:to|=)?\s*)(-?\d+)/i.exec(input)
+    ?? /(?:scale\s+(?:to\s+)?|to\s+)(-?\d+)\s*guests/i.exec(input);
   if (!match) return null;
-  const rawNum = match[1].replace(/,/g, '');
-  const budgetInr = Math.max(1000, parseInt(rawNum, 10));
-  return {
-    action: { type: 'mutate_budget', budgetInr },
-    log: `✓ Updated Budget -> ₹${budgetInr.toLocaleString('en-IN')}`,
-  };
+  const count = parseInt(match[1], 10);
+  if (count < BOUNDS_LIMITS.minGuests || count > BOUNDS_LIMITS.maxGuests) {
+    return { outOfBounds: true, val: count };
+  }
+  return { action: { type: 'mutate_guests', guests: count }, log: `✓ Updated Guests -> ${count}` };
+}
+
+function parseBudgetAction(input: string): ParsedNumberResult<AgentAction> | null {
+  const match = /(?:budget|₹|rs\.?|inr)\s*(?:to|=)?\s*(-?\d[\d,]*)/i.exec(input);
+  if (!match) return null;
+  const amount = parseInt(match[1].replace(/,/g, ''), 10);
+  if (amount < BOUNDS_LIMITS.minBudgetInr || amount > BOUNDS_LIMITS.maxBudgetInr) {
+    return { outOfBounds: true, val: amount };
+  }
+  return { action: { type: 'mutate_budget', budgetInr: amount }, log: `✓ Updated Budget -> ₹${amount.toLocaleString('en-IN')}` };
 }
 
 function parseTaskAction(input: string): { action: AgentAction; log: string } | null {
@@ -99,34 +109,106 @@ function parseModalAction(input: string): { action: AgentAction; log: string } |
   return null;
 }
 
-/**
- * Deterministically parses natural language commands to extract state mutation
- * and UI navigation actions for the Jashn Agentic Copilot.
- */
-export function parseAgentCommand(input: string): ParsedAgentCommand {
+function checkSafetyPipeline(input: string): ParsedAgentCommand | null {
+  const guard = runGuardrailPipeline(input);
+  if (guard.isInjection) {
+    return {
+      reply: '🛡️ AI Guardrail Intercepted: Adversarial prompt injection or instruction override blocked. System security maintained.',
+      actions: [],
+      executionLog: ['🛡️ Injection Attempt Blocked'],
+      guardrailBlocked: true,
+      guardrailReason: 'Prompt Injection / Adversarial Override',
+    };
+  }
+  if (guard.isUnsafe) {
+    return {
+      reply: '🛡️ AI Guardrail Intercepted: Off-topic or unsafe request blocked. Jashn Copilot only processes celebration event planning workflows.',
+      actions: [],
+      executionLog: ['🛡️ Unsafe Content Blocked'],
+      guardrailBlocked: true,
+      guardrailReason: 'Off-Topic / Unsafe Request',
+    };
+  }
+  return null;
+}
+
+function checkBoundsViolations(
+  g: ParsedNumberResult<AgentAction> | null,
+  b: ParsedNumberResult<AgentAction> | null,
+): ParsedAgentCommand | null {
+  if (g?.outOfBounds) {
+    return {
+      reply: `🛡️ AI Guardrail Intercepted: Guest count (${g.val}) is out of domain bounds (1 to 5,000). Action rejected.`,
+      actions: [],
+      executionLog: ['🛡️ Out-of-Bounds Numbers Blocked'],
+      guardrailBlocked: true,
+      guardrailReason: 'Guest count out of bounds',
+    };
+  }
+  if (b?.outOfBounds) {
+    return {
+      reply: `🛡️ AI Guardrail Intercepted: Budget amount is out of domain bounds (₹1,000 to ₹50 Crore). Action rejected.`,
+      actions: [],
+      executionLog: ['🛡️ Out-of-Bounds Numbers Blocked'],
+      guardrailBlocked: true,
+      guardrailReason: 'Budget out of bounds',
+    };
+  }
+  return null;
+}
+
+function pushParsedAction(
+  item: { readonly action: AgentAction; readonly log: string } | null,
+  actions: AgentAction[],
+  logs: string[],
+): void {
+  if (!item) return;
+  actions.push(item.action);
+  logs.push(item.log);
+}
+
+function pushNumberAction(
+  item: ParsedNumberResult<AgentAction> | null,
+  actions: AgentAction[],
+  logs: string[],
+): void {
+  if (!item?.action || !item.log) return;
+  actions.push(item.action);
+  logs.push(item.log);
+}
+
+function parseCommandActions(cleanText: string, piiRedacted: boolean): ParsedAgentCommand {
+  const g = parseGuestsAction(cleanText);
+  const b = parseBudgetAction(cleanText);
+  const boundsErr = checkBoundsViolations(g, b);
+  if (boundsErr) return boundsErr;
+
   const actions: AgentAction[] = [];
   const executionLog: string[] = [];
-
-  const g = parseGuestsAction(input);
-  if (g) { actions.push(g.action); executionLog.push(g.log); }
-
-  const b = parseBudgetAction(input);
-  if (b) { actions.push(b.action); executionLog.push(b.log); }
-
-  const t = parseTaskAction(input);
-  if (t) { actions.push(t.action); executionLog.push(t.log); }
-
-  const tab = parseTabAction(input);
-  if (tab) { actions.push(tab.action); executionLog.push(tab.log); }
-
-  const m = parseModalAction(input);
-  if (m) { actions.push(m.action); executionLog.push(m.log); }
+  if (piiRedacted) executionLog.push('🛡️ PII Auto-Redacted');
+  pushNumberAction(g, actions, executionLog);
+  pushNumberAction(b, actions, executionLog);
+  pushParsedAction(parseTaskAction(cleanText), actions, executionLog);
+  pushParsedAction(parseTabAction(cleanText), actions, executionLog);
+  pushParsedAction(parseModalAction(cleanText), actions, executionLog);
 
   const reply = executionLog.length > 0
-    ? `Executed: ${executionLog.map((l) => l.replace('✓ ', '')).join(', ')}. Living event plan updated live.`
+    ? `Executed: ${executionLog.map((l) => l.replace('✓ ', '').replace('🛡️ ', '')).join(', ')}. Living event plan updated live.`
     : "I'm your Jashn AI Copilot. Ask me to scale guests, budget, add critical tasks, or jump to any workspace view!";
 
-  return { reply, actions, executionLog };
+  return { reply, actions, executionLog, piiRedacted };
+}
+
+/**
+ * Deterministically parses natural language commands to extract state mutation
+ * and UI navigation actions for the Jashn Agentic Copilot, guarded by safety checks.
+ */
+export function parseAgentCommand(input: string): ParsedAgentCommand {
+  const blocked = checkSafetyPipeline(input);
+  if (blocked) return blocked;
+
+  const guard = runGuardrailPipeline(input);
+  return parseCommandActions(guard.sanitizedText, guard.hasPii);
 }
 
 /**

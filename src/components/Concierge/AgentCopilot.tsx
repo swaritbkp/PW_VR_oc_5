@@ -14,6 +14,7 @@ interface ChatMessage {
   readonly sender: 'user' | 'agent';
   readonly text: string;
   readonly log?: readonly string[];
+  readonly guardrailBlocked?: boolean;
 }
 
 const QUICK_CHIPS = [
@@ -38,7 +39,7 @@ function CopilotHeader({ onToggle }: { readonly onToggle: () => void }): React.J
         <span className="text-base">🤖</span>
         <div>
           <h3 className="text-xs font-bold tracking-tight">Jashn Agentic AI Copilot</h3>
-          <p className="text-[10px] text-amber-200">Gemini 2.5 &bull; Autonomous Workspace Control</p>
+          <p className="text-[10px] text-amber-200">🛡️ Guardrails Active: Injection • PII • Bounds</p>
         </div>
       </div>
       <button
@@ -56,29 +57,42 @@ function CopilotHeader({ onToggle }: { readonly onToggle: () => void }): React.J
 function ExecutionLogPills({ log }: { readonly log: readonly string[] }): React.JSX.Element {
   return (
     <div className="mt-2 pt-2 border-t border-amber-200/60 flex flex-wrap gap-1">
-      {log.map((item, idx) => (
-        <span
-          key={`log-${idx}`}
-          className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-2xs"
-        >
-          {item}
-        </span>
-      ))}
+      {log.map((item, idx) => {
+        const isShield = item.startsWith('🛡️');
+        const color = isShield
+          ? 'bg-rose-100 text-rose-900 border-rose-300'
+          : 'bg-emerald-100 text-emerald-900 border-emerald-300';
+        return (
+          <span
+            key={`log-${idx}`}
+            className={`text-[10px] font-bold px-2 py-0.5 rounded-md border shadow-2xs ${color}`}
+          >
+            {item}
+          </span>
+        );
+      })}
     </div>
   );
 }
 
 function ChatMessageBubble({ msg }: { readonly msg: ChatMessage }): React.JSX.Element {
   const isAgent = msg.sender === 'agent';
+  const isBlocked = Boolean(msg.guardrailBlocked);
+  const bubbleBg = isAgent
+    ? isBlocked
+      ? 'bg-rose-50 text-rose-950 border border-rose-300 rounded-tl-xs'
+      : 'bg-amber-50/90 text-stone-800 border border-amber-200/80 rounded-tl-xs'
+    : 'bg-amber-800 text-white rounded-tr-xs';
+
   return (
     <div className={`flex flex-col ${isAgent ? 'items-start' : 'items-end'}`}>
-      <div
-        className={`max-w-[85%] p-2.5 rounded-2xl text-xs ${
-          isAgent
-            ? 'bg-amber-50/90 text-stone-800 border border-amber-200/80 rounded-tl-xs'
-            : 'bg-amber-800 text-white rounded-tr-xs'
-        }`}
-      >
+      <div className={`max-w-[85%] p-2.5 rounded-2xl text-xs ${bubbleBg}`}>
+        {isBlocked && (
+          <div className="flex items-center gap-1 font-bold text-rose-700 text-[10px] uppercase mb-1 border-b border-rose-200 pb-1">
+            <span>🛡️</span>
+            <span>AI Guardrail Intercepted: Input Blocked</span>
+          </div>
+        )}
         <p className="leading-relaxed">{msg.text}</p>
         {isAgent && msg.log && msg.log.length > 0 && <ExecutionLogPills log={msg.log} />}
       </div>
@@ -176,10 +190,13 @@ function useCopilotMessages(onExecuteAction: (a: AgentAction) => void) {
       sender: 'agent',
       text: parsed.reply,
       log: parsed.executionLog,
+      guardrailBlocked: parsed.guardrailBlocked,
     };
     setMessages((prev) => [...prev, userMsg, agentMsg]);
     setInput('');
-    for (const act of parsed.actions) onExecuteAction(act);
+    if (!parsed.guardrailBlocked) {
+      for (const act of parsed.actions) onExecuteAction(act);
+    }
   };
 
   return { messages, input, setInput, handleSendCommand };

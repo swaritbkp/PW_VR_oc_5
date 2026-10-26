@@ -1,3 +1,5 @@
+import { detectPromptInjection, redactPii } from '../security/guardrails';
+
 export type RedFlagSeverity = 'high' | 'medium' | 'low';
 
 export interface DetectedRedFlag {
@@ -102,14 +104,35 @@ function buildSummary(flags: readonly DetectedRedFlag[], risk: RiskLevel): strin
   return `High Risk: ${flags.length} predatory clause(s) detected. Do not pay token advance without amendments.`;
 }
 
+function checkInjectionRule(cleanText: string): DetectedRedFlag | null {
+  const injection = detectPromptInjection(cleanText);
+  if (!injection.isInjection) return null;
+  return {
+    id: 'adversarial_injection',
+    severity: 'high',
+    phraseMatched: injection.patternMatched ?? 'Adversarial instruction override',
+    riskTitle: 'Adversarial Prompt Manipulation Detected',
+    explanation: 'Contract terms contain prompt injection or instruction override payloads attempting to manipulate automated risk analysis.',
+    counterClause: 'Reject contract immediately. Suspected fraud or adversarial document manipulation.',
+  };
+}
+
 function scanRules(text: string): {
   readonly detected: readonly DetectedRedFlag[];
   readonly deduction: number;
 } {
+  const cleanText = redactPii(text).text;
   const detected: DetectedRedFlag[] = [];
   let deduction = 0;
+
+  const injFlag = checkInjectionRule(cleanText);
+  if (injFlag) {
+    detected.push(injFlag);
+    deduction += 60;
+  }
+
   for (const rule of RED_FLAG_RULES) {
-    const match = rule.regex.exec(text);
+    const match = rule.regex.exec(cleanText);
     if (match) {
       detected.push({
         id: rule.id,

@@ -4,11 +4,13 @@ import { buildTemplateTasks, getTemplate, templatesFor } from '@/lib/templates/c
 import type { IntakeInput } from '@/lib/plan/schemas';
 import type { PlanState } from '@/lib/plan/propagate';
 import type { PlanTask } from '@/lib/plan/types';
+import { redactPii } from '@/lib/security/guardrails';
 
 function createCustomTask(intake: IntakeInput, parentTaskId: string): PlanTask | null {
   const rawPrompt = intake.style || intake.nonNegotiables?.join(', ');
   if (!rawPrompt) return null;
-  const snippet = rawPrompt.length > 36 ? `${rawPrompt.slice(0, 36)}...` : rawPrompt;
+  const piiCleaned = redactPii(rawPrompt).text;
+  const snippet = piiCleaned.length > 36 ? `${piiCleaned.slice(0, 36)}...` : piiCleaned;
   return {
     id: `custom_${Date.now().toString(36)}`,
     name: `Custom Style: ${snippet}`,
@@ -18,7 +20,7 @@ function createCustomTask(intake: IntakeInput, parentTaskId: string): PlanTask |
     dependsOn: [parentTaskId],
     category: 'decor',
     drivers: ['budget'],
-    why: rawPrompt,
+    why: piiCleaned,
     optional: false,
   };
 }
