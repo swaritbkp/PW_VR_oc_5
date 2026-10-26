@@ -47,9 +47,7 @@ function RenderLanguages({
           type="button"
           onClick={() => setLang(l.code)}
           className={`px-2.5 py-1 text-xs font-semibold rounded-md border transition-colors ${
-            lang === l.code
-              ? 'bg-amber-800 text-white border-amber-800'
-              : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
+            lang === l.code ? 'bg-amber-800 text-white border-amber-800' : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
           }`}
         >
           {l.label}
@@ -68,14 +66,8 @@ function StatusActionButtons({
   readonly vendor: Vendor;
   readonly onUpdate: (v: Vendor, s: VendorStatus, q?: number) => void;
 }): React.JSX.Element {
-  const contactCls =
-    status === 'contacted'
-      ? 'bg-blue-50 text-blue-800 border-blue-400'
-      : 'border-stone-200 text-stone-700 hover:bg-stone-50';
-  const backupCls =
-    status === 'backup'
-      ? 'bg-teal-50 text-teal-800 border-teal-400'
-      : 'border-teal-200 text-teal-800 bg-teal-50/50 hover:bg-teal-100';
+  const contactCls = status === 'contacted' ? 'bg-blue-50 text-blue-800 border-blue-400' : 'border-stone-200 text-stone-700 hover:bg-stone-50';
+  const backupCls = status === 'backup' ? 'bg-teal-50 text-teal-800 border-teal-400' : 'border-teal-200 text-teal-800 bg-teal-50/50 hover:bg-teal-100';
 
   return (
     <div className="grid grid-cols-2 gap-2">
@@ -102,14 +94,21 @@ function RenderFooterButtons({
   quote,
   vendor,
   onUpdate,
+  isLocked,
 }: {
   readonly status: VendorStatus | undefined;
   readonly quote: number | undefined;
   readonly vendor: Vendor;
   readonly onUpdate: (v: Vendor, s: VendorStatus, q?: number) => void;
+  readonly isLocked?: boolean;
 }): React.JSX.Element {
   return (
     <div className="pt-4 border-t border-stone-200 space-y-2">
+      {(isLocked || status === 'booked') && (
+        <div className="text-center text-xs font-bold text-emerald-800 bg-emerald-50 py-1.5 px-2 rounded-lg border border-emerald-200">
+          ✓ Locked Custom Vendor Quote into Budget Ledger
+        </div>
+      )}
       <StatusActionButtons status={status} vendor={vendor} onUpdate={onUpdate} />
       <button
         type="button"
@@ -117,55 +116,30 @@ function RenderFooterButtons({
         className="w-full py-2.5 px-3 text-xs font-bold rounded-lg bg-emerald-700 text-white hover:bg-emerald-800 flex items-center justify-center gap-1.5 hover:-translate-y-0.5 transition-all duration-200 shadow-sm"
       >
         <IconCheckCircle className="w-3.5 h-3.5" />
-        <span>Confirm Booking</span>
+        <span>Confirm Booking &amp; Lock Quote</span>
       </button>
     </div>
   );
 }
 
-function ContactHeader({
-  name,
-  address,
-  onClose,
-}: {
-  readonly name: string;
-  readonly address: string;
-  readonly onClose: () => void;
-}): React.JSX.Element {
+function ContactHeader({ name, address, onClose }: { readonly name: string; readonly address: string; readonly onClose: () => void }): React.JSX.Element {
   return (
     <div className="flex items-start justify-between">
       <div>
         <h3 className="font-bold text-stone-900 text-base">{name}</h3>
         <p className="text-xs text-stone-500">{address}</p>
       </div>
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label="Close contact drawer"
-        className="p-1 text-stone-400 hover:text-stone-700 rounded-lg text-sm"
-      >
-        ✕
-      </button>
+      <button type="button" onClick={onClose} aria-label="Close contact drawer" className="p-1 text-stone-400 hover:text-stone-700 rounded-lg text-sm">✕</button>
     </div>
   );
 }
 
-function InitialMessageField({
-  lang,
-  setLang,
-  enquiry,
-}: {
-  readonly lang: EnquiryLanguage;
-  readonly setLang: (l: EnquiryLanguage) => void;
-  readonly enquiry: string;
-}): React.JSX.Element {
+function InitialMessageField({ lang, setLang, enquiry }: { readonly lang: EnquiryLanguage; readonly setLang: (l: EnquiryLanguage) => void; readonly enquiry: string }): React.JSX.Element {
   return (
     <div>
       <label className="block text-xs font-semibold text-stone-700 mb-1.5">Initial Message Language</label>
       <RenderLanguages lang={lang} setLang={setLang} />
-      <div className="mt-2 p-2.5 bg-stone-50 rounded-lg border border-stone-100 text-xs text-stone-700 italic">
-        &ldquo;{enquiry}&rdquo;
-      </div>
+      <div className="mt-2 p-2.5 bg-stone-50 rounded-lg border border-stone-100 text-xs text-stone-700 italic">&ldquo;{enquiry}&rdquo;</div>
     </div>
   );
 }
@@ -201,6 +175,21 @@ function useContactDetails(options: {
   return { lang, setLang, quoteInput, setQuoteInput, phoneObj, enquiry, waUrl, parsedQuote };
 }
 
+function useContactStatusUpdate(
+  onUpdateStatus: (vendor: Vendor, status: VendorStatus, quoteInr?: number) => void,
+) {
+  const [isLocked, setIsLocked] = useState(false);
+  const handleUpdate = (v: Vendor, s: VendorStatus, q?: number) => {
+    if (s === 'booked' && q) setIsLocked(true);
+    if (q !== undefined) {
+      onUpdateStatus(v, s, q);
+    } else {
+      onUpdateStatus(v, s);
+    }
+  };
+  return { isLocked, handleUpdate };
+}
+
 /**
  * Modal dialog for initiating contact, inspecting details, and updating booking status for a selected vendor.
  */
@@ -208,6 +197,7 @@ export function ContactSheet(props: ContactSheetProps): React.JSX.Element {
   const { vendor, eventType, eventDate, city, guests, currentStatus, onClose, onUpdateStatus, onOpenNegotiation, onOpenRedFlags } = props;
   const { lang, setLang, quoteInput, setQuoteInput, phoneObj, enquiry, waUrl, parsedQuote } =
     useContactDetails({ vendor, eventType, eventDate, city, guests });
+  const { isLocked, handleUpdate } = useContactStatusUpdate(onUpdateStatus);
 
   return (
     <div
@@ -227,7 +217,13 @@ export function ContactSheet(props: ContactSheetProps): React.JSX.Element {
         />
         <QuoteInputField quoteInput={quoteInput} setQuoteInput={setQuoteInput} />
       </div>
-      <RenderFooterButtons status={currentStatus} quote={parsedQuote} vendor={vendor} onUpdate={onUpdateStatus} />
+      <RenderFooterButtons
+        status={currentStatus}
+        quote={parsedQuote}
+        vendor={vendor}
+        onUpdate={handleUpdate}
+        isLocked={isLocked}
+      />
     </div>
   );
 }

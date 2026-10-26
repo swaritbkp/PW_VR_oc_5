@@ -38,6 +38,26 @@ describe('NegotiationCoach Component (AC22)', () => {
     expect(screen.getByText(/नमस्ते/i)).toBeInTheDocument();
   });
 
+  it('applies negotiation strategy and displays locked budget confirmation', () => {
+    const handleApply = vi.fn();
+    render(
+      <NegotiationCoach
+        initialVendorName="Grand Palace Banquets"
+        initialCategory="venue"
+        initialCity="Chandigarh"
+        initialQuoteInr={500000}
+        onClose={vi.fn()}
+        onApplyStrategy={handleApply}
+      />,
+    );
+
+    const applyBtn = screen.getByRole('button', { name: /Apply Strategy & Lock to Budget/i });
+    fireEvent.click(applyBtn);
+
+    expect(handleApply).toHaveBeenCalledWith(expect.any(Number), 'Grand Palace Banquets', 'venue');
+    expect(screen.getByText(/Locked Custom Vendor Quote into Budget Ledger/i)).toBeInTheDocument();
+  });
+
   it('passes automated accessibility audit with zero violations', async () => {
     const { container } = render(
       <NegotiationCoach

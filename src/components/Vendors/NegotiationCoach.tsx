@@ -20,6 +20,7 @@ export interface NegotiationCoachProps {
   readonly guestCount?: number;
   readonly eventDate?: string;
   readonly onClose: () => void;
+  readonly onApplyStrategy?: (targetOfferInr: number, vendorName: string, category: string) => void;
 }
 
 function NegotiationHeader({
@@ -95,9 +96,32 @@ function useNegotiationStrategy(opts: NegotiationCoachProps) {
   return { tactic, setTactic, language, setLanguage, quoteInr, setQuoteInr, copied, strategy, handleCopy };
 }
 
-function NegotiationDoneButton({ onClose }: { readonly onClose: () => void }) {
+function NegotiationFooterButtons({
+  isLocked,
+  onApply,
+  onClose,
+}: {
+  readonly isLocked: boolean;
+  readonly onApply?: () => void;
+  readonly onClose: () => void;
+}): React.JSX.Element {
   return (
-    <div className="flex justify-end pt-2">
+    <div className="flex items-center justify-between pt-2 border-t border-stone-100">
+      {isLocked ? (
+        <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+          ✓ Locked Custom Vendor Quote into Budget Ledger
+        </span>
+      ) : onApply ? (
+        <button
+          type="button"
+          onClick={onApply}
+          className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors shadow-xs"
+        >
+          ✓ Apply Strategy &amp; Lock to Budget
+        </button>
+      ) : (
+        <div />
+      )}
       <button
         type="button"
         onClick={onClose}
@@ -109,12 +133,29 @@ function NegotiationDoneButton({ onClose }: { readonly onClose: () => void }) {
   );
 }
 
+function useApplyLock(
+  onApplyStrategy: ((targetOfferInr: number, vendorName: string, category: string) => void) | undefined,
+  targetOfferInr: number,
+  vendorName: string,
+  category: string,
+) {
+  const [isLocked, setIsLocked] = useState(false);
+  const handleApply = onApplyStrategy
+    ? () => {
+        onApplyStrategy(targetOfferInr, vendorName, category);
+        setIsLocked(true);
+      }
+    : undefined;
+  return { isLocked, handleApply };
+}
+
 /**
  * Cultural AI negotiation assistant generating culturally authentic bargaining scripts across 4 strategic levers.
  */
 export function NegotiationCoach(props: NegotiationCoachProps): React.JSX.Element {
-  const { initialVendorName = 'Premier Event Vendor', onClose } = props;
+  const { initialVendorName = 'Premier Event Vendor', initialCategory = 'venue', onClose, onApplyStrategy } = props;
   const s = useNegotiationStrategy(props);
+  const { isLocked, handleApply } = useApplyLock(onApplyStrategy, s.strategy.targetOfferInr, initialVendorName, initialCategory);
 
   return (
     <div
@@ -144,7 +185,7 @@ export function NegotiationCoach(props: NegotiationCoachProps): React.JSX.Elemen
           copied={s.copied}
           onCopy={s.handleCopy}
         />
-        <NegotiationDoneButton onClose={onClose} />
+        <NegotiationFooterButtons isLocked={isLocked} onApply={handleApply} onClose={onClose} />
       </div>
     </div>
   );

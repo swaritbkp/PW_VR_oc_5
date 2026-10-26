@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import type { AgentAction } from '@/lib/concierge/agentActions';
 import { createAgentTask } from '@/lib/concierge/agentActions';
+import { sanitizeTaskDependencies } from '@/lib/concierge/nuanceActions';
 import { propagate, type PlanState } from '@/lib/plan/propagate';
-import { pushVersion, type VersionStore } from '@/lib/plan/versions';
+import { currentPlan, pushVersion, type VersionStore } from '@/lib/plan/versions';
 import type { ModalType } from '@/components/UI/AppModals';
 
 export interface AgentHandlerContext {
@@ -16,18 +17,41 @@ export interface AgentHandlerContext {
 
 function handleStateMutation(action: AgentAction, ctx: AgentHandlerContext) {
   if (action.type === 'mutate_guests') {
-    const res = propagate(ctx.currentPlan, { kind: 'guests', guests: action.guests });
-    ctx.setVersionStore((s) => pushVersion(s, res.plan, res.diff.join('; ')));
+    ctx.setVersionStore((s) => {
+      const plan = currentPlan(s);
+      const res = propagate(plan, { kind: 'guests', guests: action.guests });
+      return pushVersion(s, res.plan, res.diff.join('; '));
+    });
   } else if (action.type === 'mutate_budget') {
-    const res = propagate(ctx.currentPlan, { kind: 'budget', budgetInr: action.budgetInr });
-    ctx.setVersionStore((s) => pushVersion(s, res.plan, res.diff.join('; ')));
+    ctx.setVersionStore((s) => {
+      const plan = currentPlan(s);
+      const res = propagate(plan, { kind: 'budget', budgetInr: action.budgetInr });
+      return pushVersion(s, res.plan, res.diff.join('; '));
+    });
   } else if (action.type === 'add_task') {
-    const newTask = createAgentTask(action.name);
-    const nextPlan = { ...ctx.currentPlan, tasks: [newTask, ...ctx.currentPlan.tasks] };
-    ctx.setVersionStore((s) => pushVersion(s, nextPlan, `Injected task: ${action.name}`));
+    ctx.setVersionStore((s) => {
+      const plan = currentPlan(s);
+      const raw = createAgentTask(action.name, {
+        category: action.category,
+        optimistic: action.optimistic,
+        mostLikely: action.likely,
+        pessimistic: action.pessimistic,
+      });
+      const safe = sanitizeTaskDependencies(plan.tasks, raw);
+      return pushVersion(s, { ...plan, tasks: [safe, ...plan.tasks] }, `Injected task: ${action.name}`);
+    });
+  } else if (action.type === 'add_budget_line') {
+    ctx.setVersionStore((s) => {
+      const plan = currentPlan(s);
+      const filtered = plan.budgetLines.filter((l) => l.name !== action.line.name);
+      return pushVersion(s, { ...plan, budgetLines: [...filtered, action.line] }, `Added line: ${action.line.name}`);
+    });
   } else if (action.type === 'set_city') {
-    const res = propagate(ctx.currentPlan, { kind: 'city', city: action.city });
-    ctx.setVersionStore((s) => pushVersion(s, res.plan, res.diff.join('; ')));
+    ctx.setVersionStore((s) => {
+      const plan = currentPlan(s);
+      const res = propagate(plan, { kind: 'city', city: action.city });
+      return pushVersion(s, res.plan, res.diff.join('; '));
+    });
   }
 }
 

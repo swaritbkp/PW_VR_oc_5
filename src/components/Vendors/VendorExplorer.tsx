@@ -15,6 +15,7 @@ export interface VendorExplorerProps {
   readonly eventDate: string;
   readonly guests: number;
   readonly onBookVendor?: (vendor: Vendor, status: VendorStatus, quoteInr?: number) => void;
+  readonly onApplyStrategy?: (targetOfferInr: number, vendorName: string, category: string) => void;
 }
 
 function useVendorSearch(category: VendorNeedId, eventType: EventType, city: string) {
@@ -165,8 +166,9 @@ function ExplorerActiveModals(props: {
   readonly eventDate: string;
   readonly guests: number;
   readonly onBookVendor?: (vendor: Vendor, status: VendorStatus, quoteInr?: number) => void;
+  readonly onApplyStrategy?: (targetOfferInr: number, vendorName: string, category: string) => void;
 }) {
-  const { state: s, eventType, eventDate, guests, onBookVendor } = props;
+  const { state: s, eventType, eventDate, guests, onBookVendor, onApplyStrategy } = props;
   return (
     <>
       <VendorContactContainer
@@ -188,6 +190,7 @@ function ExplorerActiveModals(props: {
         guests={guests}
         eventDate={eventDate}
         onClose={() => s.setActiveTool('none')}
+        onApplyStrategy={onApplyStrategy}
       />
     </>
   );
@@ -197,7 +200,7 @@ function ExplorerActiveModals(props: {
  * Location-aware vendor explorer integrating the Google Places API route with ranked list and map views.
  */
 export function VendorExplorer(props: VendorExplorerProps): React.JSX.Element {
-  const { initialCity, initialCategory, eventType, eventDate, guests, onBookVendor } = props;
+  const { initialCity, initialCategory, eventType, eventDate, guests, onBookVendor, onApplyStrategy } = props;
   const s = useVendorExplorerState(initialCity, initialCategory, eventType);
 
   return (
@@ -224,6 +227,7 @@ export function VendorExplorer(props: VendorExplorerProps): React.JSX.Element {
         eventDate={eventDate}
         guests={guests}
         onBookVendor={onBookVendor}
+        onApplyStrategy={onApplyStrategy}
       />
     </div>
   );

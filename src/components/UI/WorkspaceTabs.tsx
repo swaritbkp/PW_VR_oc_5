@@ -22,6 +22,7 @@ export interface WorkspaceTabsProps {
   readonly guests: number;
   readonly vendorCategory?: VendorNeedId;
   readonly onBookVendor: (vendor: Vendor, status: VendorStatus, quoteInr?: number) => void;
+  readonly onApplyStrategy?: (targetOfferInr: number, vendorName: string, category: string) => void;
 }
 
 function GraphViewToggle({
@@ -155,6 +156,7 @@ export function WorkspaceTabs(props: WorkspaceTabsProps): React.JSX.Element {
         eventDate={props.eventDate}
         guests={props.guests}
         onBookVendor={props.onBookVendor}
+        onApplyStrategy={props.onApplyStrategy}
       />
     );
   }

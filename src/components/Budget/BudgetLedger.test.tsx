@@ -77,6 +77,36 @@ describe('BudgetLedger Component (AC1, AC3)', () => {
     expect(updated[0].rateInr).toBe(600000);
   });
 
+  it('adds New-Age Nuance presets (Star Night, 2nd Caterer, Craft Bar) and updates budget', () => {
+    const handleUpdate = vi.fn();
+    render(
+      <BudgetLedger
+        budgetLines={sampleLines}
+        budgetInr={2500000}
+        guests={350}
+        onClose={vi.fn()}
+        onUpdateBudgetLines={handleUpdate}
+      />,
+    );
+
+    // Click Star Night Preset
+    fireEvent.click(screen.getByRole('button', { name: /Star Night & Artist Rider/i }));
+    expect(screen.getAllByText(/Star Night: Artist Tech Rider/i).length).toBeGreaterThanOrEqual(1);
+
+    // Click Specialty 2nd Caterer Preset
+    fireEvent.click(screen.getByRole('button', { name: /Specialty 2nd Caterer/i }));
+    expect(screen.getAllByText(/Specialty 2nd Caterer: Live Chaat/i).length).toBeGreaterThanOrEqual(1);
+
+    // Click Craft Bar Preset
+    fireEvent.click(screen.getByRole('button', { name: /Craft Bar, Mixology & Excise/i }));
+    expect(screen.getAllByText(/Craft Bar, Mixology & Excise Permit/i).length).toBeGreaterThanOrEqual(1);
+
+    fireEvent.click(screen.getByRole('button', { name: /Save & Apply Changes/i }));
+    expect(handleUpdate).toHaveBeenCalled();
+    const updated = handleUpdate.mock.calls[0][0];
+    expect(updated).toHaveLength(5);
+  });
+
   it('passes automated accessibility audit with zero violations (AC7)', async () => {
     const { container } = render(
       <BudgetLedger

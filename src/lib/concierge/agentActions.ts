@@ -1,38 +1,10 @@
 import type { PlanTask, TaskCategory } from '../plan/types';
 import { runGuardrailPipeline, BOUNDS_LIMITS } from '../security/guardrails';
+import type { AgentAction, ParsedAgentCommand } from './types';
+import { parseNewAgeNuances, sanitizeTaskDependencies } from './nuanceActions';
 
-export type AgentAction =
-  | { readonly type: 'mutate_guests'; readonly guests: number }
-  | { readonly type: 'mutate_budget'; readonly budgetInr: number }
-  | {
-      readonly type: 'add_task';
-      readonly name: string;
-      readonly days?: number;
-      readonly critical?: boolean;
-      readonly category?: TaskCategory;
-    }
-  | { readonly type: 'navigate_tab'; readonly tab: 'roadmap' | 'vendors' | 'graph' }
-  | {
-      readonly type: 'open_modal';
-      readonly modal:
-        | 'chaos'
-        | 'redflags'
-        | 'negotiate'
-        | 'whatif'
-        | 'templates'
-        | 'dossier'
-        | 'budget';
-    }
-  | { readonly type: 'set_city'; readonly city: string };
-
-export interface ParsedAgentCommand {
-  readonly reply: string;
-  readonly actions: readonly AgentAction[];
-  readonly executionLog: readonly string[];
-  readonly guardrailBlocked?: boolean;
-  readonly guardrailReason?: string;
-  readonly piiRedacted?: boolean;
-}
+export type { AgentAction, ParsedAgentCommand };
+export { sanitizeTaskDependencies };
 
 interface ParsedNumberResult<T> {
   readonly action?: T;
@@ -54,7 +26,7 @@ function parseGuestsAction(input: string): ParsedNumberResult<AgentAction> | nul
 }
 
 function parseBudgetAction(input: string): ParsedNumberResult<AgentAction> | null {
-  const match = /(?:budget|₹|rs\.?|inr)\s*(?:to|=)?\s*(-?\d[\d,]*)/i.exec(input);
+  const match = /(?:set\s+|scale\s+|update\s+|change\s+)?(?:the\s+)?budget\s*(?:to|=|\s:?)\s*(?:₹|rs\.?|inr)?\s*(-?\d[\d,]*)/i.exec(input);
   if (!match) return null;
   const amount = parseInt(match[1].replace(/,/g, ''), 10);
   if (amount < BOUNDS_LIMITS.minBudgetInr || amount > BOUNDS_LIMITS.maxBudgetInr) {
@@ -68,6 +40,10 @@ function parseTaskAction(input: string): { action: AgentAction; log: string } | 
   if (!match) return null;
   const rawName = match[1].trim().replace(/(?:task|to the critical path)$/i, '').trim();
   if (!rawName || rawName.length < 3) return null;
+  // If the command already specifically represents one of our celebration nuances, skip duplicate
+  if (/(?:star\s*night|artist|sufi|caterer|chaat|craft\s*bar|cocktail|excise|liquor)/i.test(rawName)) {
+    return null;
+  }
   return {
     action: { type: 'add_task', name: rawName, critical: true, category: 'entertainment' },
     log: `✓ Added Node -> ${rawName}`,
@@ -188,6 +164,7 @@ function parseCommandActions(cleanText: string, piiRedacted: boolean): ParsedAge
   if (piiRedacted) executionLog.push('🛡️ PII Auto-Redacted');
   pushNumberAction(g, actions, executionLog);
   pushNumberAction(b, actions, executionLog);
+  parseNewAgeNuances(cleanText, actions, executionLog);
   pushParsedAction(parseTaskAction(cleanText), actions, executionLog);
   pushParsedAction(parseTabAction(cleanText), actions, executionLog);
   pushParsedAction(parseModalAction(cleanText), actions, executionLog);
@@ -211,18 +188,28 @@ export function parseAgentCommand(input: string): ParsedAgentCommand {
   return parseCommandActions(guard.sanitizedText, guard.hasPii);
 }
 
+export interface AgentTaskOptions {
+  readonly dependsOnId?: string;
+  readonly category?: TaskCategory;
+  readonly optimistic?: number;
+  readonly mostLikely?: number;
+  readonly pessimistic?: number;
+}
+
 /**
  * Creates a new PlanTask ready for insertion into the CPM Event Graph.
  */
-export function createAgentTask(name: string, dependsOnId = 'W01'): PlanTask {
+export function createAgentTask(name: string, options?: AgentTaskOptions | string): PlanTask {
+  const opts: AgentTaskOptions = typeof options === 'string' ? { dependsOnId: options } : (options ?? {});
+  const dependsOnId = opts.dependsOnId ?? 'W01';
   return {
-    id: `agent_${Date.now().toString(36)}`,
+    id: `agent_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`,
     name,
-    optimistic: 2,
-    mostLikely: 4,
-    pessimistic: 6,
+    optimistic: opts.optimistic ?? 2,
+    mostLikely: opts.mostLikely ?? 4,
+    pessimistic: opts.pessimistic ?? 6,
     dependsOn: [dependsOnId],
-    category: 'entertainment',
+    category: opts.category ?? 'entertainment',
     drivers: ['date'],
     why: 'Autonomous AI Copilot living plan injection',
     optional: false,

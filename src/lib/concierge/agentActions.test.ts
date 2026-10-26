@@ -21,6 +21,28 @@ describe('agentActions NLP Parser', () => {
     expect(result.executionLog).toContain('✓ Navigated -> CPM Graph');
   });
 
+  it('parses full New-Age Celebration multi-intent command across graph and budget', () => {
+    const cmd =
+      'Scale to 420 guests, add Star Night (₹4.5L), add 2nd Chaat Caterer & Craft Bar permit, and jump to CPM Graph';
+    const result = parseAgentCommand(cmd);
+
+    expect(result.guardrailBlocked).toBeFalsy();
+    expect(result.actions.length).toBeGreaterThanOrEqual(7);
+    expect(result.actions).toContainEqual({ type: 'mutate_guests', guests: 420 });
+    expect(result.actions).toContainEqual({ type: 'navigate_tab', tab: 'graph' });
+
+    expect(result.actions.some((a) => a.type === 'add_task' && a.name.includes('Star Night'))).toBe(true);
+    expect(result.actions.some((a) => a.type === 'add_task' && a.name.includes('Multi-Caterer'))).toBe(true);
+    expect(result.actions.some((a) => a.type === 'add_task' && a.name.includes('Excise Liquor Permit'))).toBe(true);
+
+    expect(result.actions.some((a) => a.type === 'add_budget_line' && a.line.name.includes('Star Night'))).toBe(true);
+    expect(result.actions.some((a) => a.type === 'add_budget_line' && a.line.name.includes('Specialty 2nd Caterer'))).toBe(true);
+    expect(result.actions.some((a) => a.type === 'add_budget_line' && a.line.name.includes('Craft Bar'))).toBe(true);
+
+    expect(result.executionLog).toContain('✓ Updated Guests -> 420');
+    expect(result.executionLog).toContain('✓ Navigated -> CPM Graph');
+  });
+
   it('parses budget scaling and modal triggers', () => {
     const cmd = 'Set budget to 3000000 and launch Chaos Monkey disruption';
     const result = parseAgentCommand(cmd);

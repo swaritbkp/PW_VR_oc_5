@@ -25,6 +25,67 @@ function createCustomTask(intake: IntakeInput, parentTaskId: string): PlanTask |
   };
 }
 
+function getStarNightNuance(rawPrompt: string, rootId: string): { task?: PlanTask; line?: BudgetLine } {
+  if (!/(?:star\s*night|sufi\s*night|artist|celebrity|live\s*band)/i.test(rawPrompt)) return {};
+  return {
+    task: {
+      id: `nuance_star_${Date.now()}`,
+      name: 'Star Night: Artist Tech Rider & Sound NOC',
+      optimistic: 5, mostLikely: 8, pessimistic: 14,
+      dependsOn: [rootId], category: 'entertainment', drivers: ['budget'],
+      why: 'Artist technical rider, sound setup and legal NOC', optional: false,
+    },
+    line: {
+      id: 'b_nuance_star', category: 'entertainment', name: 'Star Night & Artist Rider',
+      unit: 'fixed', rateInr: 450000, quantity: 1, drivers: ['budget'],
+      notes: 'Artist tech rider, sound setup & NOC',
+    },
+  };
+}
+
+function getCatererNuance(rawPrompt: string, rootId: string): { task?: PlanTask; line?: BudgetLine } {
+  if (!/(?:multiple\s*caterer|second\s*caterer|2nd\s*caterer|chaat|live\s*counter|halwai)/i.test(rawPrompt)) return {};
+  return {
+    task: {
+      id: `nuance_cater_${Date.now()}`,
+      name: 'Multi-Caterer Split: Tasting & Kitchen Zoning',
+      optimistic: 3, mostLikely: 5, pessimistic: 9,
+      dependsOn: [rootId], category: 'food', drivers: ['guests'],
+      why: 'Dual kitchen zoning, tasting signoff & live counters', optional: false,
+    },
+    line: {
+      id: 'b_nuance_cater', category: 'food', name: 'Specialty 2nd Caterer / Live Chaat Counter',
+      unit: 'per_head', rateInr: 450, quantity: 1, drivers: ['guests', 'budget'],
+      notes: 'Secondary live counters, chaat & dessert halwai',
+    },
+  };
+}
+
+function getBarNuance(rawPrompt: string, rootId: string): { task?: PlanTask; line?: BudgetLine } {
+  if (!/(?:craft\s*bar|cocktail|drinks|liquor|excise|mixology|l-?12a)/i.test(rawPrompt)) return {};
+  return {
+    task: {
+      id: `nuance_bar_${Date.now()}`,
+      name: 'Excise Liquor Permit (L-12A) & Craft Bar',
+      optimistic: 4, mostLikely: 7, pessimistic: 12,
+      dependsOn: [rootId], category: 'permits', drivers: ['date'],
+      why: 'State excise liquor permit and mixologist setup', optional: false,
+    },
+    line: {
+      id: 'b_nuance_bar', category: 'food', name: 'Craft Bar, Mixology & Excise Permit',
+      unit: 'per_head', rateInr: 650, quantity: 1, drivers: ['guests', 'budget'],
+      notes: 'Craft mixology, bar setup & excise permit',
+    },
+  };
+}
+
+function extractNuanceElements(rawPrompt: string, rootId: string): { tasks: PlanTask[]; lines: BudgetLine[] } {
+  const helpers = [getStarNightNuance(rawPrompt, rootId), getCatererNuance(rawPrompt, rootId), getBarNuance(rawPrompt, rootId)];
+  const tasks = helpers.map((h) => h.task).filter((t): t is PlanTask => t !== undefined);
+  const lines = helpers.map((h) => h.line).filter((l): l is BudgetLine => l !== undefined);
+  return { tasks, lines };
+}
+
 function buildCategoryLines(venue: number, decor: number, media: number, styleSnippet?: string): BudgetLine[] {
   return [
     {
@@ -58,23 +119,41 @@ function buildScaledLines(budgetInr: number, guests: number, styleSnippet?: stri
   return [buildCategoryLines(venue, decor, media, styleSnippet)[0], foodLine, ...buildCategoryLines(venue, decor, media, styleSnippet).slice(1)];
 }
 
+function resolveTemplate(intake: IntakeInput) {
+  if (intake.templateId) {
+    const t = getTemplate(intake.templateId);
+    if (t) return t;
+  }
+  const byType = templatesFor(intake.eventType)[0];
+  if (byType) return byType;
+  return getTemplate('wedding-phulkari-courtyard')!;
+}
+
+function resolvePrompt(intake: IntakeInput): string {
+  if (intake.style) return intake.style;
+  if (intake.nonNegotiables && intake.nonNegotiables.length > 0) {
+    return intake.nonNegotiables.join(', ');
+  }
+  return '';
+}
+
 /**
  * Builds an adapted PlanState from user intake parameters, creating a customized CPM DAG task node
  * and scaling the budget with a 10% contingency reserve.
  */
 export function buildAdaptedPlanFromIntake(intake: IntakeInput, currentPlan: PlanState): PlanState {
-  const template =
-    (intake.templateId ? getTemplate(intake.templateId) : undefined) ??
-    templatesFor(intake.eventType)[0] ??
-    getTemplate('wedding-phulkari-courtyard')!;
+  const template = resolveTemplate(intake);
   const baseTasks = buildTemplateTasks(template);
-  const customTask = createCustomTask(intake, baseTasks[0]?.id ?? 'W01');
-  const tasks = customTask ? [customTask, ...baseTasks] : baseTasks;
+  const anchorId = baseTasks[0]?.id ?? 'W01';
+  const customTask = createCustomTask(intake, anchorId);
+  const nuances = extractNuanceElements(resolvePrompt(intake), anchorId);
 
+  const tasks = [...nuances.tasks, ...(customTask ? [customTask] : []), ...baseTasks];
   const styleSnippet = intake.style ? intake.style.slice(0, 24) : undefined;
-  const budgetLines = buildScaledLines(intake.budgetInr, intake.guests, styleSnippet);
+  const budgetLines = [...nuances.lines, ...buildScaledLines(intake.budgetInr, intake.guests, styleSnippet)];
   const todayIso = new Date().toISOString().slice(0, 10);
-  const targetDays = daysBetween(todayIso, intake.date) ?? currentPlan.targetDays;
+  const diffDays = daysBetween(todayIso, intake.date);
+  const targetDays = diffDays !== null ? diffDays : currentPlan.targetDays;
 
   return {
     id: `plan_${Date.now()}`,

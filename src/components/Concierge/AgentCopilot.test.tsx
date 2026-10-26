@@ -39,6 +39,34 @@ describe('AgentCopilot Component', () => {
     expect(screen.getAllByText(/Updated Guests -> 420/i).length).toBeGreaterThanOrEqual(1);
   });
 
+  it('triggers quick-prompt chip for New-Age Celebration multi-intent execution', () => {
+    const handleAction = vi.fn();
+    render(<AgentCopilot isOpen={true} onToggle={vi.fn()} onExecuteAction={handleAction} />);
+
+    const chip = screen.getByRole('button', { name: /Scale to 420 guests, add Star Night/i });
+    fireEvent.click(chip);
+
+    expect(handleAction).toHaveBeenCalledWith({ type: 'mutate_guests', guests: 420 });
+    expect(handleAction).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'add_task', name: 'Star Night: Artist Tech Rider & Sound NOC' }),
+    );
+    expect(handleAction).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'add_budget_line' }),
+    );
+    expect(handleAction).toHaveBeenCalledWith({ type: 'navigate_tab', tab: 'graph' });
+  });
+
+  it('triggers guardrail test quick-prompt chip and displays interception badge', () => {
+    const handleAction = vi.fn();
+    render(<AgentCopilot isOpen={true} onToggle={vi.fn()} onExecuteAction={handleAction} />);
+
+    const guardrailChip = screen.getByRole('button', { name: /Test Guardrail/i });
+    fireEvent.click(guardrailChip);
+
+    expect(handleAction).not.toHaveBeenCalled();
+    expect(screen.getByText(/AI Guardrail Intercepted: Input Blocked/i)).toBeInTheDocument();
+  });
+
   it('displays guardrail interception alert and blocks actions on prompt injection', () => {
     const handleAction = vi.fn();
     render(<AgentCopilot isOpen={true} onToggle={vi.fn()} onExecuteAction={handleAction} />);

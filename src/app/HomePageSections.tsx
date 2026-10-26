@@ -1,12 +1,17 @@
 'use client';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import { GuidedJourneyBar } from '@/components/Journey/GuidedJourneyBar';
 import { CelebrationConcierge } from '@/components/UI/CelebrationConcierge';
 import { CommandCenter } from '@/components/CommandCenter/CommandCenter';
 import { WorkspaceTabs } from '@/components/UI/WorkspaceTabs';
-import { NodeInspector } from '@/components/NodeInspector/NodeInspector';
 import type { HomePageState } from './useHomePageState';
+
+const NodeInspector = dynamic(
+  () => import('@/components/NodeInspector/NodeInspector').then((m) => m.NodeInspector),
+  { ssr: false },
+);
 
 function WorkspaceTopSection({ state }: { readonly state: HomePageState }): React.JSX.Element {
   const { currentPlan, doneCount, activeTab, setActiveTab, setSimulationRun, setActiveModal } = state;
@@ -75,6 +80,7 @@ function WorkspaceBottomSection({ state }: { readonly state: HomePageState }): R
         guests={currentPlan.intake.guests}
         vendorCategory={state.vendorCategory}
         onBookVendor={state.handleBookVendor}
+        onApplyStrategy={state.handleApplyNegotiationStrategy}
       />
     </section>
   );

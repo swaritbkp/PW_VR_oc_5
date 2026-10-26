@@ -82,6 +82,7 @@ describe('ContactSheet Component (AC22, AC23, AC24, AC30)', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Confirm Booking/i }));
     expect(handleUpdate).toHaveBeenCalledWith(sampleVendor, 'booked', 150000);
+    expect(screen.getByText(/Locked Custom Vendor Quote into Budget Ledger/i)).toBeInTheDocument();
   });
 
   it('passes accessibility audits with axe', async () => {

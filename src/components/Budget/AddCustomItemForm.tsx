@@ -8,29 +8,59 @@ export interface AddCustomItemFormProps {
   readonly onAddItem: (item: BudgetLine) => void;
 }
 
-const CATEGORIES: readonly TaskCategory[] = [
-  'venue',
-  'food',
-  'decor',
-  'media',
-  'entertainment',
-  'logistics',
-  'planning',
+export interface NewAgePreset {
+  readonly label: string;
+  readonly name: string;
+  readonly category: TaskCategory;
+  readonly unit: 'fixed' | 'per_head';
+  readonly rateInr: number;
+  readonly notes: string;
+}
+
+export const NEW_AGE_PRESETS: readonly NewAgePreset[] = [
+  {
+    label: '🎤 + Star Night & Artist Rider (₹4,50,000 Fixed)',
+    name: 'Star Night: Artist Tech Rider & Sound NOC',
+    category: 'entertainment',
+    unit: 'fixed',
+    rateInr: 450000,
+    notes: 'Star Night celebrity artist tech rider, sound setup & NOC',
+  },
+  {
+    label: '🍲 + Specialty 2nd Caterer / Live Chaat Counter (₹450/guest)',
+    name: 'Specialty 2nd Caterer: Live Chaat & Halwai Counter',
+    category: 'food',
+    unit: 'per_head',
+    rateInr: 450,
+    notes: 'Secondary live counters, regional chaat & dessert halwai zoning',
+  },
+  {
+    label: '🍸 + Craft Bar, Mixology & Excise Permit (₹650/guest)',
+    name: 'Craft Bar, Mixology & Excise Permit (L-12A)',
+    category: 'food',
+    unit: 'per_head',
+    rateInr: 650,
+    notes: 'Craft mixology cocktail bar, bartenders & state excise L-12A permit',
+  },
 ];
 
+const CATEGORY_LABELS: readonly { readonly id: TaskCategory; readonly label: string }[] = [
+  { id: 'entertainment', label: 'Entertainment / Star Night' },
+  { id: 'food', label: 'Food / Multi-Caterer' },
+  { id: 'venue', label: 'Venue & Grounds' },
+  { id: 'decor', label: 'Decor & Styling' },
+  { id: 'media', label: 'Media & Photo' },
+  { id: 'permits', label: 'Beverages, Bar & Permits' },
+  { id: 'logistics', label: 'Logistics' },
+  { id: 'planning', label: 'Planning' },
+];
+
+const TASK_CATEGORIES: ReadonlySet<string> = new Set<TaskCategory>([
+  'venue', 'food', 'decor', 'media', 'entertainment', 'logistics', 'planning', 'permits',
+]);
+
 function isTaskCategory(val: string): val is TaskCategory {
-  switch (val) {
-    case 'venue':
-    case 'food':
-    case 'decor':
-    case 'media':
-    case 'entertainment':
-    case 'logistics':
-    case 'planning':
-      return true;
-    default:
-      return false;
-  }
+  return TASK_CATEGORIES.has(val);
 }
 
 function isBudgetUnit(val: string): val is 'fixed' | 'per_head' {
@@ -84,7 +114,7 @@ function FormInputs(p: FormInputsProps) {
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
       <input
         aria-label="New item name"
-        placeholder="Item name"
+        placeholder="Custom item name"
         value={p.name}
         onChange={(e) => p.onNameChange(e.target.value)}
         className="p-1.5 text-xs border border-stone-200 rounded-lg bg-white"
@@ -95,12 +125,10 @@ function FormInputs(p: FormInputsProps) {
         onChange={(e) => {
           if (isTaskCategory(e.target.value)) p.onCatChange(e.target.value);
         }}
-        className="p-1.5 text-xs border border-stone-200 rounded-lg bg-white capitalize"
+        className="p-1.5 text-xs border border-stone-200 rounded-lg bg-white"
       >
-        {CATEGORIES.map((c) => (
-          <option key={c} value={c}>
-            {c}
-          </option>
+        {CATEGORY_LABELS.map((c) => (
+          <option key={c.id} value={c.id}>{c.label}</option>
         ))}
       </select>
       <select
@@ -119,10 +147,29 @@ function FormInputs(p: FormInputsProps) {
   );
 }
 
-/**
- * Form allowing hosts to add custom line items to the celebration budget ledger.
- */
-export function AddCustomItemForm({ onAddItem }: AddCustomItemFormProps): React.JSX.Element {
+function NewAgePresetPills({ onSelectPreset }: { readonly onSelectPreset: (p: NewAgePreset) => void }) {
+  return (
+    <div className="pt-2 border-t border-stone-200/80 space-y-1">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+        ✨ New-Age Indian Celebration Nuance Presets (1-Click Add):
+      </span>
+      <div className="flex flex-wrap gap-1.5">
+        {NEW_AGE_PRESETS.map((p, idx) => (
+          <button
+            key={idx}
+            type="button"
+            onClick={() => onSelectPreset(p)}
+            className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 hover:border-amber-300 transition-colors shadow-2xs"
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function useAddCustomItemForm(onAddItem: (item: BudgetLine) => void) {
   const [newName, setNewName] = useState('');
   const [newCat, setNewCat] = useState<TaskCategory>('entertainment');
   const [newUnit, setNewUnit] = useState<'fixed' | 'per_head'>('fixed');
@@ -137,27 +184,50 @@ export function AddCustomItemForm({ onAddItem }: AddCustomItemFormProps): React.
       unit: newUnit,
       rateInr: newRate,
       quantity: 1,
-      drivers: ['budget'],
+      drivers: newUnit === 'per_head' ? ['guests', 'budget'] : ['budget'],
       notes: 'Custom line item added by host',
     });
     setNewName('');
     setNewRate(5000);
   };
 
+  const handleSelectPreset = (p: NewAgePreset) => {
+    onAddItem({
+      id: `custom_nuance_${Date.now()}`,
+      category: p.category,
+      name: p.name,
+      unit: p.unit,
+      rateInr: p.rateInr,
+      quantity: 1,
+      drivers: p.unit === 'per_head' ? ['guests', 'budget'] : ['budget'],
+      notes: p.notes,
+    });
+  };
+
+  return { newName, setNewName, newCat, setNewCat, newUnit, setNewUnit, newRate, setNewRate, handleAdd, handleSelectPreset };
+}
+
+/**
+ * Form allowing hosts to add custom line items and 1-click new-age celebration presets to the budget ledger.
+ */
+export function AddCustomItemForm({ onAddItem }: AddCustomItemFormProps): React.JSX.Element {
+  const f = useAddCustomItemForm(onAddItem);
+
   return (
-    <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2">
+    <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2.5">
       <span className="text-xs font-bold text-stone-800 block">Add Custom Budget Item</span>
       <FormInputs
-        name={newName}
-        cat={newCat}
-        unit={newUnit}
-        rate={newRate}
-        onNameChange={setNewName}
-        onCatChange={setNewCat}
-        onUnitChange={setNewUnit}
-        onRateChange={setNewRate}
-        onAdd={handleAdd}
+        name={f.newName}
+        cat={f.newCat}
+        unit={f.newUnit}
+        rate={f.newRate}
+        onNameChange={f.setNewName}
+        onCatChange={f.setNewCat}
+        onUnitChange={f.setNewUnit}
+        onRateChange={f.setNewRate}
+        onAdd={f.handleAdd}
       />
+      <NewAgePresetPills onSelectPreset={f.handleSelectPreset} />
     </div>
   );
 }

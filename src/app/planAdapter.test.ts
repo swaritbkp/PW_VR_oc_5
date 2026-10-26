@@ -14,7 +14,7 @@ describe('planAdapter: buildAdaptedPlanFromIntake', () => {
         guests: 350,
         budgetInr: 2500000,
         style: 'Outdoor winter Anand Karaj with rain-proof shamiana and zero-plastic decor',
-        nonNegotiables: ['Zero-plastic decor', 'Halwai catering'],
+        nonNegotiables: ['Zero-plastic decor'],
         language: 'en',
       },
       initial,
@@ -39,5 +39,40 @@ describe('planAdapter: buildAdaptedPlanFromIntake', () => {
     expect(rec.gapInr).toBe(0);
     expect(allocation.contingencyInr).toBe(227273);
     expect(allocation.grandTotal).toBe(2500000);
+  });
+
+  it('wires New-Age celebration nuances (Star Night, Multi-Caterer, Craft Bar) into CPM DAG and budget', () => {
+    const initial = getInitialPlan();
+    const adapted = buildAdaptedPlanFromIntake(
+      {
+        eventType: 'wedding',
+        city: 'Chandigarh',
+        date: '2027-03-20',
+        guests: 400,
+        budgetInr: 3500000,
+        style: 'Modern cocktail sangeet with celebrity Star Night performer, 2nd Chaat Caterer, and Craft Bar mixology',
+        nonNegotiables: ['Star Night', 'Excise Permit'],
+        language: 'en',
+      },
+      initial,
+    );
+
+    // Verify nuance tasks exist in the PERT/CPM DAG
+    const starTask = adapted.tasks.find((t) => t.name.includes('Star Night'));
+    expect(starTask).toBeDefined();
+    expect(starTask?.optimistic).toBe(5);
+    expect(starTask?.mostLikely).toBe(8);
+    expect(starTask?.pessimistic).toBe(14);
+
+    const catererTask = adapted.tasks.find((t) => t.name.includes('Multi-Caterer'));
+    expect(catererTask).toBeDefined();
+
+    const barTask = adapted.tasks.find((t) => t.name.includes('Excise Liquor Permit'));
+    expect(barTask).toBeDefined();
+
+    // Verify budget lines exist
+    expect(adapted.budgetLines.some((l) => l.name.includes('Star Night'))).toBe(true);
+    expect(adapted.budgetLines.some((l) => l.name.includes('Specialty 2nd Caterer'))).toBe(true);
+    expect(adapted.budgetLines.some((l) => l.name.includes('Craft Bar'))).toBe(true);
   });
 });

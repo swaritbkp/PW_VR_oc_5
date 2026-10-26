@@ -20,6 +20,23 @@ const AgentActionSchema = z.discriminatedUnion('type', [
     days: z.number().optional(),
     critical: z.boolean().optional(),
     category: z.string().optional(),
+    optimistic: z.number().optional(),
+    likely: z.number().optional(),
+    pessimistic: z.number().optional(),
+  }),
+  z.object({
+    type: z.literal('add_budget_line'),
+    line: z.object({
+      id: z.string(),
+      category: z.string(),
+      name: z.string(),
+      unit: z.enum(['fixed', 'per_head']),
+      rateInr: z.number(),
+      quantity: z.number().optional(),
+      locked: z.boolean().optional(),
+      drivers: z.array(z.string()).optional(),
+      notes: z.string().optional(),
+    }),
   }),
   z.object({ type: z.literal('navigate_tab'), tab: z.enum(['roadmap', 'vendors', 'graph']) }),
   z.object({

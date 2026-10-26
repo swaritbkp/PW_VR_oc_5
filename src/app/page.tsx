@@ -1,11 +1,16 @@
 'use client';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import { AppHeader } from '@/components/UI/AppHeader';
 import { AppModals } from '@/components/UI/AppModals';
-import { AgentCopilot } from '@/components/Concierge/AgentCopilot';
 import { useHomePageState } from './useHomePageState';
 import { CelebrationWorkspaceSection, NodeInspectorOverlay } from './HomePageSections';
+
+const AgentCopilot = dynamic(
+  () => import('@/components/Concierge/AgentCopilot').then((m) => m.AgentCopilot),
+  { ssr: false },
+);
 
 /**
  * Main application dashboard hosting the Event Graph, Command Center, and Living Plan workflows.

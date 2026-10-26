@@ -61,6 +61,7 @@ export function VendorToolModals({
   guests,
   eventDate,
   onClose,
+  onApplyStrategy,
 }: {
   readonly activeTool: 'none' | 'negotiate' | 'redflags';
   readonly selectedVendor: Vendor | null;
@@ -69,6 +70,7 @@ export function VendorToolModals({
   readonly guests: number;
   readonly eventDate: string;
   readonly onClose: () => void;
+  readonly onApplyStrategy?: (targetOfferInr: number, vendorName: string, category: string) => void;
 }): React.JSX.Element | null {
   if (activeTool === 'negotiate' && selectedVendor) {
     return (
@@ -80,6 +82,7 @@ export function VendorToolModals({
         guestCount={guests}
         eventDate={eventDate}
         onClose={onClose}
+        onApplyStrategy={onApplyStrategy}
       />
     );
   }
