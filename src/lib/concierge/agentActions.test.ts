@@ -95,4 +95,15 @@ describe('agentActions NLP Parser', () => {
     expect(result.reply).not.toContain('9876543210');
     expect(result.reply).not.toContain('test@example.com');
   });
+
+  it('parses Showstopper fireworks and custom Star Night pricing commands', () => {
+    const cmd = 'Add Star Night at ₹12L and add fireworks and cold pyro showstopper at ₹1.8L and jump to CPM graph';
+    const result = parseAgentCommand(cmd);
+
+    expect(result.guardrailBlocked).toBeFalsy();
+    expect(result.actions.some((a) => a.type === 'add_task' && a.name.includes('Showstopper & Fireworks'))).toBe(true);
+    expect(result.actions.some((a) => a.type === 'add_budget_line' && a.line.name.includes('Star Night') && a.line.rateInr === 1200000)).toBe(true);
+    expect(result.actions.some((a) => a.type === 'add_budget_line' && a.line.name.includes('Showstopper') && a.line.rateInr === 180000)).toBe(true);
+    expect(result.actions.some((a) => a.type === 'navigate_tab' && a.tab === 'graph')).toBe(true);
+  });
 });

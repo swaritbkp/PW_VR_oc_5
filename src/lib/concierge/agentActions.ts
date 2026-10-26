@@ -41,7 +41,7 @@ function parseTaskAction(input: string): { action: AgentAction; log: string } | 
   const rawName = match[1].trim().replace(/(?:task|to the critical path)$/i, '').trim();
   if (!rawName || rawName.length < 3) return null;
   // If the command already specifically represents one of our celebration nuances, skip duplicate
-  if (/(?:star\s*night|artist|sufi|caterer|chaat|craft\s*bar|cocktail|excise|liquor)/i.test(rawName)) {
+  if (/(?:star\s*night|artist|sufi|caterer|chaat|craft\s*bar|cocktail|excise|liquor|firework|pyro|showstopper|weather)/i.test(rawName)) {
     return null;
   }
   return {

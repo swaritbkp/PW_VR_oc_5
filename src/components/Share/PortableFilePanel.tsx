@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import type { PlanState } from '@/lib/plan/propagate';
 import type { VendorSelection } from '@/lib/vendors/types';
 import { exportJashnFile, importJashnFile, type ImportedPlan } from '@/lib/plan/portability';
+import { downloadBudgetXls } from '@/lib/portability/xlsPortability';
 import { IconCheckCircle, IconDownloadFile, IconUploadFile } from '../UI/JashnIcons';
 
 export interface PortableFilePanelProps {
@@ -23,16 +24,13 @@ function readFileAsText(file: File | undefined, onText: (content: string) => voi
 }
 
 function triggerDownload(content: string, filename: string) {
-  const blob = new Blob([content], { type: 'application/json' });
-  if (typeof URL.createObjectURL === 'function') {
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', filename);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
+  if (typeof URL.createObjectURL !== 'function') return;
+  const url = URL.createObjectURL(new Blob([content], { type: 'application/json' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', filename);
+  link.click();
+  if (typeof URL.revokeObjectURL === 'function') URL.revokeObjectURL(url);
 }
 
 function DropZoneFileInput({ onFileSelect }: { readonly onFileSelect: (content: string) => void }): React.JSX.Element {
@@ -151,14 +149,23 @@ function ExportBox({
           {plan.tasks.length} tasks • {vendorSelections.length} vendors
         </span>
       </div>
-      <button
-        type="button"
-        onClick={onExport}
-        className="w-full py-2.5 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-xs"
-      >
-        <IconDownloadFile className="w-4 h-4" />
-        <span>Export Portable .jashn File</span>
-      </button>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={onExport}
+          className="flex-1 py-2 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs"
+        >
+          <IconDownloadFile className="w-3.5 h-3.5" />
+          <span>Export Portable .jashn File</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => downloadBudgetXls(plan)}
+          className="py-2 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center justify-center gap-1 transition-all shadow-xs"
+        >
+          <span>📥 .xls</span>
+        </button>
+      </div>
     </div>
   );
 }

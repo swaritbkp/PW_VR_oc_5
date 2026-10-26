@@ -5,6 +5,7 @@ import { propagate, type PlanState } from '@/lib/plan/propagate';
 import type { PlanTask, VendorNeedId } from '@/lib/plan/types';
 import { currentPlan, pushVersion, type VersionStore } from '@/lib/plan/versions';
 import type { Vendor, VendorSelection, VendorStatus } from '@/lib/vendors/types';
+import { factorWeatherIntoPlan, type WeatherForecast } from '@/lib/weather/weatherForecast';
 
 function createTaskAndBudgetHandlers(
   plan: PlanState,
@@ -59,7 +60,7 @@ function createVendorBookingHandlers(
 }
 
 /**
- * Creates dispatch handlers for task updates, budget reconciliations, and vendor bookings.
+ * Creates dispatch handlers for task updates, budget reconciliations, vendor bookings, and weather factoring.
  */
 export function createPlanActionHandlers(
   plan: PlanState,
@@ -67,8 +68,17 @@ export function createPlanActionHandlers(
   setVersionStore: React.Dispatch<React.SetStateAction<VersionStore>>,
   setVendorSelections: React.Dispatch<React.SetStateAction<VendorSelection[]>>,
 ) {
+  const handleFactorWeather = (forecast: WeatherForecast) => {
+    setVersionStore((store) => {
+      const cur = currentPlan(store);
+      const factored = factorWeatherIntoPlan(cur, forecast);
+      return pushVersion(store, factored, `Factored weather forecast: ${forecast.condition} (${forecast.rainProbabilityPct}% rain)`);
+    });
+  };
+
   return {
     ...createTaskAndBudgetHandlers(plan, setVersionStore),
     ...createVendorBookingHandlers(vendorCategory, setVersionStore, setVendorSelections),
+    handleFactorWeather,
   };
 }

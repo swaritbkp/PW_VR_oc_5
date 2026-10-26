@@ -68,6 +68,55 @@ describe('New-Age Indian Celebration Nuances & DAG Guard', () => {
     }
   });
 
+  it('parses Variable Star Night rates (₹12L, ₹8.5L) and Showstopper Fireworks (₹1.8L)', () => {
+    const cmd = 'Add Star Night at ₹12L and add fireworks and cold pyro showstopper at ₹1.8L';
+    const actions: AgentAction[] = [];
+    const logs: string[] = [];
+
+    parseNewAgeNuances(cmd, actions, logs);
+
+    // Star Night ₹12L
+    const starBudget = actions.find((a) => a.type === 'add_budget_line' && a.line.name.includes('Star Night'));
+    expect(starBudget).toBeDefined();
+    if (starBudget && starBudget.type === 'add_budget_line') {
+      expect(starBudget.line.rateInr).toBe(1200000);
+    }
+
+    // Showstopper & Fireworks ₹1.8L
+    const pyroTask = actions.find((a) => a.type === 'add_task' && a.name.includes('Showstopper & Fireworks'));
+    expect(pyroTask).toBeDefined();
+    if (pyroTask && pyroTask.type === 'add_task') {
+      expect(pyroTask.optimistic).toBe(4);
+      expect(pyroTask.likely).toBe(7);
+      expect(pyroTask.pessimistic).toBe(12);
+      expect(pyroTask.category).toBe('permits');
+    }
+
+    const pyroBudget = actions.find((a) => a.type === 'add_budget_line' && a.line.name.includes('Showstopper'));
+    expect(pyroBudget).toBeDefined();
+    if (pyroBudget && pyroBudget.type === 'add_budget_line') {
+      expect(pyroBudget.line.rateInr).toBe(180000);
+    }
+    expect(logs.some((l) => l.includes('Showstopper & Fireworks'))).toBe(true);
+  });
+
+  it('parses Weather Proofing nuance with German Hanger task and reserve line', () => {
+    const cmd = 'Include weather proofing with waterproof german hanger and heaters';
+    const actions: AgentAction[] = [];
+    const logs: string[] = [];
+
+    parseNewAgeNuances(cmd, actions, logs);
+
+    const weatherTask = actions.find((a) => a.type === 'add_task' && a.name.includes('Waterproof German Hanger'));
+    expect(weatherTask).toBeDefined();
+
+    const weatherBudget = actions.find((a) => a.type === 'add_budget_line' && a.line.name.includes('Weather Proofing'));
+    expect(weatherBudget).toBeDefined();
+    if (weatherBudget && weatherBudget.type === 'add_budget_line') {
+      expect(weatherBudget.line.rateInr).toBe(150000);
+    }
+  });
+
   it('sanitizeTaskDependencies prevents cycles and reparents to root task', () => {
     const existingTasks: PlanTask[] = [
       {

@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { GuidedJourneyBar } from '@/components/Journey/GuidedJourneyBar';
 import { CelebrationConcierge } from '@/components/UI/CelebrationConcierge';
 import { CommandCenter } from '@/components/CommandCenter/CommandCenter';
+import { WeatherForecastBar } from '@/components/Weather/WeatherForecastBar';
 import { WorkspaceTabs } from '@/components/UI/WorkspaceTabs';
 import type { HomePageState } from './useHomePageState';
 
@@ -49,24 +50,34 @@ function WorkspaceTopSection({ state }: { readonly state: HomePageState }): Reac
   );
 }
 
+function CommandCenterSection({ state }: { readonly state: HomePageState }): React.JSX.Element | null {
+  if (!state.commandData) return null;
+  return (
+    <CommandCenter
+      daysLeft={state.currentPlan.targetDays}
+      probabilityOnTime={state.commandData.prob}
+      budgetSummary={state.commandData.alloc}
+      budgetReconciliation={state.commandData.recon}
+      nextAction={state.commandData.nextTask}
+      alerts={state.commandData.alerts}
+      tasks={state.currentPlan.tasks}
+      onSelectTask={(id) => state.setSelectedTaskId(id ?? null)}
+      onOpenBudget={() => state.setActiveModal('budget')}
+    />
+  );
+}
+
 function WorkspaceBottomSection({ state }: { readonly state: HomePageState }): React.JSX.Element {
   const { currentPlan, activeTab } = state;
 
   return (
     <section id="event-graph" aria-label="Event workspace" className="space-y-4">
-      {state.commandData && (
-        <CommandCenter
-          daysLeft={currentPlan.targetDays}
-          probabilityOnTime={state.commandData.prob}
-          budgetSummary={state.commandData.alloc}
-          budgetReconciliation={state.commandData.recon}
-          nextAction={state.commandData.nextTask}
-          alerts={state.commandData.alerts}
-          tasks={currentPlan.tasks}
-          onSelectTask={(id) => state.setSelectedTaskId(id ?? null)}
-          onOpenBudget={() => state.setActiveModal('budget')}
-        />
-      )}
+      <CommandCenterSection state={state} />
+      <WeatherForecastBar
+        city={currentPlan.intake.city}
+        eventDate={currentPlan.intake.date}
+        onFactorWeather={state.handleFactorWeather}
+      />
       <WorkspaceTabs
         activeTab={activeTab}
         tasks={currentPlan.tasks}

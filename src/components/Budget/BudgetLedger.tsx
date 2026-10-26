@@ -2,9 +2,11 @@
 
 import React, { useMemo, useState } from 'react';
 import { allocate, reconcile, type BudgetLine } from '../../lib/budget/engine';
-import { formatInr } from '../../lib/format';
+import { downloadBudgetXls } from '../../lib/portability/xlsPortability';
 import { AddCustomItemForm } from './AddCustomItemForm';
 import { LedgerTable } from './LedgerTable';
+import { SummaryHeader, LedgerDialogHeader } from './LedgerHeaderSections';
+import { BudgetXlsModal } from './BudgetXlsModal';
 
 export interface BudgetLedgerProps {
   readonly budgetLines: readonly BudgetLine[];
@@ -14,72 +16,34 @@ export interface BudgetLedgerProps {
   readonly onUpdateBudgetLines?: (newLines: readonly BudgetLine[], reason: string) => void;
 }
 
-interface SummaryProps {
-  readonly budgetInr: number;
-  readonly grandTotal: number;
-  readonly contingency: number;
-  readonly status: string;
-}
-
-function SummaryHeader({ budgetInr, grandTotal, contingency, status }: SummaryProps) {
-  const isFits = status === 'fits' || status === 'under';
+function XlsActionBar({ onOpenXls, onExportXls }: { readonly onOpenXls: () => void; readonly onExportXls: () => void }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-stone-50 rounded-2xl border border-stone-200">
-      <div>
-        <span className="text-[10px] text-stone-500 uppercase font-bold block">Target Budget</span>
-        <span className="text-sm font-black text-stone-900">{formatInr(budgetInr)}</span>
+    <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-stone-100/90 rounded-2xl border border-stone-200 text-xs">
+      <div className="flex items-center gap-1.5 font-bold text-stone-700">
+        <span>🛡️</span>
+        <span className="text-[11px] text-stone-600">XLS Guardrails: Macro-Safe • XXE • Injection • PII • Bounds</span>
       </div>
-      <div>
-        <span className="text-[10px] text-stone-500 uppercase font-bold block">Total Projected</span>
-        <span className={`text-sm font-black ${isFits ? 'text-emerald-700' : 'text-rose-600'}`}>
-          {formatInr(grandTotal)}
-        </span>
-      </div>
-      <div>
-        <span className="text-[10px] text-stone-500 uppercase font-bold block">Contingency Reserve</span>
-        <span className="text-sm font-black text-amber-900">{formatInr(contingency)}</span>
-      </div>
-      <div>
-        <span className="text-[10px] text-stone-500 uppercase font-bold block">Reconciliation</span>
-        <span
-          className={`text-xs font-bold px-2 py-0.5 rounded-full inline-block mt-0.5 uppercase ${
-            isFits ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
-          }`}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onExportXls}
+          className="px-2.5 py-1 text-xs font-bold rounded-lg bg-white border border-stone-300 text-stone-800 hover:bg-stone-50 transition-colors shadow-2xs"
         >
-          {status}
-        </span>
+          📥 Export Excel (.xls)
+        </button>
+        <button
+          type="button"
+          onClick={onOpenXls}
+          className="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-700 text-white hover:bg-emerald-800 transition-colors shadow-xs"
+        >
+          📤 Import Edited Excel (.xls)
+        </button>
       </div>
     </div>
   );
 }
 
-function LedgerDialogHeader({ onClose }: { readonly onClose: () => void }) {
-  return (
-    <div className="p-4 sm:p-5 border-b border-stone-100 flex items-center justify-between bg-stone-50/80">
-      <div>
-        <h3 className="text-base font-bold text-stone-900">Celebration Budget Ledger</h3>
-        <p className="text-xs text-stone-500">
-          Customize line items, toggle locks, or add custom budget entries.
-        </p>
-      </div>
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label="Close ledger"
-        className="p-1.5 rounded-xl text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 text-sm"
-      >
-        ✕
-      </button>
-    </div>
-  );
-}
-
-interface ModalFooterProps {
-  readonly onSave: () => void;
-  readonly onClose: () => void;
-}
-
-function ModalFooter({ onSave, onClose }: ModalFooterProps) {
+function ModalFooter({ onSave, onClose }: { readonly onSave: () => void; readonly onClose: () => void }) {
   return (
     <div className="p-4 border-t border-stone-200 flex justify-end gap-2 bg-stone-50">
       <button
@@ -106,30 +70,28 @@ function useBudgetLedger(
   onClose?: () => void,
 ) {
   const [lines, setLines] = useState<BudgetLine[]>([...initialLines]);
-  const [isModified, setIsModified] = useState(false);
 
   const handleRateChange = (id: string, rate: number) => {
     setLines((prev) => prev.map((l) => (l.id === id ? { ...l, rateInr: rate } : l)));
-    setIsModified(true);
   };
   const handleToggleLock = (id: string) => {
     setLines((prev) => prev.map((l) => (l.id === id ? { ...l, locked: !l.locked } : l)));
-    setIsModified(true);
   };
   const handleDelete = (id: string) => {
     setLines((prev) => prev.filter((l) => l.id !== id));
-    setIsModified(true);
   };
   const handleAddItem = (item: BudgetLine) => {
     setLines((prev) => [...prev, item]);
-    setIsModified(true);
+  };
+  const handleImportLines = (imported: readonly BudgetLine[]) => {
+    setLines([...imported]);
   };
   const handleSave = () => {
     onUpdate?.(lines, 'Customized budget line items');
     onClose?.();
   };
 
-  return { lines, isModified, handleRateChange, handleToggleLock, handleDelete, handleAddItem, handleSave };
+  return { lines, handleRateChange, handleToggleLock, handleDelete, handleAddItem, handleImportLines, handleSave };
 }
 
 interface LedgerBodyProps {
@@ -139,6 +101,8 @@ interface LedgerBodyProps {
   readonly status: string;
   readonly lines: readonly BudgetLine[];
   readonly guests: number;
+  readonly onOpenXls: () => void;
+  readonly onExportXls: () => void;
   readonly onAddItem: (item: BudgetLine) => void;
   readonly onRateChange: (id: string, rate: number) => void;
   readonly onToggleLock: (id: string) => void;
@@ -147,13 +111,14 @@ interface LedgerBodyProps {
 
 function LedgerDialogBody(p: LedgerBodyProps) {
   return (
-    <div className="p-4 sm:p-5 flex-1 overflow-y-auto space-y-4">
+    <div className="p-4 sm:p-5 flex-1 overflow-y-auto space-y-3.5">
       <SummaryHeader
         budgetInr={p.budgetInr}
         grandTotal={p.grandTotal}
         contingency={p.contingency}
         status={p.status}
       />
+      <XlsActionBar onOpenXls={p.onOpenXls} onExportXls={p.onExportXls} />
       <AddCustomItemForm onAddItem={p.onAddItem} />
       <LedgerTable
         lines={p.lines}
@@ -162,6 +127,47 @@ function LedgerDialogBody(p: LedgerBodyProps) {
         onToggleLock={p.onToggleLock}
         onDelete={p.onDelete}
       />
+    </div>
+  );
+}
+
+function LedgerDialogContainer({
+  onClose,
+  alloc,
+  recon,
+  budgetInr,
+  ledger,
+  guests,
+  onOpenXls,
+  onSave,
+}: {
+  readonly onClose: () => void;
+  readonly alloc: ReturnType<typeof allocate>;
+  readonly recon: ReturnType<typeof reconcile>;
+  readonly budgetInr: number;
+  readonly ledger: ReturnType<typeof useBudgetLedger>;
+  readonly guests: number;
+  readonly onOpenXls: () => void;
+  readonly onSave: () => void;
+}) {
+  return (
+    <div className="bg-white rounded-3xl shadow-2xl border border-stone-200 max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+      <LedgerDialogHeader onClose={onClose} />
+      <LedgerDialogBody
+        budgetInr={budgetInr}
+        grandTotal={alloc.grandTotal}
+        contingency={alloc.contingencyInr}
+        status={recon.status}
+        lines={ledger.lines}
+        guests={guests}
+        onOpenXls={onOpenXls}
+        onExportXls={() => downloadBudgetXls({ lines: ledger.lines, guests })}
+        onAddItem={ledger.handleAddItem}
+        onRateChange={ledger.handleRateChange}
+        onToggleLock={ledger.handleToggleLock}
+        onDelete={ledger.handleDelete}
+      />
+      <ModalFooter onSave={onSave} onClose={onClose} />
     </div>
   );
 }
@@ -177,6 +183,7 @@ export function BudgetLedger({
   onUpdateBudgetLines,
 }: BudgetLedgerProps): React.JSX.Element {
   const ledger = useBudgetLedger(initialLines, onUpdateBudgetLines, onClose);
+  const [showXlsModal, setShowXlsModal] = useState(false);
   const alloc = useMemo(() => allocate(ledger.lines, budgetInr, guests), [ledger.lines, budgetInr, guests]);
   const recon = useMemo(() => reconcile(alloc), [alloc]);
 
@@ -187,22 +194,24 @@ export function BudgetLedger({
       aria-label="Celebration Budget Ledger"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/40 backdrop-blur-xs"
     >
-      <div className="bg-white rounded-3xl shadow-2xl border border-stone-200 max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden">
-        <LedgerDialogHeader onClose={onClose} />
-        <LedgerDialogBody
-          budgetInr={budgetInr}
-          grandTotal={alloc.grandTotal}
-          contingency={alloc.contingencyInr}
-          status={recon.status}
+      <LedgerDialogContainer
+        onClose={onClose}
+        alloc={alloc}
+        recon={recon}
+        budgetInr={budgetInr}
+        ledger={ledger}
+        guests={guests}
+        onOpenXls={() => setShowXlsModal(true)}
+        onSave={ledger.handleSave}
+      />
+      {showXlsModal && (
+        <BudgetXlsModal
           lines={ledger.lines}
           guests={guests}
-          onAddItem={ledger.handleAddItem}
-          onRateChange={ledger.handleRateChange}
-          onToggleLock={ledger.handleToggleLock}
-          onDelete={ledger.handleDelete}
+          onClose={() => setShowXlsModal(false)}
+          onImportLines={ledger.handleImportLines}
         />
-        <ModalFooter onSave={ledger.handleSave} onClose={onClose} />
-      </div>
+      )}
     </div>
   );
 }

@@ -2,17 +2,35 @@ import type { PlanTask } from '../plan/types';
 import { computeSchedule } from '../schedule/cpm';
 import type { AgentAction } from './types';
 
-function parseStarNightRate(input: string): number {
-  const match = /(?:₹|rs\.?|inr)?\s*([0-9.]+)\s*(?:l|lakh|lacs?)/i.exec(input);
-  if (!match) return 450000;
-  const num = parseFloat(match[1]);
-  return Number.isFinite(num) && num > 0 ? Math.round(num * 100000) : 450000;
+/**
+ * Extracts numeric Indian Rupee amounts from natural language strings, supporting Lakhs (e.g. ₹12L, 1.8 Lakh)
+ * and formatted numbers (e.g. ₹8,50,000, 180000).
+ */
+export function parseCustomRupeeAmount(input: string, contextKeywords: RegExp, defaultInr: number): number {
+  const match = contextKeywords.exec(input);
+  if (!match) return defaultInr;
+
+  const segment = input.slice(match.index);
+
+  const lakhMatch = /(?:₹|rs\.?|inr)?\s*([0-9.]+)\s*(?:l|lakh|lacs?)/i.exec(segment);
+  if (lakhMatch) {
+    const num = parseFloat(lakhMatch[1]);
+    if (Number.isFinite(num) && num > 0) return Math.round(num * 100000);
+  }
+
+  const rawMatch = /(?:₹|rs\.?|inr|\bat|\bfor)\s*([0-9]{1,3}(?:,[0-9]{2,3})+|[0-9]{4,8})/i.exec(segment);
+  if (rawMatch) {
+    const cleanNum = parseInt(rawMatch[1].replace(/,/g, ''), 10);
+    if (Number.isFinite(cleanNum) && cleanNum >= 1000) return cleanNum;
+  }
+
+  return defaultInr;
 }
 
 function parseStarNightNuance(input: string, actions: AgentAction[], logs: string[]): void {
   const re = /(?:star\s*night|sufi\s*night|artist\s*(?:rider)?|celebrity\s*(?:dj|artist|performer)|live\s*band)/i;
   if (!re.test(input)) return;
-  const rate = parseStarNightRate(input);
+  const rate = parseCustomRupeeAmount(input, re, 450000);
   actions.push({
     type: 'add_task',
     name: 'Star Night: Artist Tech Rider & Sound NOC',
@@ -37,6 +55,36 @@ function parseStarNightNuance(input: string, actions: AgentAction[], logs: strin
     },
   });
   logs.push(`✓ Added Budget Line -> Star Night & Artist Rider (₹${rate.toLocaleString('en-IN')})`);
+}
+
+function parseShowstopperNuance(input: string, actions: AgentAction[], logs: string[]): void {
+  const re = /(?:showstopper|fireworks?|pyro(?:technics?)?|cold\s*pyro|aerial\s*fireworks?|drone\s*show|sparkular|crackers?)/i;
+  if (!re.test(input)) return;
+  const rate = parseCustomRupeeAmount(input, re, 180000);
+  actions.push({
+    type: 'add_task',
+    name: 'Showstopper & Fireworks: Fire NOC & Cold-Pyro Clearance',
+    category: 'permits',
+    critical: false,
+    optimistic: 4,
+    likely: 7,
+    pessimistic: 12,
+  });
+  logs.push('✓ Added Node -> Showstopper & Fireworks: Fire NOC & Cold-Pyro Clearance');
+  actions.push({
+    type: 'add_budget_line',
+    line: {
+      id: `nuance_pyro_${Date.now()}`,
+      category: 'entertainment',
+      name: 'Showstopper: Cold Pyro Entry & Aerial Fireworks',
+      unit: 'fixed',
+      rateInr: rate,
+      quantity: 1,
+      drivers: ['budget'],
+      notes: 'Fire safety NOC, green pyrotechnics license & cold-pyro sparkular staging',
+    },
+  });
+  logs.push(`✓ Added Budget Line -> Showstopper & Fireworks (₹${rate.toLocaleString('en-IN')})`);
 }
 
 function parseMultiCatererNuance(input: string, actions: AgentAction[], logs: string[]): void {
@@ -97,14 +145,45 @@ function parseCraftBarNuance(input: string, actions: AgentAction[], logs: string
   logs.push('✓ Added Budget Line -> Craft Bar & Mixology (₹650/guest)');
 }
 
+function parseWeatherProofingNuance(input: string, actions: AgentAction[], logs: string[]): void {
+  const re = /(?:weather\s*(?:proofing|forecast|advisory)?|waterproof(?:ing)?|german\s*hanger|shamiana\s*reserve|rain\s*(?:proof|protection|contingency))/i;
+  if (!re.test(input)) return;
+  actions.push({
+    type: 'add_task',
+    name: 'Weather Proofing: Waterproof German Hanger & Heaters',
+    category: 'venue',
+    critical: false,
+    optimistic: 3,
+    likely: 6,
+    pessimistic: 10,
+  });
+  logs.push('✓ Added Node -> Weather Proofing: Waterproof German Hanger & Heaters');
+  actions.push({
+    type: 'add_budget_line',
+    line: {
+      id: `nuance_weather_${Date.now()}`,
+      category: 'venue',
+      name: 'Weather Proofing & Shamiana Reserve',
+      unit: 'fixed',
+      rateInr: 150000,
+      quantity: 1,
+      drivers: ['budget'],
+      notes: 'Waterproof German hanger marquee, drainage berms & climate conditioning',
+    },
+  });
+  logs.push('✓ Added Budget Line -> Weather Proofing & Shamiana Reserve (₹1,50,000)');
+}
+
 /**
  * Parses natural language input for New-Age Indian celebration nuances (Star Night,
- * multi-caterer split, craft bar & liquor permits) and appends tasks and budget items.
+ * showstopper fireworks, multi-caterer split, craft bar, weather proofing) and appends tasks and budget items.
  */
 export function parseNewAgeNuances(input: string, actions: AgentAction[], logs: string[]): void {
   parseStarNightNuance(input, actions, logs);
+  parseShowstopperNuance(input, actions, logs);
   parseMultiCatererNuance(input, actions, logs);
   parseCraftBarNuance(input, actions, logs);
+  parseWeatherProofingNuance(input, actions, logs);
 }
 
 /**
