@@ -104,37 +104,74 @@ function NodeDoneCheckmark({ node }: { readonly node: GraphNode }): React.JSX.El
   );
 }
 
+function splitNodeTitle(name: string): [string, string | null] {
+  if (name.length <= 20) return [name, null];
+  const breakPoint = name.lastIndexOf(' ', 20);
+  if (breakPoint > 6) {
+    const line1 = name.slice(0, breakPoint);
+    const line2 = name.slice(breakPoint + 1);
+    const trimmed2 = line2.length > 24 ? `${line2.slice(0, 22)}...` : line2;
+    return [line1, trimmed2];
+  }
+  return [name.slice(0, 18), `${name.slice(18, 38)}...`];
+}
+
+function getTimingSuffix(node: GraphNode): string {
+  if (node.critical) return ' • Priority';
+  return node.floatDays > 0 ? ` • +${Math.round(node.floatDays)}d` : ' • 0d';
+}
+
+function SingleLineTitle({ title, timing, date }: { readonly title: string; readonly timing: string; readonly date?: string | null }) {
+  return (
+    <>
+      <text x={12} y={18} fontSize={11} fontWeight="600" fill="#0F172A" className="pointer-events-none select-none">
+        {title}
+      </text>
+      <text x={12} y={32} fontSize={9.5} fill="#64748B" className="pointer-events-none select-none font-medium">
+        {date ? `${date}` : ''}{timing}
+      </text>
+    </>
+  );
+}
+
+function MultiLineTitle({
+  line1,
+  line2,
+  timing,
+  date,
+}: {
+  readonly line1: string;
+  readonly line2: string;
+  readonly timing: string;
+  readonly date?: string | null;
+}) {
+  return (
+    <>
+      <text x={12} y={14} fontSize={10} fontWeight="600" fill="#0F172A" className="pointer-events-none select-none">
+        {line1}
+      </text>
+      <text x={12} y={25} fontSize={10} fontWeight="600" fill="#0F172A" className="pointer-events-none select-none">
+        {line2}
+      </text>
+      <text x={12} y={36} fontSize={8.5} fill="#64748B" className="pointer-events-none select-none font-medium">
+        {date ? `${date}` : ''}{timing}
+      </text>
+    </>
+  );
+}
+
 function NodeCardText({ node }: { readonly node: GraphNode }): React.JSX.Element {
-  const displayName = node.name.length > 18 ? `${node.name.slice(0, 16)}...` : node.name;
-  const timingSuffix = node.critical
-    ? ' • Priority'
-    : node.floatDays > 0
-      ? ` • +${Math.round(node.floatDays)}d`
-      : ' • 0d';
+  const [line1, line2] = splitNodeTitle(node.name);
+  const timing = getTimingSuffix(node);
 
   return (
     <>
       <NodeDoneCheckmark node={node} />
-      <text
-        x={12}
-        y={18}
-        fontSize={11}
-        fontWeight={node.critical ? '700' : '600'}
-        fill="#0F172A"
-        className="pointer-events-none select-none"
-      >
-        {displayName}
-      </text>
-      <text
-        x={12}
-        y={32}
-        fontSize={9.5}
-        fill="#64748B"
-        className="pointer-events-none select-none font-medium"
-      >
-        {node.startDate ? `${node.startDate}` : ''}
-        {timingSuffix}
-      </text>
+      {line2 ? (
+        <MultiLineTitle line1={line1} line2={line2} timing={timing} date={node.startDate} />
+      ) : (
+        <SingleLineTitle title={line1} timing={timing} date={node.startDate} />
+      )}
     </>
   );
 }

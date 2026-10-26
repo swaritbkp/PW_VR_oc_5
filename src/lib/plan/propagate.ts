@@ -1,4 +1,4 @@
-import { scaleForBudget, scaleForGuests, type BudgetLine } from '../budget/engine';
+import { scaleForBudget, type BudgetLine } from '../budget/engine';
 import { daysBetween } from '../dates';
 import type { Schedule } from '../schedule/types';
 import type { Driver, PlanTask } from './types';
@@ -61,11 +61,16 @@ function updateTasksForDriver(
 
 function handleGuests(plan: PlanState, guests: number): PropagateResult {
   const diff = [`Guests changed from ${plan.intake.guests} to ${guests}`];
-  const bLines = scaleForGuests(plan.budgetLines, guests, plan.intake.guests);
   const dirtyIds: string[] = [];
-  for (const b of bLines) {
-    if (b.drivers.includes('guests')) dirtyIds.push(b.id);
-  }
+  const bLines = plan.budgetLines.map((line) => {
+    if (line.drivers.includes('guests')) {
+      dirtyIds.push(line.id);
+      if (line.unit === 'per_head') {
+        return { ...line, quantity: guests };
+      }
+    }
+    return line;
+  });
   const tResult = updateTasksForDriver(plan.tasks, 'guests', 1);
   dirtyIds.push(...tResult.dirtyIds);
   return {

@@ -3,6 +3,7 @@
 import React from 'react';
 import { AppHeader } from '@/components/UI/AppHeader';
 import { AppModals } from '@/components/UI/AppModals';
+import { AgentCopilot } from '@/components/Concierge/AgentCopilot';
 import { useHomePageState } from './useHomePageState';
 import { CelebrationWorkspaceSection, NodeInspectorOverlay } from './HomePageSections';
 
@@ -36,6 +37,11 @@ export default function HomePage(): React.JSX.Element {
           onImportPlan={state.handleImportPlan}
           onUpdateBudgetLines={state.handleUpdateBudgetLines}
           onApplyIntake={state.handleApplyIntake}
+        />
+        <AgentCopilot
+          isOpen={state.isCopilotOpen}
+          onToggle={() => state.setIsCopilotOpen(!state.isCopilotOpen)}
+          onExecuteAction={state.handleExecuteAgentAction}
         />
       </main>
     </div>

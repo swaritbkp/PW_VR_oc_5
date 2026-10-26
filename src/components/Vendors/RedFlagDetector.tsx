@@ -8,7 +8,7 @@ export interface RedFlagDetectorProps {
   readonly onClose: () => void;
 }
 
-const PRESETS: readonly { readonly label: string; readonly text: string; readonly safe?: boolean }[] = [
+export const PRESETS: readonly { readonly label: string; readonly text: string; readonly safe?: boolean }[] = [
   {
     label: 'Predatory Contract (100% Advance & No Rain Refund)',
     text: 'Vendor demands 100% non-refundable cash advance 60 days prior with no rain cancellation clause and ₹50,000/hr overtime penalty.',
@@ -201,7 +201,7 @@ function ScannerCloseButton({ onClose }: { readonly onClose: () => void }) {
  * Predatory contract clause scanner analyzing vendor quotes against consumer protection rules.
  */
 export function RedFlagDetector({
-  initialText = PRESETS[0].text,
+  initialText = PRESETS[1].text,
   onClose,
 }: RedFlagDetectorProps): React.JSX.Element {
   const [contractText, setContractText] = useState(initialText);

@@ -113,6 +113,13 @@ describe('AC3 change propagation', () => {
     expect(res.diff[0]).toContain('Date moved to 2026-11-30');
   });
 
+  it('updates guest quantity on per-head lines without rate explosion', () => {
+    const res = propagate(samplePlan, { kind: 'guests', guests: 500 });
+    const foodLine = res.plan.budgetLines.find((b) => b.id === 'B02');
+    expect(foodLine?.quantity).toBe(500);
+    expect(foodLine?.rateInr).toBe(1500); // Unit rate remains realistic
+  });
+
   it('propagates city changes and updates relevant logistics nodes', () => {
     const res = propagate(samplePlan, { kind: 'city', city: 'Amritsar' });
     expect(res.plan.intake.city).toBe('Amritsar');

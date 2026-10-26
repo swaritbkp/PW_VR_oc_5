@@ -10,7 +10,7 @@ describe('planAdapter: buildAdaptedPlanFromIntake', () => {
       {
         eventType: 'wedding',
         city: 'Amritsar',
-        date: '2026-12-15',
+        date: '2027-02-14',
         guests: 350,
         budgetInr: 2500000,
         style: 'Outdoor winter Anand Karaj with rain-proof shamiana and zero-plastic decor',
@@ -31,11 +31,13 @@ describe('planAdapter: buildAdaptedPlanFromIntake', () => {
     expect(customTask?.why).toContain('Outdoor winter Anand Karaj');
     expect(customTask?.category).toBe('decor');
 
-    // Verify scaled budget lines fit with 10% contingency
+    // Verify scaled budget lines fit with 10% contingency exactly to INR 25,00,000
     const allocation = allocate(adapted.budgetLines, adapted.intake.budgetInr, adapted.intake.guests);
     const rec = reconcile(allocation);
     expect(rec.isWithinBudget).toBe(true);
-    expect(allocation.contingencyInr).toBeGreaterThan(0);
-    expect(allocation.grandTotal).toBeLessThanOrEqual(2500000);
+    expect(rec.status).toBe('fits');
+    expect(rec.gapInr).toBe(0);
+    expect(allocation.contingencyInr).toBe(227273);
+    expect(allocation.grandTotal).toBe(2500000);
   });
 });

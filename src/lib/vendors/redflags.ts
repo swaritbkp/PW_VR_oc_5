@@ -23,6 +23,7 @@ export interface RedFlagAnalysis {
 interface PatternRule {
   readonly id: string;
   readonly severity: RedFlagSeverity;
+  readonly deduction: number;
   readonly regex: RegExp;
   readonly title: string;
   readonly explanation: string;
@@ -33,8 +34,9 @@ const RED_FLAG_RULES: readonly PatternRule[] = [
   {
     id: 'full_advance',
     severity: 'high',
-    regex: /(100%(\s+\w+){0,3}\s*advance|full\s*payment\s*(before|in\s*advance))/i,
-    title: '100% Upfront Advance Payment Demanded',
+    deduction: 35,
+    regex: /(100%(\s+[\w-]+){0,4}\s*advance|full\s*payment\s*(before|in\s*advance))/i,
+    title: '100% Advance Payment Trap',
     explanation:
       'Paying 100% before the event leaves the host with zero financial leverage if deliverables fail.',
     counterClause:
@@ -43,6 +45,7 @@ const RED_FLAG_RULES: readonly PatternRule[] = [
   {
     id: 'cash_only',
     severity: 'high',
+    deduction: 35,
     regex: /(no\s*written\s*agreement|cash\s*only|कच्चा|raw\s*cash)/i,
     title: 'Unwritten Agreement or Cash-Only Mandate',
     explanation: 'Absence of GST invoice or signed MoU deprives you of consumer legal protections.',
@@ -52,8 +55,9 @@ const RED_FLAG_RULES: readonly PatternRule[] = [
   {
     id: 'non_refundable',
     severity: 'high',
+    deduction: 30,
     regex: /(non-refundable|no\s*refund|no\s*rain\s*cancellation)/i,
-    title: 'Blanket Non-Refundable / No Weather Cancellation Clause',
+    title: 'No Rain / Force Majeure Refund',
     explanation:
       'Refusal to accommodate severe force majeure or rain imposes total financial risk onto the host.',
     counterClause:
@@ -62,6 +66,7 @@ const RED_FLAG_RULES: readonly PatternRule[] = [
   {
     id: 'generator_actuals',
     severity: 'medium',
+    deduction: 15,
     regex: /(diesel|generator)\s*(billed\s*)?at\s*actuals/i,
     title: 'Uncapped Generator / Diesel Fuel Surcharge',
     explanation: 'Open-ended fuel billing often inflates final settlement bills unexpectedly.',
@@ -71,8 +76,9 @@ const RED_FLAG_RULES: readonly PatternRule[] = [
   {
     id: 'curfew_penalty',
     severity: 'medium',
+    deduction: 15,
     regex: /(curfew\s*at\s*10\s*pm|overtime\s*(penalty|fee)|hourly\s*(fine|penalty)|\/hr\s*overtime)/i,
-    title: 'Aggressive Curfew / Overtime Penalty',
+    title: 'Predatory Overtime Penalty',
     explanation:
       'Hefty per-minute or hourly overtime penalties can cause disputes during celebration extensions.',
     counterClause:
@@ -113,7 +119,7 @@ function scanRules(text: string): {
         explanation: rule.explanation,
         counterClause: rule.counterClause,
       });
-      deduction += rule.severity === 'high' ? 35 : 15;
+      deduction += rule.deduction;
     }
   }
   return { detected, deduction };

@@ -90,7 +90,7 @@ function GuestsInputField({ guests, onGuestsChange }: { readonly guests: string;
   return (
     <div>
       <label htmlFor="guests-input" className="block text-xs font-semibold text-stone-700 mb-1">Guest Count</label>
-      <input id="guests-input" type="number" min="1" value={guests} onChange={(e) => onGuestsChange(e.target.value)} required className="w-full p-2 text-xs border border-stone-200 rounded-lg" />
+      <input id="guests-input" type="number" value={guests} onChange={(e) => onGuestsChange(e.target.value)} required className="w-full p-2 text-xs border border-stone-200 rounded-lg" />
     </div>
   );
 }
@@ -99,7 +99,7 @@ function BudgetInputField({ budgetInr, onBudgetChange }: { readonly budgetInr: s
   return (
     <div>
       <label htmlFor="budget-input" className="block text-xs font-semibold text-stone-700 mb-1">Budget (₹ INR)</label>
-      <input id="budget-input" type="number" min="1000" value={budgetInr} onChange={(e) => onBudgetChange(e.target.value)} required className="w-full p-2 text-xs border border-stone-200 rounded-lg" />
+      <input id="budget-input" type="number" value={budgetInr} onChange={(e) => onBudgetChange(e.target.value)} required className="w-full p-2 text-xs border border-stone-200 rounded-lg" />
       <p className="text-[10px] text-amber-800 font-mono mt-0.5">{formatInr(parseInt(budgetInr, 10) || 0)}</p>
     </div>
   );

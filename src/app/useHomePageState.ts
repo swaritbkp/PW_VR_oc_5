@@ -17,6 +17,7 @@ import type { Vendor, VendorSelection, VendorStatus } from '@/lib/vendors/types'
 import type { ModalType } from '@/components/UI/AppModals';
 import type { AppLanguage } from '@/components/UI/AppHeader';
 import { buildAdaptedPlanFromIntake } from './planAdapter';
+import { useAgentCopilotHandler } from './useAgentCopilotHandler';
 
 function usePlanStoreState() {
   const [versionStore, setVersionStore] = useState(() => createVersionStore(getInitialPlan()));
@@ -34,14 +35,10 @@ function usePlanStoreState() {
   );
 
   return {
-    versionStore,
-    setVersionStore,
-    vendorSelections,
-    setVendorSelections,
-    simulationRun,
-    setSimulationRun,
-    currentPlan,
-    journey,
+    versionStore, setVersionStore,
+    vendorSelections, setVendorSelections,
+    simulationRun, setSimulationRun,
+    currentPlan, journey,
   };
 }
 
@@ -63,10 +60,7 @@ function useScheduleLayoutState(currentPlan: PlanState) {
     if (!schedule) return null;
     const prob = probabilityOnTime(schedule, currentPlan.targetDays);
     const alerts = evaluate({
-      schedule,
-      today: 0,
-      availableDays: currentPlan.targetDays,
-      probabilityOnTime: prob,
+      schedule, today: 0, availableDays: currentPlan.targetDays, probabilityOnTime: prob,
     });
     const alloc = allocate(currentPlan.budgetLines, currentPlan.intake.budgetInr, currentPlan.intake.guests);
     const recon = reconcile(alloc);
@@ -88,11 +82,8 @@ function createNavigationHandlers(
       return;
     }
     const modalMap: Record<string, ModalType> = {
-      templates: 'templates',
-      chaos: 'chaos',
-      export_jashn: 'portable',
-      dossier: 'dossier',
-      whatif: 'whatif',
+      templates: 'templates', chaos: 'chaos', export_jashn: 'portable',
+      dossier: 'dossier', whatif: 'whatif',
     };
     const targetModal = modalMap[actionId];
     if (targetModal) {
@@ -117,8 +108,7 @@ function createPlanActionHandlers(
 ) {
   const handleUpdateTaskStatus = (id: string, done: boolean) => {
     const updatedTasks = currentPlan.tasks.map((t) => (t.id === id ? { ...t, done } : t));
-    const nextPlan = { ...currentPlan, tasks: updatedTasks };
-    setVersionStore((s) => pushVersion(s, nextPlan, `Updated task ${id} status`));
+    setVersionStore((s) => pushVersion(s, { ...currentPlan, tasks: updatedTasks }, `Updated task ${id} status`));
   };
 
   const handleUpdateTask = (id: string, updates: Partial<PlanTask>) => {
@@ -127,8 +117,7 @@ function createPlanActionHandlers(
   };
 
   const handleUpdateBudgetLines = (budgetLines: readonly BudgetLine[], reason: string) => {
-    const nextPlan = { ...currentPlan, budgetLines };
-    setVersionStore((s) => pushVersion(s, nextPlan, reason));
+    setVersionStore((s) => pushVersion(s, { ...currentPlan, budgetLines }, reason));
   };
 
   const handleBookVendor = (vendor: Vendor, status: VendorStatus, quoteInr?: number) => {
@@ -209,27 +198,22 @@ export function useHomePageState() {
   const { layout, commandData } = useScheduleLayoutState(planState.currentPlan);
   const derived = useWorkspaceDerived(layout, planState.currentPlan.tasks, uiState.selectedTaskId);
   const navHandlers = createNavigationHandlers(
-    uiState.setActiveModal,
-    uiState.setActiveTab,
-    planState.setSimulationRun,
+    uiState.setActiveModal, uiState.setActiveTab, planState.setSimulationRun,
   );
   const planHandlers = createPlanActionHandlers(
-    planState.currentPlan,
-    uiState.vendorCategory,
-    planState.setVersionStore,
-    planState.setVendorSelections,
+    planState.currentPlan, uiState.vendorCategory, planState.setVersionStore, planState.setVendorSelections,
   );
   const intakeHandlers = createIntakeHandlers(planState, uiState);
+  const copilot = useAgentCopilotHandler({
+    currentPlan: planState.currentPlan,
+    setVersionStore: planState.setVersionStore,
+    setActiveTab: uiState.setActiveTab,
+    setActiveModal: uiState.setActiveModal,
+  });
 
   return {
-    ...planState,
-    ...navHandlers,
-    ...planHandlers,
-    ...uiState,
-    ...derived,
-    ...intakeHandlers,
-    layout,
-    commandData,
+    ...planState, ...navHandlers, ...planHandlers, ...uiState, ...derived, ...intakeHandlers, ...copilot,
+    layout, commandData,
   };
 }
 

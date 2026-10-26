@@ -4,6 +4,7 @@ import React from 'react';
 import type { ScheduledTask } from '../../lib/schedule/types';
 import type { Alert } from '../../lib/schedule/sentinel';
 import type { AllocationResult, ReconcileResult } from '../../lib/budget/engine';
+import type { PlanTask } from '../../lib/plan/types';
 import { ReadinessGauge } from './ReadinessGauge';
 import { BudgetDonut } from './BudgetDonut';
 import { IconTimeline } from '../UI/JashnIcons';
@@ -15,6 +16,7 @@ export interface CommandCenterProps {
   readonly budgetReconciliation: ReconcileResult;
   readonly nextAction?: ScheduledTask;
   readonly alerts: readonly Alert[];
+  readonly tasks?: readonly PlanTask[];
   readonly onSelectTask?: (taskId: string) => void;
   readonly onOpenBudget?: () => void;
 }
@@ -43,21 +45,7 @@ function CountdownCard({ daysLeft }: { readonly daysLeft: number }): React.JSX.E
           />
         </div>
       </div>
-      <div className="text-[10px] font-medium text-stone-500 flex items-center justify-between pt-1 border-t border-stone-100">
-        <span>Timeline Target: 75 days</span>
-        <span className="text-amber-700 font-semibold">Seasonal Buffer Active</span>
-      </div>
-    </div>
-  );
-}
-
-function EmptyNextActionCard(): React.JSX.Element {
-  return (
-    <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 shadow-xs flex flex-col justify-center">
-      <span className="text-xs font-bold text-emerald-900">Next Action</span>
-      <p className="text-xs text-emerald-800 mt-1">
-        All ready tasks are completed! Celebration is prepared.
-      </p>
+      <span className="text-[10px] text-stone-500">Target locked for celebration day</span>
     </div>
   );
 }
@@ -66,40 +54,83 @@ function NextActionCard({
   task,
   onSelectTask,
 }: {
-  readonly task: ScheduledTask | undefined;
-  readonly onSelectTask?: (id: string) => void;
+  readonly task?: ScheduledTask;
+  readonly onSelectTask?: (taskId: string) => void;
 }): React.JSX.Element {
   if (!task) {
-    return <EmptyNextActionCard />;
+    return (
+      <div className="p-3.5 rounded-2xl bg-white border border-stone-200/80 shadow-xs flex flex-col justify-between">
+        <span className="text-xs font-semibold text-stone-600">Next Best Action</span>
+        <p className="text-xs text-stone-500 my-2">All tasks completed or plan is awaiting start.</p>
+        <span className="text-[10px] text-stone-500">Plan on track</span>
+      </div>
+    );
   }
-  const isCrit = task.totalFloat <= 0;
-  const badgeClass = isCrit
-    ? 'bg-amber-50 text-amber-800 border border-amber-200'
-    : 'bg-emerald-50 text-emerald-800 border border-emerald-200';
-  const badgeText = isCrit ? 'Needs Decision' : `Flexible: +${Math.round(task.totalFloat)}d`;
 
   return (
-    <div className="flex flex-col justify-between p-3.5 rounded-2xl bg-white border border-stone-200/80 shadow-xs">
+    <div className="p-3.5 rounded-2xl bg-amber-50/50 border border-amber-200/80 shadow-xs flex flex-col justify-between">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-stone-600">Next Best Action</span>
-        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeClass}`}>
-          {badgeText}
+        <span className="text-xs font-bold text-amber-950">Next Best Action</span>
+        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900">
+          Critical Path
         </span>
       </div>
-      <p className="text-sm font-bold text-stone-900 truncate my-1">{task.name}</p>
+      <div className="my-1">
+        <p className="text-sm font-bold text-stone-900 line-clamp-1">{task.name}</p>
+        <p className="text-xs text-stone-600">Expected duration: {Math.round(task.expected)} days</p>
+      </div>
       <button
         type="button"
         onClick={() => onSelectTask?.(task.id)}
-        className="w-full py-1.5 flex items-center justify-center gap-1.5 text-center text-xs font-semibold rounded-lg bg-amber-50/80 hover:bg-amber-100 text-amber-900 border border-amber-200 hover:-translate-y-0.5 transition-all duration-200 shadow-2xs"
+        className="w-full mt-1 py-1.5 px-2 bg-amber-800 hover:bg-amber-900 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1 transition-colors"
       >
         <IconTimeline className="w-3.5 h-3.5" />
-        <span>Focus task on graph &rarr;</span>
+        <span>Focus task on graph</span>
       </button>
     </div>
   );
 }
 
-function AlertList({ alerts }: { readonly alerts: readonly Alert[] }): React.JSX.Element {
+function resolveAlertGuidance(ruleId: string): string {
+  if (ruleId === 'R1_START_SOON') return 'Critical Path Milestone — Scheduled to start soon';
+  if (ruleId === 'R2_OVERDUE') return 'Action overdue — Immediate focus required';
+  if (ruleId === 'R3_NO_BUFFER') return 'Zero float — Critical path item';
+  if (ruleId === 'R5_NEAR_CRITICAL') return 'Near critical — Buffer < 2 days';
+  if (ruleId === 'R6_NO_BACKUP') return 'Missing Plan B backup vendor';
+  return 'Actionable milestone review';
+}
+
+function getAlertBadge(severity: string) {
+  if (severity === 'critical') return { badge: 'Critical', badgeColor: 'bg-red-50 text-red-800 border-red-200' };
+  if (severity === 'warning') return { badge: '⚠ At Risk', badgeColor: 'bg-amber-50 text-amber-800 border-amber-200' };
+  return { badge: '✓ On Track', badgeColor: 'bg-emerald-50 text-emerald-800 border-emerald-200' };
+}
+
+function resolveTaskTitle(taskId: string, tasks?: readonly PlanTask[]): string {
+  const task = tasks?.find((t) => t.id === taskId);
+  if (task) return task.name;
+  if (taskId === 'W01') return 'Lock Venue & Grounds Deposit';
+  if (taskId === 'W02') return 'Finalize Feast & Catering Menu';
+  return `Task ${taskId}`;
+}
+
+function formatAlertItem(a: Alert, tasks?: readonly PlanTask[]) {
+  const { badge, badgeColor } = getAlertBadge(a.severity);
+  if (!a.taskId) {
+    return { badge, text: 'Seasonal timeline buffer notice — Monitor venue availability', badgeColor };
+  }
+  const taskName = resolveTaskTitle(a.taskId, tasks);
+  const guidance = resolveAlertGuidance(a.ruleId);
+  return { badge, text: `${taskName} — ${guidance}`, badgeColor };
+}
+
+function AlertList({
+  alerts,
+  tasks,
+}: {
+  readonly alerts: readonly Alert[];
+  readonly tasks?: readonly PlanTask[];
+}): React.JSX.Element {
   if (alerts.length === 0) {
     return (
       <p className="text-xs text-stone-500 py-1">
@@ -110,10 +141,7 @@ function AlertList({ alerts }: { readonly alerts: readonly Alert[] }): React.JSX
   return (
     <ul className="space-y-1.5 max-h-36 overflow-y-auto" role="list">
       {alerts.slice(0, 5).map((a, i) => {
-        const isCrit = a.severity === 'critical';
-        const badgeColor = isCrit
-          ? 'bg-red-50 text-red-800 border-red-200'
-          : 'bg-amber-50 text-amber-800 border-amber-200';
+        const item = formatAlertItem(a, tasks);
         return (
           <li
             key={`${a.ruleId}-${i}`}
@@ -121,15 +149,13 @@ function AlertList({ alerts }: { readonly alerts: readonly Alert[] }): React.JSX
           >
             <div>
               <span
-                className={`inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded border mr-1.5 ${badgeColor}`}
+                className={`inline-block font-mono text-[10px] font-bold px-1.5 py-0.5 rounded border mr-1.5 ${item.badgeColor}`}
               >
-                {a.ruleId}
+                {item.badge}
               </span>
-              <span className="text-stone-700 font-medium">
-                {a.taskId ? `Check status for ${a.taskId}` : 'Seasonal timeline buffer notice'}
-              </span>
+              <span className="text-stone-700 font-medium">{item.text}</span>
             </div>
-            <span className="text-[10px] font-bold text-stone-500 capitalize">{a.severity}</span>
+            <span className="text-[10px] font-mono font-bold text-stone-400 capitalize">{a.ruleId}</span>
           </li>
         );
       })}
@@ -147,6 +173,7 @@ export function CommandCenter({
   budgetReconciliation: recon,
   nextAction,
   alerts,
+  tasks,
   onSelectTask,
   onOpenBudget,
 }: CommandCenterProps): React.JSX.Element {
@@ -168,7 +195,7 @@ export function CommandCenter({
             Automated Readiness Checks
           </span>
         </div>
-        <AlertList alerts={alerts} />
+        <AlertList alerts={alerts} tasks={tasks} />
       </div>
     </section>
   );

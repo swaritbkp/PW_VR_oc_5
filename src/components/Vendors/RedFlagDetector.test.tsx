@@ -2,16 +2,23 @@ import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { axe } from 'vitest-axe';
 import { describe, expect, it, vi } from 'vitest';
-import { RedFlagDetector } from './RedFlagDetector';
+import { PRESETS, RedFlagDetector } from './RedFlagDetector';
 
 describe('RedFlagDetector Component (AC23)', () => {
   it('renders detector and scans predatory clauses', () => {
     const handleClose = vi.fn();
-    render(<RedFlagDetector onClose={handleClose} />);
+    render(<RedFlagDetector initialText={PRESETS[0].text} onClose={handleClose} />);
 
     expect(screen.getByText(/Vendor Contract Red-Flag Detector/i)).toBeInTheDocument();
     expect(screen.getByText(/Safety Score/i)).toBeInTheDocument();
     expect(screen.getByText(/Detected Predatory Clauses/i)).toBeInTheDocument();
+  });
+
+  it('defaults to Standard Safe Contract with 100/100 score', () => {
+    render(<RedFlagDetector onClose={vi.fn()} />);
+
+    expect(screen.getByText(/Vendor Contract Red-Flag Detector/i)).toBeInTheDocument();
+    expect(screen.getByText(/100\/100 • Safe \(Low Risk\)/i)).toBeInTheDocument();
   });
 
   it('switches text when preset button is clicked and dynamically updates score', () => {

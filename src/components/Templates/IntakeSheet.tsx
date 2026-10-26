@@ -59,7 +59,7 @@ function getDefaultLogistics(init?: Partial<IntakeInput>) {
   return {
     eventType: init?.eventType ?? 'wedding',
     city: init?.city ?? 'Chandigarh',
-    date: init?.date ?? '2026-12-15',
+    date: init?.date ?? '2027-02-14',
   };
 }
 
@@ -178,6 +178,7 @@ export function IntakeSheet({
   return (
     <form
       onSubmit={form.handleSubmit}
+      noValidate
       className="space-y-4 p-6 bg-white rounded-2xl border border-stone-200 shadow-sm max-w-xl mx-auto"
     >
       <IntakeHeader />

@@ -27,7 +27,7 @@ const LANE_ORDER: readonly TaskCategory[] = [
 ];
 
 // prettier-ignore
-const DEFAULTS = { dayWidth: 24, nodeHeight: 44, rowGap: 10, laneGap: 28, minNodeWidth: 120, padding: 24 };
+const DEFAULTS = { dayWidth: 24, nodeHeight: 44, rowGap: 10, laneGap: 28, minNodeWidth: 150, padding: 24 };
 const COLUMN_GAP = 8;
 const MILESTONE_SIZE = 32;
 const EPSILON = 1e-9;

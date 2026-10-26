@@ -28,6 +28,7 @@ function WorkspaceTopSection({ state }: { readonly state: HomePageState }): Reac
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         language={state.language}
+        onOpenCopilot={() => state.setIsCopilotOpen(true)}
         onOpenPlanB={() => {
           setSimulationRun(true);
           setActiveModal('disruption');
@@ -56,6 +57,7 @@ function WorkspaceBottomSection({ state }: { readonly state: HomePageState }): R
           budgetReconciliation={state.commandData.recon}
           nextAction={state.commandData.nextTask}
           alerts={state.commandData.alerts}
+          tasks={currentPlan.tasks}
           onSelectTask={(id) => state.setSelectedTaskId(id ?? null)}
           onOpenBudget={() => state.setActiveModal('budget')}
         />

@@ -14,6 +14,19 @@ describe('AC23 Smart Vendor Contract & Red-Flag Detector', () => {
     expect(flag?.counterClause).toMatch(/25%|milestone/);
   });
 
+  it('scans 3-part predatory clause dropping safety score to exactly 20/100', () => {
+    const predatory =
+      'Vendor demands 100% non-refundable cash advance 60 days prior with no rain cancellation clause and Rs 50,000/hr overtime penalty';
+    const analysis = analyzeVendorQuote(predatory);
+
+    expect(analysis.riskLevel).toBe('high_risk');
+    expect(analysis.safetyScore).toBe(20);
+    expect(analysis.flags.length).toBe(3);
+    expect(analysis.flags.some((f) => f.id === 'full_advance')).toBe(true);
+    expect(analysis.flags.some((f) => f.id === 'non_refundable')).toBe(true);
+    expect(analysis.flags.some((f) => f.id === 'curfew_penalty')).toBe(true);
+  });
+
   it('flags unwritten/cash-only arrangements as severe risk', () => {
     const quote = 'No written agreement needed, raw cash only (कच्चा) on venue entry.';
     const analysis = analyzeVendorQuote(quote);

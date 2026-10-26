@@ -8,7 +8,7 @@ import type { PlanTask } from '@/lib/plan/types';
 function createCustomTask(intake: IntakeInput, parentTaskId: string): PlanTask | null {
   const rawPrompt = intake.style || intake.nonNegotiables?.join(', ');
   if (!rawPrompt) return null;
-  const snippet = rawPrompt.length > 28 ? `${rawPrompt.slice(0, 28)}...` : rawPrompt;
+  const snippet = rawPrompt.length > 36 ? `${rawPrompt.slice(0, 36)}...` : rawPrompt;
   return {
     id: `custom_${Date.now().toString(36)}`,
     name: `Custom Style: ${snippet}`,
@@ -23,44 +23,37 @@ function createCustomTask(intake: IntakeInput, parentTaskId: string): PlanTask |
   };
 }
 
-function buildScaledLines(budgetInr: number, guests: number, styleSnippet?: string): BudgetLine[] {
-  const netSpend = Math.round(budgetInr / 1.10);
-  const perHeadRate = Math.max(500, Math.round((netSpend * 0.30) / Math.max(1, guests)));
+function buildCategoryLines(venue: number, decor: number, media: number, styleSnippet?: string): BudgetLine[] {
   return [
     {
-      id: 'b_venue',
-      category: 'venue',
-      name: 'Celebration Venue & Grounds',
-      unit: 'fixed',
-      rateInr: Math.round(netSpend * 0.35),
-      drivers: ['budget'],
+      id: 'b_venue', category: 'venue', name: 'Celebration Venue & Grounds',
+      unit: 'fixed', rateInr: venue, drivers: ['budget'],
     },
     {
-      id: 'b_food',
-      category: 'food',
-      name: 'Curated Feast & Beverages',
-      unit: 'per_head',
-      rateInr: perHeadRate,
-      quantity: guests,
-      drivers: ['guests'],
+      id: 'b_decor', category: 'decor', name: styleSnippet ? `Decor: ${styleSnippet}` : 'Theme Styling & Lighting',
+      unit: 'fixed', rateInr: decor, drivers: ['budget'],
     },
     {
-      id: 'b_decor',
-      category: 'decor',
-      name: styleSnippet ? `Decor: ${styleSnippet}` : 'Theme Styling & Lighting',
-      unit: 'fixed',
-      rateInr: Math.round(netSpend * 0.20),
-      drivers: ['budget'],
-    },
-    {
-      id: 'b_media',
-      category: 'media',
-      name: 'Cinematography & Photo',
-      unit: 'fixed',
-      rateInr: Math.round(netSpend * 0.15),
-      drivers: ['budget'],
+      id: 'b_media', category: 'media', name: 'Cinematography & Photo',
+      unit: 'fixed', rateInr: media, drivers: ['budget'],
     },
   ];
+}
+
+function buildScaledLines(budgetInr: number, guests: number, styleSnippet?: string): BudgetLine[] {
+  const netSpend = Math.round(budgetInr / 1.10);
+  const safeGuests = Math.max(1, guests);
+  const perHeadRate = Math.max(500, Math.round((netSpend * 0.30) / safeGuests));
+  const remainingNet = netSpend - perHeadRate * safeGuests;
+  const venue = Math.round(remainingNet * (35 / 70));
+  const decor = Math.round(remainingNet * (20 / 70));
+  const media = remainingNet - venue - decor;
+
+  const foodLine: BudgetLine = {
+    id: 'b_food', category: 'food', name: 'Curated Feast & Beverages',
+    unit: 'per_head', rateInr: perHeadRate, quantity: safeGuests, drivers: ['guests'],
+  };
+  return [buildCategoryLines(venue, decor, media, styleSnippet)[0], foodLine, ...buildCategoryLines(venue, decor, media, styleSnippet).slice(1)];
 }
 
 /**

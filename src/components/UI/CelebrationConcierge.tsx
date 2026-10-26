@@ -25,6 +25,7 @@ export interface CelebrationConciergeProps {
   readonly onOpenWhatIf: () => void;
   readonly onOpenChaos?: () => void;
   readonly onOpenDossier?: () => void;
+  readonly onOpenCopilot?: () => void;
   readonly language?: AppLanguage;
 }
 
@@ -39,30 +40,25 @@ interface ConciergeTextOptions {
 
 function getConciergeStrings(opts: ConciergeTextOptions) {
   const { lang, eventType, city, doneCount, totalCount, pct } = opts;
+  const isDone = doneCount === totalCount;
   if (lang === 'hi') {
     return {
       badge: 'उत्सव कंसीयर्ज',
       headline: `नमस्ते और सत श्री अकाल! आपके उत्सव की जीवंत योजना — ${city} में ${eventType}।`,
-      sub: doneCount === totalCount
-        ? '✨ शानदार! आपके सभी मील के पत्थर पूरे हो चुके हैं।'
-        : `आपने ${totalCount} में से ${doneCount} मील के पत्थर पूरे कर लिए हैं (${pct}%)।`,
+      sub: isDone ? '✨ शानदार! आपके सभी मील के पत्थर पूरे हो चुके हैं।' : `आपने ${totalCount} में से ${doneCount} मील के पत्थर पूरे कर लिए हैं (${pct}%)।`,
     };
   }
   if (lang === 'pa') {
     return {
       badge: 'ਜਸ਼ਨ ਕੰਸੀਅਰਜ',
       headline: `ਨਮਸਤੇ ਅਤੇ ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ! ਤੁਹਾਡੇ ਜਸ਼ਨ ਦੀ ਜੀਵੰਤ ਯੋਜਨਾ — ${city} ਵਿਖੇ ${eventType}।`,
-      sub: doneCount === totalCount
-        ? '✨ ਸ਼ਾਨਦਾਰ! ਤੁਹਾਡੇ ਸਾਰੇ ਮੀਲ ਪੱਥਰ ਪੂਰੇ ਹੋ ਗਏ ਹਨ।'
-        : `ਤੁਸੀਂ ${totalCount} ਵਿੱਚੋਂ ${doneCount} ਮੀਲ ਪੱਥਰ ਪੂਰੇ ਕਰ ਲਏ ਹਨ (${pct}%)।`,
+      sub: isDone ? '✨ ਸ਼ਾਨਦਾਰ! ਤੁਹਾਡੇ ਸਾਰੇ ਮੀਲ ਪੱਥਰ ਪੂਰੇ ਹੋ ਗਏ ਹਨ।' : `ਤੁਸੀਂ ${totalCount} ਵਿੱਚੋਂ ${doneCount} ਮੀਲ ਪੱਥਰ ਪੂਰੇ ਕਰ ਲਏ ਹਨ (${pct}%)।`,
     };
   }
   return {
     badge: 'Celebration Concierge',
     headline: `Namaste & Sat Sri Akal! Planning your ${eventType} in ${city}.`,
-    sub: doneCount === totalCount
-      ? '✨ Fantastic! All milestones are completed and ready for the big celebration.'
-      : `You have completed ${doneCount} of ${totalCount} milestones (${pct}%). Lock in key vendors below.`,
+    sub: isDone ? '✨ Fantastic! All milestones are completed and ready for the big celebration.' : `You have completed ${doneCount} of ${totalCount} milestones (${pct}%). Lock in key vendors below.`,
   };
 }
 
@@ -96,39 +92,50 @@ function ConciergeHeader(props: {
   );
 }
 
-function ConciergeQuickActions({
-  onOpenChaos,
-  onOpenDossier,
-  onOpenPlanB,
-  onOpenWhatIf,
-}: {
+function CopilotHeroButton({ onClick }: { readonly onClick?: () => void }): React.JSX.Element | null {
+  if (!onClick) return null;
+  return (
+    <button
+      type="button"
+      id="hero-copilot-btn"
+      onClick={onClick}
+      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-950 text-xs font-bold hover:-translate-y-0.5 transition-all duration-200 shadow-2xs"
+    >
+      <span>💬</span>
+      <span>Ask AI Agent</span>
+    </button>
+  );
+}
+
+function ConciergeQuickActions(props: {
   readonly onOpenChaos?: () => void;
   readonly onOpenDossier?: () => void;
   readonly onOpenPlanB: () => void;
   readonly onOpenWhatIf: () => void;
+  readonly onOpenCopilot?: () => void;
 }): React.JSX.Element {
-  const btnCls =
-    'flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-800 text-xs font-bold hover:-translate-y-0.5 transition-all duration-200 shadow-2xs hover:border-amber-300';
+  const btnCls = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-800 text-xs font-bold hover:-translate-y-0.5 transition-all duration-200 shadow-2xs hover:border-amber-300';
 
   return (
     <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
-      {onOpenChaos && (
-        <button type="button" onClick={onOpenChaos} className={btnCls}>
+      <CopilotHeroButton onClick={props.onOpenCopilot} />
+      {props.onOpenChaos && (
+        <button type="button" onClick={props.onOpenChaos} className={btnCls}>
           <IconShieldBolt className="w-3.5 h-3.5 text-amber-600" />
           <span>Chaos Monkey</span>
         </button>
       )}
-      {onOpenDossier && (
-        <button type="button" onClick={onOpenDossier} className={btnCls}>
+      {props.onOpenDossier && (
+        <button type="button" onClick={props.onOpenDossier} className={btnCls}>
           <IconDossier className="w-3.5 h-3.5 text-indigo-600" />
           <span>Executive Dossier</span>
         </button>
       )}
-      <button type="button" onClick={onOpenPlanB} className={btnCls}>
+      <button type="button" onClick={props.onOpenPlanB} className={btnCls}>
         <IconShieldBolt className="w-3.5 h-3.5 text-teal-600" />
         <span>Simulate Plan B</span>
       </button>
-      <button type="button" onClick={onOpenWhatIf} className={btnCls}>
+      <button type="button" onClick={props.onOpenWhatIf} className={btnCls}>
         <IconSliders className="w-3.5 h-3.5 text-stone-600" />
         <span>What-If Sliders</span>
       </button>
@@ -221,6 +228,7 @@ export function CelebrationConcierge(props: CelebrationConciergeProps): React.JS
           onOpenDossier={props.onOpenDossier}
           onOpenPlanB={props.onOpenPlanB}
           onOpenWhatIf={props.onOpenWhatIf}
+          onOpenCopilot={props.onOpenCopilot}
         />
       </div>
       <ConciergeNavTabs activeTab={props.activeTab} onSelectTab={props.onSelectTab} />
