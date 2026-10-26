@@ -60,8 +60,9 @@ function useScheduleLayoutState(plan: PlanState) {
   const commandData = useMemo(() => {
     if (!schedule) return null;
     const prob = probabilityOnTime(schedule, plan.targetDays);
+    const todayOffset = Math.max(0, schedule.projectDuration - plan.targetDays);
     const alerts = evaluate({
-      schedule, today: 0, availableDays: plan.targetDays, probabilityOnTime: prob,
+      schedule, today: todayOffset, availableDays: plan.targetDays, probabilityOnTime: prob,
     });
     const alloc = allocate(plan.budgetLines, plan.intake.budgetInr, plan.intake.guests);
     const recon = reconcile(alloc);

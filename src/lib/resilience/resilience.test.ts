@@ -106,7 +106,7 @@ describe('AC25 disruptions and backups', () => {
     });
     if (!surge.ok) throw new Error('expected ok');
     expect(surge.value.budgetImpactPct).toBe(15);
-    expect(surge.value.deltaDays).toBe(0);
+    expect(surge.value.deltaDays).toBe(3);
   });
 
   it('applies category effects (permits) and rejects broken networks', () => {

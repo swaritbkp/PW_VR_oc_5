@@ -10,6 +10,7 @@ export type DisruptionKind =
 
 /** How a disruption stretches the plan. Slip is the redo time without and with a Plan B ready. */
 export interface DisruptionEffect {
+  readonly taskId?: string;
   readonly need?: VendorNeedId;
   readonly category?: TaskCategory;
   readonly slipDays: number;
@@ -55,7 +56,7 @@ export const DISRUPTIONS: readonly DisruptionScenario[] = [
   { id: 'fog_travel', kind: 'weather', title: 'Dense fog delays travel', backupPlan: 'Arrange transport for key guests and plan a later start.', likelihood: 1, impact: 2, seasonal: [{ months: [12, 1], likelihood: 4 }], needs: ['transport'], effects: [] },
   { id: 'heat_wave', kind: 'weather', title: 'Extreme heat', backupPlan: 'Add shade, cooling and water points, or shift to the evening.', likelihood: 1, impact: 3, seasonal: [{ months: [5, 6], likelihood: 4 }], outdoorOnly: true, needs: ['tent_house'], effects: [], eventDayRisk: true },
   { id: 'permit_denied', kind: 'regulatory', title: 'Permission delayed or denied', backupPlan: 'Hold an alternate venue that needs no special permission.', likelihood: 2, impact: 4, eventTypes: ['community'], needs: ['venue'], effects: [{ category: 'permits', slipDays: 14, slipDaysWithBackup: 3 }] },
-  { id: 'guest_surge', kind: 'people', title: 'Guest count jumps by a third', backupPlan: 'Agree a flexible headcount band with the caterer.', likelihood: 3, impact: 3, needs: ['caterer'], effects: [], budgetImpactPct: 15 },
+  { id: 'guest_surge', kind: 'people', title: 'Guest count jumps by a third', backupPlan: 'Agree a flexible headcount band with the caterer.', likelihood: 3, impact: 3, needs: ['caterer'], effects: [{ taskId: 'W06', need: 'caterer', slipDays: 3, slipDaysWithBackup: 1 }], budgetImpactPct: 15 },
   { id: 'date_pulled_forward', kind: 'date', title: 'Date moves two weeks earlier', backupPlan: 'Cannot be covered by a vendor. Decide what to cut first.', likelihood: 2, impact: 4, needs: [], effects: [], availableDaysDelta: -14 },
 ];
 
@@ -97,6 +98,7 @@ function targetEffect(
 ): DisruptionEffect | undefined {
   return effects.find(
     (e) =>
+      (e.taskId !== undefined && task.id === e.taskId) ||
       (e.need !== undefined && task.bookingFor === e.need) ||
       (e.category !== undefined && task.category === e.category),
   );

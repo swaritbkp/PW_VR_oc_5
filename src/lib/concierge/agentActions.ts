@@ -14,9 +14,10 @@ interface ParsedNumberResult<T> {
 }
 
 function parseGuestsAction(input: string): ParsedNumberResult<AgentAction> | null {
-  const match = /(?:scale|set|change|update|guests?|to)\s*(-?\d+)\s*guests?/i.exec(input)
-    ?? /(?:guest\s*count\s*(?:to|=)?\s*)(-?\d+)/i.exec(input)
-    ?? /(?:scale\s+(?:to\s+)?|to\s+)(-?\d+)\s*guests/i.exec(input);
+  const match =
+    /(?:guest\s*count\s*(?:to|=|\s)?\s*)(-?\d+)/i.exec(input) ??
+    /(?:scale|set|change|update|make\s+it|we\s+have|to)\s*(-?\d+)\s*(?:guests?|people|attendees)/i.exec(input) ??
+    /(-?\d+)\s*(?:guests?|people\s+coming|attendees)/i.exec(input);
   if (!match) return null;
   const count = parseInt(match[1], 10);
   if (count < BOUNDS_LIMITS.minGuests || count > BOUNDS_LIMITS.maxGuests) {
@@ -26,7 +27,15 @@ function parseGuestsAction(input: string): ParsedNumberResult<AgentAction> | nul
 }
 
 function parseBudgetAction(input: string): ParsedNumberResult<AgentAction> | null {
-  const match = /(?:set\s+|scale\s+|update\s+|change\s+)?(?:the\s+)?budget\s*(?:to|=|\s:?)\s*(?:₹|rs\.?|inr)?\s*(-?\d[\d,]*)/i.exec(input);
+  const lakhMatch = /(?:set|scale|update|change|increase)?\s*(?:the\s+)?budget\s*(?:to|=|\s:?)\s*(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d+)?)\s*(?:lakh?s?|lacs?|l\b)/i.exec(input);
+  if (lakhMatch) {
+    const amount = Math.round(parseFloat(lakhMatch[1]) * 100_000);
+    if (amount < BOUNDS_LIMITS.minBudgetInr || amount > BOUNDS_LIMITS.maxBudgetInr) {
+      return { outOfBounds: true, val: amount };
+    }
+    return { action: { type: 'mutate_budget', budgetInr: amount }, log: `✓ Updated Budget -> ₹${amount.toLocaleString('en-IN')}` };
+  }
+  const match = /(?:set|scale|update|change|increase)?\s*(?:the\s+)?budget\s*(?:to|=|\s:?)\s*(?:₹|rs\.?|inr)?\s*(-?\d[\d,]*)/i.exec(input);
   if (!match) return null;
   const amount = parseInt(match[1].replace(/,/g, ''), 10);
   if (amount < BOUNDS_LIMITS.minBudgetInr || amount > BOUNDS_LIMITS.maxBudgetInr) {
@@ -196,19 +205,31 @@ export interface AgentTaskOptions {
   readonly pessimistic?: number;
 }
 
+let agentTaskSeq = 0;
+
+function generateAgentTaskId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `agent_${crypto.randomUUID().slice(0, 8)}`;
+  }
+  return `agent_${Date.now().toString(36)}_${(++agentTaskSeq).toString(36)}`;
+}
+
+function normalizeTaskOpts(o?: AgentTaskOptions | string): AgentTaskOptions {
+  return typeof o === 'string' ? { dependsOnId: o } : (o ?? {});
+}
+
 /**
  * Creates a new PlanTask ready for insertion into the CPM Event Graph.
  */
 export function createAgentTask(name: string, options?: AgentTaskOptions | string): PlanTask {
-  const opts: AgentTaskOptions = typeof options === 'string' ? { dependsOnId: options } : (options ?? {});
-  const dependsOnId = opts.dependsOnId ?? 'W01';
+  const opts = normalizeTaskOpts(options);
   return {
-    id: `agent_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`,
+    id: generateAgentTaskId(),
     name,
     optimistic: opts.optimistic ?? 2,
     mostLikely: opts.mostLikely ?? 4,
     pessimistic: opts.pessimistic ?? 6,
-    dependsOn: [dependsOnId],
+    dependsOn: [opts.dependsOnId ?? 'W01'],
     category: opts.category ?? 'entertainment',
     drivers: ['date'],
     why: 'Autonomous AI Copilot living plan injection',

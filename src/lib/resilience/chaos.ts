@@ -34,6 +34,7 @@ function findMatchingEffect(
 ): DisruptionEffect | undefined {
   return effects.find(
     (e) =>
+      (e.taskId !== undefined && task.id === e.taskId) ||
       (e.need !== undefined && task.bookingFor === e.need) ||
       (e.category !== undefined && task.category === e.category),
   );

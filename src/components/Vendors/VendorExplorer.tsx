@@ -3,9 +3,12 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import type { EventType, VendorNeedId } from '@/lib/plan/types';
 import type { Vendor, VendorStatus } from '@/lib/vendors/types';
+import { resolveCityCoordinates } from '@/lib/geo/cities';
+import { getFallbackVendors } from '@/lib/vendors/catalogFallback';
 import { VendorCityBar } from './VendorCityBar';
 import { VendorCard } from './VendorCard';
 import { VendorEmptyState } from './VendorEmptyState';
+import { VendorMapSection } from './VendorMap';
 import { VendorContactContainer, VendorToolModals } from './VendorModals';
 
 export interface VendorExplorerProps {
@@ -36,11 +39,11 @@ function useVendorSearch(category: VendorNeedId, eventType: EventType, city: str
         setVendors(data.vendors);
         setMapsFallbackUrl(null);
       } else {
-        setVendors([]);
+        setVendors(getFallbackVendors(city, category));
         setMapsFallbackUrl(data.fallback?.mapsSearchUrl ?? null);
       }
     } catch {
-      setVendors([]);
+      setVendors(getFallbackVendors(city, category));
     } finally {
       setLoading(false);
     }
@@ -101,6 +104,14 @@ function VendorResultsView(p: VendorResultsProps): React.JSX.Element {
   );
 }
 
+function useFilteredVendors(vendors: readonly Vendor[], searchQuery: string) {
+  return useMemo(() => {
+    if (!searchQuery.trim()) return vendors;
+    const q = searchQuery.toLowerCase();
+    return vendors.filter((v) => v.name.toLowerCase().includes(q) || v.address.toLowerCase().includes(q));
+  }, [vendors, searchQuery]);
+}
+
 function useVendorExplorerState(
   initialCity?: string,
   initialCategory?: VendorNeedId,
@@ -114,15 +125,11 @@ function useVendorExplorerState(
 
   useEffect(() => {
     if (initialCategory) setCategory(initialCategory);
-  }, [initialCategory]);
+    if (initialCity) setCity(initialCity);
+  }, [initialCategory, initialCity]);
 
   const { vendors, loading, mapsFallbackUrl } = useVendorSearch(category, eventType, city);
-
-  const filteredVendors = useMemo(() => {
-    if (!searchQuery.trim()) return vendors;
-    const q = searchQuery.toLowerCase();
-    return vendors.filter((v) => v.name.toLowerCase().includes(q) || v.address.toLowerCase().includes(q));
-  }, [vendors, searchQuery]);
+  const filteredVendors = useFilteredVendors(vendors, searchQuery);
 
   return {
     city,
@@ -177,6 +184,27 @@ function ExplorerActiveModals(props: {
   );
 }
 
+function VendorSearchControls({ state }: { readonly state: ReturnType<typeof useVendorExplorerState> }) {
+  return (
+    <>
+      <VendorCityBar
+        currentCity={state.city}
+        onSelectCity={state.setCity}
+        currentCategory={state.category}
+        onSelectCategory={state.setCategory}
+        searchQuery={state.searchQuery}
+        onSearchChange={state.setSearchQuery}
+      />
+      <VendorMapSection
+        center={resolveCityCoordinates(state.city)}
+        vendors={state.filteredVendors}
+        selectedId={state.selectedVendor?.placeId}
+        onSelect={state.setSelectedVendor}
+      />
+    </>
+  );
+}
+
 /**
  * Location-aware vendor explorer integrating the Google Places API route with ranked list and map views.
  */
@@ -186,14 +214,7 @@ export function VendorExplorer(props: VendorExplorerProps): React.JSX.Element {
 
   return (
     <div className="space-y-4">
-      <VendorCityBar
-        currentCity={s.city}
-        onSelectCity={s.setCity}
-        currentCategory={s.category}
-        onSelectCategory={s.setCategory}
-        searchQuery={s.searchQuery}
-        onSearchChange={s.setSearchQuery}
-      />
+      <VendorSearchControls state={s} />
       <VendorResultsView
         loading={s.loading}
         category={s.category}

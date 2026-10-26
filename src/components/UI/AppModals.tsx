@@ -76,10 +76,26 @@ export interface AppModalsProps {
   readonly versionStore: VersionStore;
   readonly onClose: () => void;
   readonly setVersionStore: React.Dispatch<React.SetStateAction<VersionStore>>;
+  readonly vendorSelections?: readonly VendorSelection[];
   readonly onOpenModal?: (modal: ModalType) => void;
   readonly onImportPlan?: (plan: PlanState, selections: readonly VendorSelection[]) => void;
   readonly onUpdateBudgetLines?: (lines: readonly BudgetLine[], reason: string) => void;
   readonly onApplyIntake?: (intake: IntakeInput) => void;
+  readonly onApplyStrategy?: (targetOfferInr: number, vendorName: string, category: string) => void;
+}
+
+function getBackedUpNeeds(selections?: readonly VendorSelection[]): ReadonlySet<VendorNeedId> {
+  const needs = new Set<VendorNeedId>();
+  for (const s of selections ?? []) {
+    if (s.status === 'backup' || s.status === 'booked') {
+      needs.add(s.need);
+    }
+  }
+  if (needs.size === 0) {
+    needs.add('venue');
+    needs.add('caterer');
+  }
+  return needs;
 }
 
 function RenderAuditModal({ onClose }: { readonly onClose: () => void }): React.JSX.Element {
@@ -108,13 +124,13 @@ function RenderFeatureModal(opts: AppModalsProps): React.JSX.Element | null {
       <ChaosMonkey
         tasks={currentPlan.tasks}
         availableDays={currentPlan.targetDays}
-        backedUpNeeds={new Set<VendorNeedId>()}
+        backedUpNeeds={getBackedUpNeeds(opts.vendorSelections)}
         onClose={onClose}
       />
     );
   }
   if (activeModal === 'dossier') return <DossierModal plan={currentPlan} onClose={onClose} />;
-  if (activeModal === 'negotiate') return <NegotiationCoach onClose={onClose} />;
+  if (activeModal === 'negotiate') return <NegotiationCoach onClose={onClose} onApplyStrategy={opts.onApplyStrategy} />;
   if (activeModal === 'redflags') return <RedFlagDetector onClose={onClose} />;
   if (activeModal === 'portable') {
     return (
@@ -156,7 +172,7 @@ function RenderDrawerModal(opts: AppModalsProps): React.JSX.Element {
       <DisruptionDrawer
         tasks={currentPlan.tasks}
         availableDays={currentPlan.targetDays}
-        backedUpNeeds={new Set<VendorNeedId>()}
+        backedUpNeeds={getBackedUpNeeds(opts.vendorSelections)}
         onClose={onClose}
         onOpenChaos={onOpenModal ? () => onOpenModal('chaos') : undefined}
       />

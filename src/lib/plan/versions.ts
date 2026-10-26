@@ -31,13 +31,20 @@ export function createVersionStore(initialPlan: PlanState): VersionStore {
   };
 }
 
+function getNextVersionId(store: VersionStore): string {
+  const last = store.versions[store.versions.length - 1];
+  if (!last) return 'v_1';
+  const num = parseInt(last.id.replace(/\D/g, ''), 10);
+  return Number.isFinite(num) ? `v_${num + 1}` : `v_${Date.now()}`;
+}
+
 /** Pushes a new plan version, capping total history at MAX_VERSIONS per AC3. */
 export function pushVersion(
   store: VersionStore,
   plan: PlanState,
   description: string,
 ): VersionStore {
-  const newId = `v_${store.versions.length + 1}`;
+  const newId = getNextVersionId(store);
   const newVersion: PlanVersion = {
     id: newId,
     parentId: store.currentId,
@@ -47,8 +54,12 @@ export function pushVersion(
   };
 
   const updated = [...store.versions, newVersion];
-  const capped =
-    updated.length > MAX_VERSIONS ? updated.slice(updated.length - MAX_VERSIONS) : updated;
+  let capped = updated;
+  if (updated.length > MAX_VERSIONS) {
+    const sliced = updated.slice(updated.length - MAX_VERSIONS);
+    const first = sliced[0];
+    capped = [{ ...first, parentId: null }, ...sliced.slice(1)];
+  }
 
   return {
     versions: capped,
@@ -56,19 +67,24 @@ export function pushVersion(
   };
 }
 
+/** Alias for pushVersion to record plan revisions. */
+export const recordVersion = pushVersion;
+
 /** Checks whether the version store can be undone to a parent snapshot. */
 export function canUndo(store: VersionStore): boolean {
-  const current = store.versions.find((v) => v.id === store.currentId);
-  return Boolean(current?.parentId);
+  const curIdx = store.versions.findIndex((v) => v.id === store.currentId);
+  return curIdx > 0;
 }
 
 /** Undoes the current change, restoring the previous snapshot byte-identically per AC3. */
 export function undoVersion(store: VersionStore): { store: VersionStore; plan: PlanState | null } {
-  const current = store.versions.find((v) => v.id === store.currentId);
-  if (!current?.parentId) {
+  const curIdx = store.versions.findIndex((v) => v.id === store.currentId);
+  if (curIdx <= 0) {
     return { store, plan: null };
   }
-  const parent = store.versions.find((v) => v.id === current.parentId);
+  const current = store.versions[curIdx];
+  const parent = (current.parentId ? store.versions.find((v) => v.id === current.parentId) : null)
+    ?? store.versions[curIdx - 1];
   if (!parent) {
     return { store, plan: null };
   }

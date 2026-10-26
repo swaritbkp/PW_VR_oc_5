@@ -1,6 +1,6 @@
 import { scaleForBudget, type BudgetLine } from '../budget/engine';
 import { daysBetween } from '../dates';
-import type { Schedule } from '../schedule/types';
+import type { Schedule, ScheduledTask } from '../schedule/types';
 import type { Driver, PlanTask } from './types';
 import type { IntakeInput } from './schemas';
 
@@ -28,7 +28,7 @@ export interface PropagateResult {
 export interface CrunchOption {
   readonly taskId: string;
   readonly taskName: string;
-  readonly action: 'drop' | 'compress' | 'parallelise';
+  readonly action: 'drop' | 'compress' | 'parallelise' | 'parallelize';
   readonly daysSaved: number;
   readonly reason: string;
 }
@@ -71,7 +71,8 @@ function handleGuests(plan: PlanState, guests: number): PropagateResult {
     }
     return line;
   });
-  const tResult = updateTasksForDriver(plan.tasks, 'guests', 1);
+  const ratio = plan.intake.guests > 0 ? guests / plan.intake.guests : 1;
+  const tResult = updateTasksForDriver(plan.tasks, 'guests', ratio);
   dirtyIds.push(...tResult.dirtyIds);
   return {
     plan: {
@@ -173,6 +174,38 @@ export function propagate(plan: PlanState, change: PlanChange): PropagateResult 
   return handleDateOrCity(plan, change);
 }
 
+function collectCrunchOptionsForTask(st: ScheduledTask, orig: PlanTask): CrunchOption[] {
+  const result: CrunchOption[] = [];
+  if (orig.optional && orig.category !== 'milestone') {
+    result.push({
+      taskId: orig.id,
+      taskName: orig.name,
+      action: 'drop',
+      daysSaved: Math.round(st.expected),
+      reason: 'Optional non-core task can be dropped',
+    });
+  }
+  const compressible = Math.round(st.expected - orig.optimistic);
+  if (compressible > 0) {
+    result.push({
+      taskId: orig.id,
+      taskName: orig.name,
+      action: 'compress',
+      daysSaved: compressible,
+      reason: `Fast-track to optimistic ${orig.optimistic}d`,
+    });
+  } else if (orig.dependsOn.length > 1) {
+    result.push({
+      taskId: orig.id,
+      taskName: orig.name,
+      action: 'parallelise',
+      daysSaved: Math.max(1, Math.round(st.expected / 2)),
+      reason: 'Split workstreams across concurrent crews',
+    });
+  }
+  return result;
+}
+
 /** Analyzes schedule crunch and ranks mitigation options per AC4. */
 export function rankCrunchOptions(
   schedule: Schedule,
@@ -184,31 +217,11 @@ export function rankCrunchOptions(
 
   const byId = new Map(tasks.map((t) => [t.id, t]));
   const critical = schedule.tasks.filter((t) => t.critical);
-  const options: CrunchOption[] = [];
-
-  for (const st of critical) {
+  const options = critical.flatMap((st) => {
     const orig = byId.get(st.id);
-    if (!orig) continue;
-    if (orig.optional) {
-      options.push({
-        taskId: orig.id,
-        taskName: orig.name,
-        action: 'drop',
-        daysSaved: Math.round(st.expected),
-        reason: 'Optional non-core task can be dropped',
-      });
-    }
-    const compressible = Math.round(st.expected - orig.optimistic);
-    if (compressible > 0) {
-      options.push({
-        taskId: orig.id,
-        taskName: orig.name,
-        action: 'compress',
-        daysSaved: compressible,
-        reason: `Fast-track to optimistic ${orig.optimistic}d`,
-      });
-    }
-  }
+    return orig ? collectCrunchOptionsForTask(st, orig) : [];
+  });
+
   options.sort((a, b) => b.daysSaved - a.daysSaved);
   return { shortfallDays: shortfall, isCrunch: true, options };
 }

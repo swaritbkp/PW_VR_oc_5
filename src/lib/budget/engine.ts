@@ -75,13 +75,7 @@ export function allocate(
     totalInr: computeLine(l, guests),
   }));
   const totalLineSpend = computed.reduce((sum, l) => sum + l.totalInr, 0);
-  const isBudgetShareContingency =
-    totalBudgetInr > 0 &&
-    Math.abs(totalLineSpend - Math.round(totalBudgetInr * 0.9)) <= INR_TOLERANCE &&
-    !lines.some((l) => l.name === 'Banquet Hall');
-  const contingencyInr = isBudgetShareContingency
-    ? Math.round((totalBudgetInr * contingencyPct) / PERCENT_BASE)
-    : Math.round((totalLineSpend * contingencyPct) / PERCENT_BASE);
+  const contingencyInr = Math.round((totalLineSpend * contingencyPct) / PERCENT_BASE);
   const grandTotal = totalLineSpend + contingencyInr;
   const gapInr = totalBudgetInr - grandTotal;
 

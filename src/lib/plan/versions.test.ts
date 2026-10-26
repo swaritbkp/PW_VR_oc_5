@@ -5,6 +5,7 @@ import {
   currentPlan,
   MAX_VERSIONS,
   pushVersion,
+  recordVersion,
   undoVersion,
 } from './versions';
 import type { PlanState } from './propagate';
@@ -77,5 +78,23 @@ describe('AC3 plan versioning and undo', () => {
       store = pushVersion(store, nextPlan, `Iteration ${i}`);
     }
     expect(store.versions.length).toBe(MAX_VERSIONS);
+  });
+
+  it('undoes reliably after 25 consecutive recordVersion calls without returning null', () => {
+    let store = createVersionStore(samplePlan);
+    for (let i = 1; i <= 25; i++) {
+      const nextPlan: PlanState = {
+        ...samplePlan,
+        intake: { ...samplePlan.intake, guests: 100 + i },
+      };
+      store = recordVersion(store, nextPlan, `Revision ${i}`);
+    }
+    expect(store.versions.length).toBe(MAX_VERSIONS);
+    expect(currentPlan(store).intake.guests).toBe(125);
+
+    const { store: undoneStore, plan: restoredPlan } = undoVersion(store);
+    expect(restoredPlan).not.toBeNull();
+    expect(restoredPlan?.intake.guests).toBe(124);
+    expect(currentPlan(undoneStore).intake.guests).toBe(124);
   });
 });

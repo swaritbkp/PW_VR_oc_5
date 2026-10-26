@@ -19,8 +19,9 @@ interface PinCoordinate {
 function calculatePins(center: LatLng, vendors: readonly Vendor[]): readonly PinCoordinate[] {
   const SCALE = 2500;
   return vendors.map((v) => {
-    const dx = (v.location.lng - center.lng) * SCALE;
-    const dy = (center.lat - v.location.lat) * SCALE;
+    const loc = v.location ?? center;
+    const dx = (loc.lng - center.lng) * SCALE;
+    const dy = (center.lat - loc.lat) * SCALE;
     const clampedX = Math.max(20, Math.min(380, 200 + dx));
     const clampedY = Math.max(20, Math.min(280, 150 + dy));
     return { vendor: v, x: clampedX, y: clampedY };
@@ -91,6 +92,31 @@ export function VendorMap({
       <div className="absolute bottom-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] text-stone-500 font-medium shadow-sm">
         Map data &copy; Google
       </div>
+    </div>
+  );
+}
+
+/** Container section embedding the interactive proximity radar and venue logistics map. */
+export function VendorMapSection({
+  center,
+  vendors,
+  selectedId,
+  onSelect,
+}: {
+  readonly center: LatLng;
+  readonly vendors: readonly Vendor[];
+  readonly selectedId?: string;
+  readonly onSelect: (v: Vendor) => void;
+}): React.JSX.Element | null {
+  if (vendors.length === 0) return null;
+  return (
+    <div className="rounded-2xl overflow-hidden border border-stone-200/90 shadow-2xs">
+      <VendorMap
+        center={center}
+        vendors={vendors}
+        selectedPlaceId={selectedId}
+        onSelectVendor={onSelect}
+      />
     </div>
   );
 }

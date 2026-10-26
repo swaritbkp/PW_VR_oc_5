@@ -106,4 +106,15 @@ describe('agentActions NLP Parser', () => {
     expect(result.actions.some((a) => a.type === 'add_budget_line' && a.line.name.includes('Showstopper') && a.line.rateInr === 180000)).toBe(true);
     expect(result.actions.some((a) => a.type === 'navigate_tab' && a.tab === 'graph')).toBe(true);
   });
+
+  it('handles conversational phrasing: make it 400 guests, 420 people coming, increase budget to 30L', () => {
+    const res1 = parseAgentCommand('make it 400 guests');
+    expect(res1.actions).toContainEqual({ type: 'mutate_guests', guests: 400 });
+
+    const res2 = parseAgentCommand('we have 420 people coming');
+    expect(res2.actions).toContainEqual({ type: 'mutate_guests', guests: 420 });
+
+    const res3 = parseAgentCommand('increase budget to 30L');
+    expect(res3.actions).toContainEqual({ type: 'mutate_budget', budgetInr: 3000000 });
+  });
 });

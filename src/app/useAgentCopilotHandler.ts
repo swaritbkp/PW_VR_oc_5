@@ -34,7 +34,7 @@ function handleStateMutation(action: AgentAction, ctx: AgentHandlerContext) {
       const raw = createAgentTask(action.name, {
         category: action.category,
         optimistic: action.optimistic,
-        mostLikely: action.likely,
+        mostLikely: action.mostLikely ?? action.likely ?? 4,
         pessimistic: action.pessimistic,
       });
       const safe = sanitizeTaskDependencies(plan.tasks, raw);

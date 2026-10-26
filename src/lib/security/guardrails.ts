@@ -55,6 +55,9 @@ const PII_RULES: readonly { readonly pattern: RegExp; readonly type: string }[] 
   { pattern: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, type: 'email' },
   { pattern: /\b[A-Z]{5}[0-9]{4}[A-Z]\b/g, type: 'pan' },
   { pattern: /\b\d{4}\s?\d{4}\s?\d{4}\b/g, type: 'aadhaar' },
+  { pattern: /\b\d{2}[A-Z]{5}\d{4}[A-Z]{1}[A-Z\d]{1}Z[A-Z\d]{1}\b/gi, type: 'gstin' },
+  { pattern: /\b(?:\d{4}[-\s]?){3}\d{4}\b/g, type: 'card' },
+  { pattern: /\b[A-PR-WYa-pr-wy][1-9]\d{6}\b/g, type: 'passport' },
 ];
 
 export const BOUNDS_LIMITS = {
@@ -67,10 +70,23 @@ export const BOUNDS_LIMITS = {
   maxQuoteInr: 100000000,
 };
 
+function normalizeHomoglyphs(text: string): string {
+  return text
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f\u200B-\u200D\uFEFF]/g, '')
+    .replace(/[\u0430]/g, 'a')
+    .replace(/[\u0435]/g, 'e')
+    .replace(/[\u0456\u0457\u0406\u0407]/g, 'i')
+    .replace(/[\u043E]/g, 'o')
+    .replace(/[\u0441]/g, 'c')
+    .replace(/[\u0440]/g, 'p');
+}
+
 /** Detects prompt injection, instruction overrides, XSS and jailbreaks. */
 export function detectPromptInjection(input: string): InjectionCheckResult {
+  const normalized = normalizeHomoglyphs(input);
   for (const item of INJECTION_PATTERNS) {
-    if (item.pattern.test(input)) {
+    if (item.pattern.test(input) || item.pattern.test(normalized)) {
       return { isInjection: true, patternMatched: item.label, reason: `Adversarial pattern: ${item.label}` };
     }
   }

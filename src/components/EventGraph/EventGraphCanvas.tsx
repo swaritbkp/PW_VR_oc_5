@@ -123,6 +123,7 @@ export function EventGraphCanvas({
   return (
     <svg
       role="region"
+      aria-roledescription="interactive event dependency graph"
       aria-label="Interactive celebration event timeline graph showing task dependencies and critical path"
       width={layout.width * zoom}
       height={layout.height * zoom}

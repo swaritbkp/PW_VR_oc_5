@@ -33,7 +33,12 @@ export interface StorageBackend {
 export function savePlanToStorage(storage: StorageBackend, plan: StoredPlan): Result<void, string> {
   try {
     const serialized = serializePlan(plan);
-    storage.setItem(`${STORAGE_KEY_PREFIX}${plan.id}`, serialized);
+    try {
+      storage.setItem(`${STORAGE_KEY_PREFIX}${plan.id}`, serialized);
+    } catch (e) {
+      const isQuota = e instanceof Error && (e.name === 'QuotaExceededError' || e.message.includes('quota'));
+      return { ok: false, error: isQuota ? 'Storage quota exceeded. Export as .jashn file.' : 'Storage write failure' };
+    }
     return { ok: true, value: undefined };
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Storage save failure';

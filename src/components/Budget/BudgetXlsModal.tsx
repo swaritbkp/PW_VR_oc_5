@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import type { BudgetLine } from '@/lib/budget/engine';
 import {
   downloadBudgetXls,
-  exportPlanBudgetToXls,
   parseAndValidateBudgetXls,
   type XlsParseResult,
 } from '@/lib/portability/xlsPortability';
@@ -30,8 +29,18 @@ export interface BudgetXlsModalProps {
 const MALICIOUS_PAYLOAD =
   'Category,Item,PricingMode,UnitRateInr,Quantity,TotalInr\nvenue,=CMD|\' /C calc\'!A0,fixed,500000,1,500000';
 
-function useXlsImport(lines: readonly BudgetLine[], guests: number, city?: string) {
-  const defaultValid = exportPlanBudgetToXls({ lines, guests, city });
+function buildCsvRows(lines: readonly BudgetLine[], guests: number): string {
+  const header = 'Category,Item,PricingMode,UnitRateInr,Quantity,TotalInr';
+  const rows = lines.map((l) => {
+    const qty = l.unit === 'per_head' ? guests : 1;
+    const total = l.unit === 'per_head' ? l.rateInr * guests : l.rateInr;
+    return `${l.category},${l.name},${l.unit},${l.rateInr},${qty},${total}`;
+  });
+  return [header, ...rows].join('\n');
+}
+
+function useXlsImport(lines: readonly BudgetLine[], guests: number) {
+  const defaultValid = buildCsvRows(lines, guests);
   const [rawInput, setRawInput] = useState<string>(defaultValid);
   const [parseResult, setParseResult] = useState<XlsParseResult | null>(null);
 
@@ -53,7 +62,7 @@ function useXlsImport(lines: readonly BudgetLine[], guests: number, city?: strin
  */
 export function BudgetXlsModal(props: BudgetXlsModalProps): React.JSX.Element {
   const { lines, guests, city, onClose, onCloseAll, onImportLines } = props;
-  const f = useXlsImport(lines, guests, city);
+  const f = useXlsImport(lines, guests);
 
   const handleApply = () => {
     if (f.parseResult?.ok && f.parseResult.lines) {

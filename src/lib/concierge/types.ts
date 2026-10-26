@@ -11,6 +11,7 @@ export type AgentAction =
       readonly critical?: boolean;
       readonly category?: TaskCategory;
       readonly optimistic?: number;
+      readonly mostLikely?: number;
       readonly likely?: number;
       readonly pessimistic?: number;
     }

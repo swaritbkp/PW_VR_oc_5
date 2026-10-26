@@ -124,6 +124,7 @@ function PortableFileHeader({ onClose }: { readonly onClose: () => void }): Reac
       <button
         type="button"
         onClick={onClose}
+        aria-label="Close portability modal"
         className="p-1 text-stone-400 hover:text-stone-700 text-sm font-bold"
       >
         ✕

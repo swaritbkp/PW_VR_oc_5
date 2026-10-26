@@ -13,4 +13,5 @@ tsconfig.tsbuildinfo
 *.webm
 *.mp4
 *.mov
+recordings/
 jashn-demo-submission.*

@@ -58,4 +58,39 @@ describe('Vendor Budget Sync & Negotiation Locking', () => {
     expect(toBudgetCategory('venue')).toBe('venue');
     expect(toBudgetCategory('music')).toBe('entertainment');
   });
+
+  it('preserves custom items (Star Night, Fireworks) when locking negotiated quotes', () => {
+    const linesWithCustom: BudgetLine[] = [
+      ...initialLines,
+      {
+        id: 'custom_star',
+        category: 'entertainment',
+        name: 'Star Night & Headline Artist',
+        unit: 'fixed',
+        rateInr: 950000,
+        drivers: ['budget'],
+      },
+      {
+        id: 'custom_pyro',
+        category: 'entertainment',
+        name: 'Showstopper Fireworks & Cold Pyro',
+        unit: 'fixed',
+        rateInr: 180000,
+        drivers: ['budget'],
+      },
+    ];
+
+    const updated = syncVendorQuoteToBudget(linesWithCustom, {
+      vendorName: 'The Grand Heritage Resort',
+      category: 'venue',
+      quoteInr: 255000,
+    });
+
+    const starNight = updated.find((l) => l.name.includes('Star Night'));
+    const fireworks = updated.find((l) => l.name.includes('Fireworks'));
+    expect(starNight).toBeDefined();
+    expect(starNight?.rateInr).toBe(950000);
+    expect(fireworks).toBeDefined();
+    expect(fireworks?.rateInr).toBe(180000);
+  });
 });

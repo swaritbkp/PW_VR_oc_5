@@ -100,6 +100,25 @@ function WeatherBarBottom({ f }: { readonly f: WeatherForecast }): React.JSX.Ele
   );
 }
 
+function useWeatherForecast(city: string, eventDate: string) {
+  const [forecast, setForecast] = useState<WeatherForecast>(() => getSeasonalClimatology(city, eventDate));
+  const [isFactored, setIsFactored] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    setIsFactored(false);
+    setForecast(getSeasonalClimatology(city, eventDate));
+    fetchWeatherForecast(city, eventDate).then((f) => {
+      if (active) setForecast(f);
+    });
+    return () => {
+      active = false;
+    };
+  }, [city, eventDate]);
+
+  return { forecast, isFactored, setIsFactored };
+}
+
 /**
  * Compact, high-visibility event-day weather forecast banner providing live or seasonal
  * climatology and one-click DAG buffer expansion and outdoor tenting reserves.
@@ -109,16 +128,7 @@ export function WeatherForecastBar({
   eventDate,
   onFactorWeather,
 }: WeatherForecastBarProps): React.JSX.Element {
-  const [forecast, setForecast] = useState<WeatherForecast>(() => getSeasonalClimatology(city, eventDate));
-  const [isFactored, setIsFactored] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    fetchWeatherForecast(city, eventDate).then((f) => {
-      if (active) setForecast(f);
-    });
-    return () => { active = false; };
-  }, [city, eventDate]);
+  const { forecast, isFactored, setIsFactored } = useWeatherForecast(city, eventDate);
 
   const handleFactor = () => {
     onFactorWeather(forecast);

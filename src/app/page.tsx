@@ -36,12 +36,14 @@ export default function HomePage(): React.JSX.Element {
           activeModal={activeModal}
           currentPlan={currentPlan}
           versionStore={state.versionStore}
+          vendorSelections={state.vendorSelections}
           onClose={() => setActiveModal('none')}
           setVersionStore={state.setVersionStore}
           onOpenModal={setActiveModal}
           onImportPlan={state.handleImportPlan}
           onUpdateBudgetLines={state.handleUpdateBudgetLines}
           onApplyIntake={state.handleApplyIntake}
+          onApplyStrategy={state.handleApplyNegotiationStrategy}
         />
         <AgentCopilot
           isOpen={state.isCopilotOpen}

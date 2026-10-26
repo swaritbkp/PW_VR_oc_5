@@ -22,10 +22,47 @@ function createTaskAndBudgetHandlers(
   };
 
   const handleUpdateBudgetLines = (budgetLines: readonly BudgetLine[], reason: string) => {
-    setVersionStore((s) => pushVersion(s, { ...plan, budgetLines }, reason));
+    setVersionStore((s) => {
+      const cur = currentPlan(s);
+      const totalSpend = budgetLines.reduce((sum, l) => sum + l.rateInr * (l.quantity ?? 1), 0);
+      const contingency = Math.round(totalSpend * 0.1);
+      const newBudget = Math.max(cur.intake.budgetInr, totalSpend + contingency);
+      return pushVersion(
+        s,
+        {
+          ...cur,
+          budgetLines,
+          intake: { ...cur.intake, budgetInr: newBudget },
+        },
+        reason,
+      );
+    });
   };
 
   return { handleUpdateTaskStatus, handleUpdateTask, handleUpdateBudgetLines };
+}
+
+function createNegotiationHandler(
+  setVersionStore: React.Dispatch<React.SetStateAction<VersionStore>>,
+) {
+  return (targetOfferInr: number, vendorName: string, category: string) => {
+    setVersionStore((store) => {
+      const cur = currentPlan(store);
+      const updatedLines = syncVendorQuoteToBudget(cur.budgetLines, {
+        vendorName,
+        category: toBudgetCategory(category),
+        quoteInr: targetOfferInr,
+      });
+      const totalSpend = updatedLines.reduce((sum, l) => sum + l.rateInr * (l.quantity ?? 1), 0);
+      const contingency = Math.round(totalSpend * 0.1);
+      const newBudget = Math.max(cur.intake.budgetInr, totalSpend + contingency);
+      return pushVersion(
+        store,
+        { ...cur, budgetLines: updatedLines, intake: { ...cur.intake, budgetInr: newBudget } },
+        `✓ Locked Custom Vendor Quote into Budget Ledger: ${vendorName} (₹${targetOfferInr.toLocaleString('en-IN')})`,
+      );
+    });
+  };
 }
 
 function createVendorBookingHandlers(
@@ -48,14 +85,7 @@ function createVendorBookingHandlers(
     });
   };
 
-  const handleApplyNegotiationStrategy = (targetOfferInr: number, vendorName: string, category: string) => {
-    setVersionStore((store) => {
-      const cur = currentPlan(store);
-      const updatedLines = syncVendorQuoteToBudget(cur.budgetLines, { vendorName, category: toBudgetCategory(category), quoteInr: targetOfferInr });
-      return pushVersion(store, { ...cur, budgetLines: updatedLines }, `✓ Locked Custom Vendor Quote into Budget Ledger: ${vendorName} (₹${targetOfferInr.toLocaleString('en-IN')})`);
-    });
-  };
-
+  const handleApplyNegotiationStrategy = createNegotiationHandler(setVersionStore);
   return { handleBookVendor, handleApplyNegotiationStrategy };
 }
 

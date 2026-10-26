@@ -16,6 +16,8 @@ const VENDOR_CATEGORY_MAP: Readonly<Record<string, TaskCategory>> = {
   media: 'media',
   photographer: 'media',
   permits: 'permits',
+  music: 'entertainment',
+  entertainment: 'entertainment',
 };
 
 /**
@@ -25,9 +27,21 @@ export function toBudgetCategory(cat: string): TaskCategory {
   return VENDOR_CATEGORY_MAP[cat] ?? 'entertainment';
 }
 
+const EXCLUDED_PATTERNS: readonly string[] = ['star night', 'firework', 'weather proof'];
+const BASE_PATTERNS: readonly string[] = ['venue', 'feast', 'catering', 'styling', 'photo'];
+
+function isBaseCategoryLine(name: string, category: string): boolean {
+  const norm = name.toLowerCase();
+  if (EXCLUDED_PATTERNS.some((p) => norm.includes(p))) {
+    return false;
+  }
+  return norm.includes(category) || BASE_PATTERNS.some((p) => norm.includes(p));
+}
+
 /**
  * Synchronizes custom vendor quote into the active celebration budget lines,
- * locking the negotiated rate and updating or inserting the vendor line item.
+ * locking the negotiated rate and updating or inserting the vendor line item
+ * without overwriting custom lines like Star Night or Fireworks.
  */
 export function syncVendorQuoteToBudget(
   lines: readonly BudgetLine[],
@@ -36,9 +50,10 @@ export function syncVendorQuoteToBudget(
   const normVendor = quote.vendorName.toLowerCase();
   const targetCat = toBudgetCategory(quote.category);
 
-  const matchIdx = lines.findIndex(
-    (l) => l.name.toLowerCase().includes(normVendor) || l.category === targetCat,
-  );
+  let matchIdx = lines.findIndex((l) => l.name.toLowerCase().includes(normVendor));
+  if (matchIdx < 0) {
+    matchIdx = lines.findIndex((l) => l.category === targetCat && isBaseCategoryLine(l.name, targetCat));
+  }
 
   if (matchIdx >= 0) {
     return lines.map((l, idx) =>
