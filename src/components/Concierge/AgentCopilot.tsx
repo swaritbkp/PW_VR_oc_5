@@ -8,6 +8,7 @@ export interface AgentCopilotProps {
   readonly onExecuteAction: (action: AgentAction) => void;
   readonly isOpen: boolean;
   readonly onToggle: () => void;
+  readonly onClose?: () => void;
 }
 
 const INITIAL_MESSAGES: readonly ChatMessage[] = [
@@ -18,7 +19,8 @@ const INITIAL_MESSAGES: readonly ChatMessage[] = [
   },
 ];
 
-function CopilotHeader({ onToggle }: { readonly onToggle: () => void }): React.JSX.Element {
+function CopilotHeader({ onToggle, onClose }: { readonly onToggle: () => void; readonly onClose?: () => void }): React.JSX.Element {
+  const handleClose = onClose ?? onToggle;
   return (
     <div className="p-3.5 bg-gradient-to-r from-amber-800 to-amber-950 text-white rounded-t-3xl flex items-center justify-between">
       <div className="flex items-center gap-2">
@@ -30,7 +32,8 @@ function CopilotHeader({ onToggle }: { readonly onToggle: () => void }): React.J
       </div>
       <button
         type="button"
-        onClick={onToggle}
+        id="close-copilot-btn"
+        onClick={handleClose}
         aria-label="Close Agent Copilot"
         className="text-amber-200 hover:text-white p-1 rounded-lg text-xs"
       >
@@ -98,12 +101,14 @@ function useCopilotMessages(onExecuteAction: (a: AgentAction) => void) {
 
 function CopilotDrawerDialog({
   onToggle,
+  onClose,
   messages,
   input,
   setInput,
   onSend,
 }: {
   readonly onToggle: () => void;
+  readonly onClose?: () => void;
   readonly messages: readonly ChatMessage[];
   readonly input: string;
   readonly setInput: (v: string) => void;
@@ -115,7 +120,7 @@ function CopilotDrawerDialog({
       aria-label="Agentic AI Copilot"
       className="fixed bottom-5 right-5 z-50 w-full sm:w-96 bg-white rounded-3xl shadow-2xl border border-stone-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200"
     >
-      <CopilotHeader onToggle={onToggle} />
+      <CopilotHeader onToggle={onToggle} onClose={onClose} />
       <MessageArea messages={messages} onSelectPrompt={onSend} />
       <CopilotInputForm
         input={input}
@@ -136,6 +141,7 @@ export function AgentCopilot({
   onExecuteAction,
   isOpen,
   onToggle,
+  onClose,
 }: AgentCopilotProps): React.JSX.Element {
   const { messages, input, setInput, handleSendCommand } = useCopilotMessages(onExecuteAction);
 
@@ -157,6 +163,7 @@ export function AgentCopilot({
   return (
     <CopilotDrawerDialog
       onToggle={onToggle}
+      onClose={onClose}
       messages={messages}
       input={input}
       setInput={setInput}

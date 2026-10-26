@@ -2,7 +2,6 @@
 
 import React, { useMemo, useState } from 'react';
 import { allocate, reconcile, type BudgetLine } from '../../lib/budget/engine';
-import { downloadBudgetXls } from '../../lib/portability/xlsPortability';
 import { AddCustomItemForm } from './AddCustomItemForm';
 import { LedgerTable } from './LedgerTable';
 import { SummaryHeader, LedgerDialogHeader } from './LedgerHeaderSections';
@@ -16,29 +15,22 @@ export interface BudgetLedgerProps {
   readonly onUpdateBudgetLines?: (newLines: readonly BudgetLine[], reason: string) => void;
 }
 
-function XlsActionBar({ onOpenXls, onExportXls }: { readonly onOpenXls: () => void; readonly onExportXls: () => void }) {
+function XlsActionBar({ onOpenXls }: { readonly onOpenXls: () => void }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-stone-100/90 rounded-2xl border border-stone-200 text-xs">
       <div className="flex items-center gap-1.5 font-bold text-stone-700">
         <span>🛡️</span>
         <span className="text-[11px] text-stone-600">XLS Guardrails: Macro-Safe • XXE • Injection • PII • Bounds</span>
       </div>
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={onExportXls}
-          className="px-2.5 py-1 text-xs font-bold rounded-lg bg-white border border-stone-300 text-stone-800 hover:bg-stone-50 transition-colors shadow-2xs"
-        >
-          📥 Export Excel (.xls)
-        </button>
-        <button
-          type="button"
-          onClick={onOpenXls}
-          className="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-700 text-white hover:bg-emerald-800 transition-colors shadow-xs"
-        >
-          📤 Import Edited Excel (.xls)
-        </button>
-      </div>
+      <button
+        type="button"
+        id="open-xls-roundtrip-btn"
+        onClick={onOpenXls}
+        className="px-3 py-1.5 text-xs font-bold rounded-xl bg-gradient-to-r from-emerald-700 to-teal-800 text-white hover:from-emerald-800 hover:to-teal-900 transition-all shadow-xs flex items-center gap-1.5"
+      >
+        <span>📊</span>
+        <span>Excel (.xls) Round-Trip &amp; Guardrails</span>
+      </button>
     </div>
   );
 }
@@ -102,7 +94,6 @@ interface LedgerBodyProps {
   readonly lines: readonly BudgetLine[];
   readonly guests: number;
   readonly onOpenXls: () => void;
-  readonly onExportXls: () => void;
   readonly onAddItem: (item: BudgetLine) => void;
   readonly onRateChange: (id: string, rate: number) => void;
   readonly onToggleLock: (id: string) => void;
@@ -118,7 +109,7 @@ function LedgerDialogBody(p: LedgerBodyProps) {
         contingency={p.contingency}
         status={p.status}
       />
-      <XlsActionBar onOpenXls={p.onOpenXls} onExportXls={p.onExportXls} />
+      <XlsActionBar onOpenXls={p.onOpenXls} />
       <AddCustomItemForm onAddItem={p.onAddItem} />
       <LedgerTable
         lines={p.lines}
@@ -161,7 +152,6 @@ function LedgerDialogContainer({
         lines={ledger.lines}
         guests={guests}
         onOpenXls={onOpenXls}
-        onExportXls={() => downloadBudgetXls({ lines: ledger.lines, guests })}
         onAddItem={ledger.handleAddItem}
         onRateChange={ledger.handleRateChange}
         onToggleLock={ledger.handleToggleLock}
@@ -172,28 +162,48 @@ function LedgerDialogContainer({
   );
 }
 
+interface XlsModalRenderOptions {
+  readonly show: boolean;
+  readonly lines: readonly BudgetLine[];
+  readonly guests: number;
+  readonly onCloseModal: () => void;
+  readonly onCloseAll: () => void;
+  readonly onImport: (newLines: readonly BudgetLine[]) => void;
+}
+
+function renderXlsModal(options: XlsModalRenderOptions): React.JSX.Element | null {
+  if (!options.show) return null;
+  return (
+    <BudgetXlsModal
+      lines={options.lines}
+      guests={options.guests}
+      onClose={options.onCloseModal}
+      onCloseAll={options.onCloseAll}
+      onImportLines={options.onImport}
+    />
+  );
+}
+
 /**
  * Comprehensive financial ledger enabling line item rate editing, contingency calculation, and custom additions.
  */
-export function BudgetLedger({
-  budgetLines: initialLines,
-  budgetInr,
-  guests,
-  onClose,
-  onUpdateBudgetLines,
-}: BudgetLedgerProps): React.JSX.Element {
+export function BudgetLedger(props: BudgetLedgerProps): React.JSX.Element {
+  const { budgetLines: initialLines, budgetInr, guests, onClose, onUpdateBudgetLines } = props;
   const ledger = useBudgetLedger(initialLines, onUpdateBudgetLines, onClose);
   const [showXlsModal, setShowXlsModal] = useState(false);
   const alloc = useMemo(() => allocate(ledger.lines, budgetInr, guests), [ledger.lines, budgetInr, guests]);
   const recon = useMemo(() => reconcile(alloc), [alloc]);
 
+  const onImport = (newLines: readonly BudgetLine[]) => {
+    ledger.handleImportLines(newLines);
+    onUpdateBudgetLines?.(newLines, 'Imported from verified Excel spreadsheet');
+  };
+
+  const closeXls = () => setShowXlsModal(false);
+  const closeAll = () => { setShowXlsModal(false); onClose(); };
+
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="Celebration Budget Ledger"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/40 backdrop-blur-xs"
-    >
+    <div role="dialog" aria-modal="true" aria-label="Celebration Budget Ledger" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/40 backdrop-blur-xs">
       <LedgerDialogContainer
         onClose={onClose}
         alloc={alloc}
@@ -204,14 +214,7 @@ export function BudgetLedger({
         onOpenXls={() => setShowXlsModal(true)}
         onSave={ledger.handleSave}
       />
-      {showXlsModal && (
-        <BudgetXlsModal
-          lines={ledger.lines}
-          guests={guests}
-          onClose={() => setShowXlsModal(false)}
-          onImportLines={ledger.handleImportLines}
-        />
-      )}
+      {renderXlsModal({ show: showXlsModal, lines: ledger.lines, guests, onCloseModal: closeXls, onCloseAll: closeAll, onImport })}
     </div>
   );
 }

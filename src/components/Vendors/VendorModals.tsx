@@ -72,13 +72,13 @@ export function VendorToolModals({
   readonly onClose: () => void;
   readonly onApplyStrategy?: (targetOfferInr: number, vendorName: string, category: string) => void;
 }): React.JSX.Element | null {
-  if (activeTool === 'negotiate' && selectedVendor) {
+  if (activeTool === 'negotiate') {
     return (
       <NegotiationCoach
-        initialVendorName={selectedVendor.name}
+        initialVendorName={selectedVendor?.name ?? 'Premier Event Vendor'}
         initialCategory={category}
         initialCity={city}
-        initialQuoteInr={selectedVendor.priceLevel ? selectedVendor.priceLevel * 100000 : 250000}
+        initialQuoteInr={selectedVendor?.priceLevel ? selectedVendor.priceLevel * 100000 : 250000}
         guestCount={guests}
         eventDate={eventDate}
         onClose={onClose}

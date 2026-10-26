@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import type { ModalType } from './AppModals';
 import {
   IconAlertShield,
-  IconDownloadFile,
   IconShieldBolt,
   IconSliders,
   IconSparkles,
@@ -25,8 +24,7 @@ interface NavLabels {
   readonly templates: string;
   readonly whatif: string;
   readonly chaos: string;
-  readonly portable: string;
-  readonly share: string;
+  readonly exportPortability: string;
   readonly audit: string;
   readonly livingGraph: string;
 }
@@ -34,15 +32,15 @@ interface NavLabels {
 const I18N: Record<AppLanguage, NavLabels> = {
   en: {
     templates: 'Templates', whatif: 'What-If Sliders', chaos: 'Chaos Monkey',
-    portable: 'Save / Load .jashn', share: 'Share & Export', audit: 'Audit', livingGraph: 'Living Graph',
+    exportPortability: '📦 Export & Portability', audit: 'Audit', livingGraph: 'Living Graph',
   },
   hi: {
     templates: 'टेम्पलेट्स', whatif: 'व्हाट-इफ़ सिमुलेटर', chaos: 'केओस मंकी',
-    portable: 'सहेजें .jashn', share: 'शेयर एवं निर्यात', audit: 'ऑडिट', livingGraph: 'जीवंत ग्राफ़',
+    exportPortability: '📦 निर्यात एवं पोर्टेबिलिटी', audit: 'ऑडिट', livingGraph: 'जीवंत ग्राफ़',
   },
   pa: {
     templates: 'ਟੈਂਪਲੇਟਸ', whatif: 'ਵਟ-ਇਫ਼ ਸਿਮੂਲੇਟਰ', chaos: 'ਕਿਓਸ ਮੰਕੀ',
-    portable: 'ਸੰਭਾਲੋ .jashn', share: 'ਸਾਂਝਾ ਕਰੋ', audit: 'ਆਡਿਟ', livingGraph: 'ਜੀਵੰਤ ਗ੍ਰਾਫ਼',
+    exportPortability: '📦 ਨਿਰਯਾਤ ਅਤੇ ਪੋਰਟੇਬਿਲਟੀ', audit: 'ਆਡਿਟ', livingGraph: 'ਜੀਵੰਤ ਗ੍ਰਾਫ਼',
   },
 };
 
@@ -68,12 +66,8 @@ const NAV_ITEMS: readonly NavItemConfig[] = [
     btnClass: 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100 shadow-xs',
   },
   {
-    modal: 'portable', key: 'portable', icon: IconUploadFile, iconClass: 'text-amber-300',
+    modal: 'portable', key: 'exportPortability', icon: IconUploadFile, iconClass: 'text-amber-300',
     btnClass: 'bg-stone-900 text-white hover:bg-stone-800 shadow-xs',
-  },
-  {
-    modal: 'share', key: 'share', icon: IconDownloadFile, iconClass: 'text-emerald-600',
-    btnClass: 'bg-emerald-50 text-emerald-900 border-emerald-300 hover:bg-emerald-100 shadow-xs',
   },
   {
     modal: 'audit', key: 'audit', icon: IconAlertShield, iconClass: 'text-stone-600',

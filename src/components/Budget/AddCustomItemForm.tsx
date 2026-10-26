@@ -19,15 +19,15 @@ export interface NewAgePreset {
 
 export const NEW_AGE_PRESETS: readonly NewAgePreset[] = [
   {
-    label: '🎤 + Star Night & Artist Rider (Custom ₹ — e.g. ₹2L / ₹8.5L / ₹25L)',
+    label: '🎤 Star Night & Headline Artist Rider',
     name: 'Star Night: Artist Tech Rider & Sound NOC',
     category: 'entertainment',
     unit: 'fixed',
-    rateInr: 450000,
+    rateInr: 950000,
     notes: 'Star Night celebrity artist tech rider, sound setup & NOC',
   },
   {
-    label: '🎆 + Showstopper: Cold Pyro Entry & Aerial Fireworks (₹1,80,000 Fixed)',
+    label: '🎆 Showstopper Fireworks & Cold Pyro',
     name: 'Showstopper: Cold Pyro Entry & Aerial Fireworks',
     category: 'entertainment',
     unit: 'fixed',
@@ -35,7 +35,7 @@ export const NEW_AGE_PRESETS: readonly NewAgePreset[] = [
     notes: 'Fire safety NOC, green pyrotechnics license & cold-pyro sparkular staging',
   },
   {
-    label: '🍲 + Specialty 2nd Caterer / Live Chaat Counter (₹450/guest)',
+    label: '🍲 2nd Caterer / Live Chaat Counter',
     name: 'Specialty 2nd Caterer: Live Chaat & Halwai Counter',
     category: 'food',
     unit: 'per_head',
@@ -43,7 +43,7 @@ export const NEW_AGE_PRESETS: readonly NewAgePreset[] = [
     notes: 'Secondary live counters, regional chaat & dessert halwai zoning',
   },
   {
-    label: '🍸 + Craft Bar, Mixology & Excise Permit (₹650/guest)',
+    label: '🍸 Craft Bar & Mixology',
     name: 'Craft Bar, Mixology & Excise Permit (L-12A)',
     category: 'permits',
     unit: 'per_head',
@@ -53,10 +53,14 @@ export const NEW_AGE_PRESETS: readonly NewAgePreset[] = [
 ];
 
 const CATEGORY_LABELS: readonly { readonly id: TaskCategory; readonly label: string }[] = [
-  { id: 'entertainment', label: 'Entertainment / Star Night' }, { id: 'food', label: 'Food / Multi-Caterer' },
-  { id: 'venue', label: 'Venue & Grounds' }, { id: 'decor', label: 'Decor & Styling' },
-  { id: 'media', label: 'Media & Photo' }, { id: 'permits', label: 'Beverages, Bar & Permits' },
-  { id: 'logistics', label: 'Logistics' }, { id: 'planning', label: 'Planning' },
+  { id: 'entertainment', label: 'Entertainment / Star Night' },
+  { id: 'food', label: 'Food / Multi-Caterer' },
+  { id: 'venue', label: 'Venue & Grounds' },
+  { id: 'decor', label: 'Decor & Styling' },
+  { id: 'media', label: 'Media & Photo' },
+  { id: 'permits', label: 'Beverages, Bar & Permits' },
+  { id: 'logistics', label: 'Logistics' },
+  { id: 'planning', label: 'Planning' },
 ];
 
 const TASK_CATEGORIES: ReadonlySet<string> = new Set<TaskCategory>([
@@ -79,17 +83,19 @@ function RateAndSubmitInput({
   return (
     <div className="flex gap-1.5">
       <input
+        id="custom-item-rate-input"
         aria-label="New item rate in INR"
         type="number"
         min="0"
         value={rate}
         onChange={(e) => onRateChange(parseInt(e.target.value, 10) || 0)}
-        className="w-full p-1.5 text-xs border border-stone-200 rounded-lg bg-white"
+        className="w-full p-1.5 text-xs border border-stone-200 rounded-lg bg-white font-bold"
       />
       <button
         type="button"
+        id="add-custom-item-submit-btn"
         onClick={onAdd}
-        className="px-2.5 py-1 text-xs font-bold rounded-lg bg-amber-800 text-white hover:bg-amber-900 transition-colors"
+        className="px-2.5 py-1 text-xs font-bold rounded-lg bg-amber-800 text-white hover:bg-amber-900 transition-colors shadow-2xs"
       >
         + Add
       </button>
@@ -151,7 +157,7 @@ function NewAgePresetPills({ onSelectPreset }: { readonly onSelectPreset: (p: Ne
   return (
     <div className="pt-2 border-t border-stone-200/80 space-y-1">
       <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
-        ✨ New-Age Indian Celebration Nuance Presets (1-Click Add):
+        ✨ New-Age Indian Celebration Nuances (Select &amp; Customize Rate):
       </span>
       <div className="flex flex-wrap gap-1.5">
         {NEW_AGE_PRESETS.map((p, idx) => (
@@ -179,8 +185,13 @@ function useAddCustomItemForm(onAddItem: (item: BudgetLine) => void) {
     if (!newName.trim()) return;
     const isPerHead = newUnit === 'per_head';
     onAddItem({
-      id: `custom_${Date.now()}`, category: newCat, name: newName.trim(), unit: newUnit,
-      rateInr: newRate, quantity: 1, drivers: isPerHead ? ['guests', 'budget'] : ['budget'],
+      id: `custom_${Date.now()}`,
+      category: newCat,
+      name: newName.trim(),
+      unit: newUnit,
+      rateInr: newRate,
+      quantity: 1,
+      drivers: isPerHead ? ['guests', 'budget'] : ['budget'],
       notes: 'Custom line item added by host',
     });
     setNewName('');
@@ -192,11 +203,10 @@ function useAddCustomItemForm(onAddItem: (item: BudgetLine) => void) {
     setNewCat(p.category);
     setNewUnit(p.unit);
     setNewRate(p.rateInr);
-    onAddItem({
-      id: `custom_nuance_${Date.now()}`, category: p.category, name: p.name,
-      unit: p.unit, rateInr: p.rateInr, quantity: 1,
-      drivers: p.unit === 'per_head' ? ['guests', 'budget'] : ['budget'], notes: p.notes,
-    });
+    if (typeof document !== 'undefined') {
+      const el = document.getElementById('custom-item-rate-input');
+      el?.focus();
+    }
   };
 
   return { newName, setNewName, newCat, setNewCat, newUnit, setNewUnit, newRate, setNewRate, handleAdd, handleSelectPreset };

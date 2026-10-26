@@ -5,7 +5,7 @@ import type { EventType, VendorNeedId } from '@/lib/plan/types';
 import type { Vendor, VendorStatus } from '@/lib/vendors/types';
 import { VendorCityBar } from './VendorCityBar';
 import { VendorCard } from './VendorCard';
-import { EmptyState } from '../UI/EmptyState';
+import { VendorEmptyState } from './VendorEmptyState';
 import { VendorContactContainer, VendorToolModals } from './VendorModals';
 
 export interface VendorExplorerProps {
@@ -66,58 +66,39 @@ function VendorLoadingSpinner({ category, city }: { readonly category: VendorNee
   );
 }
 
-function VendorEmptyState({
-  category,
-  city,
-  mapsFallbackUrl,
-}: {
-  readonly category: VendorNeedId;
-  readonly city: string;
-  readonly mapsFallbackUrl: string | null;
-}) {
-  return (
-    <div className="p-8 text-center bg-white rounded-3xl border border-stone-200/80 shadow-xs space-y-3">
-      <EmptyState
-        type="no-vendors"
-        title={`No ${category}s listed yet in ${city}`}
-        message="Search directly on Google Maps or add your trusted family vendor."
-        actionLabel="Search on Google Maps"
-        onAction={() => {
-          if (mapsFallbackUrl) window.open(mapsFallbackUrl, '_blank');
-        }}
-      />
-    </div>
-  );
-}
-
-function VendorResultsView({
-  loading,
-  category,
-  city,
-  filteredVendors,
-  mapsFallbackUrl,
-  onSelectVendor,
-}: {
+interface VendorResultsProps {
   readonly loading: boolean;
   readonly category: VendorNeedId;
   readonly city: string;
   readonly filteredVendors: readonly Vendor[];
   readonly mapsFallbackUrl: string | null;
   readonly onSelectVendor: (v: Vendor) => void;
-}): React.JSX.Element {
-  if (loading) return <VendorLoadingSpinner category={category} city={city} />;
+  readonly onOpenRedFlags: () => void;
+  readonly onOpenNegotiate: () => void;
+}
 
-  if (filteredVendors.length > 0) {
+function VendorResultsView(p: VendorResultsProps): React.JSX.Element {
+  if (p.loading) return <VendorLoadingSpinner category={p.category} city={p.city} />;
+
+  if (p.filteredVendors.length > 0) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-        {filteredVendors.map((v) => (
-          <VendorCard key={v.placeId} vendor={v} onSelect={() => onSelectVendor(v)} />
+        {p.filteredVendors.map((v) => (
+          <VendorCard key={v.placeId} vendor={v} onSelect={() => p.onSelectVendor(v)} />
         ))}
       </div>
     );
   }
 
-  return <VendorEmptyState category={category} city={city} mapsFallbackUrl={mapsFallbackUrl} />;
+  return (
+    <VendorEmptyState
+      category={p.category}
+      city={p.city}
+      mapsFallbackUrl={p.mapsFallbackUrl}
+      onOpenRedFlags={p.onOpenRedFlags}
+      onOpenNegotiate={p.onOpenNegotiate}
+    />
+  );
 }
 
 function useVendorExplorerState(
@@ -220,6 +201,8 @@ export function VendorExplorer(props: VendorExplorerProps): React.JSX.Element {
         filteredVendors={s.filteredVendors}
         mapsFallbackUrl={s.mapsFallbackUrl}
         onSelectVendor={s.setSelectedVendor}
+        onOpenRedFlags={() => s.setActiveTool('redflags')}
+        onOpenNegotiate={() => s.setActiveTool('negotiate')}
       />
       <ExplorerActiveModals
         state={s}

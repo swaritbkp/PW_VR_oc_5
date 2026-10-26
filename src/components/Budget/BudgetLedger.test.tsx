@@ -89,16 +89,19 @@ describe('BudgetLedger Component (AC1, AC3)', () => {
       />,
     );
 
-    // Click Star Night Preset
-    fireEvent.click(screen.getByRole('button', { name: /Star Night & Artist Rider/i }));
+    // Click Star Night Preset and Add
+    fireEvent.click(screen.getByRole('button', { name: /Star Night/i }));
+    fireEvent.click(screen.getByRole('button', { name: /\+ Add/i }));
     expect(screen.getAllByText(/Star Night: Artist Tech Rider/i).length).toBeGreaterThanOrEqual(1);
 
-    // Click Specialty 2nd Caterer Preset
-    fireEvent.click(screen.getByRole('button', { name: /Specialty 2nd Caterer/i }));
+    // Click Specialty 2nd Caterer Preset and Add
+    fireEvent.click(screen.getByRole('button', { name: /2nd Caterer/i }));
+    fireEvent.click(screen.getByRole('button', { name: /\+ Add/i }));
     expect(screen.getAllByText(/Specialty 2nd Caterer: Live Chaat/i).length).toBeGreaterThanOrEqual(1);
 
-    // Click Craft Bar Preset
-    fireEvent.click(screen.getByRole('button', { name: /Craft Bar, Mixology & Excise/i }));
+    // Click Craft Bar Preset and Add
+    fireEvent.click(screen.getByRole('button', { name: /Craft Bar/i }));
+    fireEvent.click(screen.getByRole('button', { name: /\+ Add/i }));
     expect(screen.getAllByText(/Craft Bar, Mixology & Excise Permit/i).length).toBeGreaterThanOrEqual(1);
 
     fireEvent.click(screen.getByRole('button', { name: /Save & Apply Changes/i }));

@@ -14,7 +14,7 @@ export function getInitialPlan(): PlanState {
     intake: {
       eventType: 'wedding',
       city: 'Chandigarh',
-      date: '2026-11-20',
+      date: '2027-02-14',
       guests: 250,
       budgetInr: 2500000,
       nonNegotiables: ['Phulkari backdrop', 'Halwai catering'],
@@ -40,6 +40,6 @@ export function getInitialPlan(): PlanState {
         drivers: ['guests'],
       },
     ],
-    targetDays: 75,
+    targetDays: 111,
   };
 }

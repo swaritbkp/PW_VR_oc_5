@@ -7,6 +7,6 @@ describe('Initial Plan Helper', () => {
     expect(plan.id).toBe('plan_phulkari_01');
     expect(plan.tasks.length).toBeGreaterThan(0);
     expect(plan.budgetLines.length).toBeGreaterThan(0);
-    expect(plan.targetDays).toBe(75);
+    expect(plan.targetDays).toBe(111);
   });
 });

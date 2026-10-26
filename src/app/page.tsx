@@ -46,6 +46,7 @@ export default function HomePage(): React.JSX.Element {
         <AgentCopilot
           isOpen={state.isCopilotOpen}
           onToggle={() => state.setIsCopilotOpen(!state.isCopilotOpen)}
+          onClose={() => state.setIsCopilotOpen(false)}
           onExecuteAction={state.handleExecuteAgentAction}
         />
       </main>
