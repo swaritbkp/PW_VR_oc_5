@@ -2,6 +2,21 @@ import type { VendorNeedId } from '../plan/types';
 import type { Vendor } from './types';
 import { resolveCityCoordinates } from '../geo/cities';
 
+const BASE_RATING = 4.8;
+const RATING_STEP = 0.1;
+const BASE_REVIEWS = 220;
+const REVIEWS_STEP = 75;
+const DEFAULT_PRICE_LEVEL = 3;
+const BASE_DISTANCE_KM = 1.2;
+const DISTANCE_STEP_KM = 1.4;
+const VERIFIED_BASE_DISTANCE_KM = 1.5;
+const VERIFIED_DISTANCE_STEP_KM = 1.8;
+const DISTANCE_DECIMAL_SCALE = 10;
+const LAT_OFFSET_A = 0.005;
+const LAT_OFFSET_B = -0.006;
+const LNG_OFFSET_A = 0.004;
+const LNG_OFFSET_B = -0.005;
+
 interface CityCatalogData {
   readonly venues: readonly { readonly name: string; readonly addr: string; readonly rating: number; readonly reviews: number; readonly price: 0 | 1 | 2 | 3 | 4; readonly phone: string; readonly dLat: number; readonly dLng: number }[];
   readonly caterers: readonly { readonly name: string; readonly addr: string; readonly rating: number; readonly reviews: number; readonly price: 0 | 1 | 2 | 3 | 4; readonly phone: string; readonly dLat: number; readonly dLng: number }[];
@@ -94,23 +109,27 @@ function buildSyntheticVendor(city: string, need: VendorNeedId, idx: number): Ve
   };
   const list = titles[need] ?? ['Signature Celebration Vendor'];
   const name = `${city} ${list[idx % list.length]}`;
-  const dLat = (idx === 0 ? 0.005 : -0.006) * (idx + 1);
-  const dLng = (idx === 0 ? 0.004 : -0.005) * (idx + 1);
+  const dLat = (idx === 0 ? LAT_OFFSET_A : LAT_OFFSET_B) * (idx + 1);
+  const dLng = (idx === 0 ? LNG_OFFSET_A : LNG_OFFSET_B) * (idx + 1);
   return {
     placeId: `fallback_${city.toLowerCase().replace(/[^a-z0-9]/g, '')}_${need}_${idx + 1}`,
     name,
     address: `Central Boulevard, ${city}`,
     location: { lat: center.lat + dLat, lng: center.lng + dLng },
-    rating: 4.8 + (idx % 2) * 0.1,
-    ratingCount: 220 + idx * 75,
-    priceLevel: 3,
+    rating: BASE_RATING + (idx % 2) * RATING_STEP,
+    ratingCount: BASE_REVIEWS + idx * REVIEWS_STEP,
+    priceLevel: DEFAULT_PRICE_LEVEL,
     phone: `+9198000${idx}${idx}123`,
-    distanceKm: 1.2 + idx * 1.4,
+    distanceKm: BASE_DISTANCE_KM + idx * DISTANCE_STEP_KM,
   };
 }
 
 /**
  * Returns a verified, realistic fallback vendor list for any city and vendor need.
+ *
+ * @param city - Target city name for local vendor matching
+ * @param need - Category of vendor needed
+ * @returns Array of realistic vendors matching the domain need
  */
 export function getFallbackVendors(city: string, need: VendorNeedId): readonly Vendor[] {
   const cat = resolveCityCatalog(city);
@@ -128,7 +147,9 @@ export function getFallbackVendors(city: string, need: VendorNeedId): readonly V
       ratingCount: item.reviews,
       priceLevel: item.price,
       phone: item.phone,
-      distanceKm: Math.round((1.5 + idx * 1.8) * 10) / 10,
+      distanceKm:
+        Math.round((VERIFIED_BASE_DISTANCE_KM + idx * VERIFIED_DISTANCE_STEP_KM) * DISTANCE_DECIMAL_SCALE) /
+        DISTANCE_DECIMAL_SCALE,
     }));
   }
 

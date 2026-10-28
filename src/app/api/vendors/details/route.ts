@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { DETAILS_FIELD_MASK, PLACES_DETAILS_URL, normaliseDetails } from '@/lib/vendors/places';
 import { VendorDetailsRequestSchema } from '@/lib/vendors/schemas';
 import { checkRateLimit } from '@/server/security/rateLimit';
+import { getServerSettings } from '@/lib/config/settings';
 
 const STATUS_OK = 200;
 const STATUS_BAD_REQUEST = 400;
@@ -38,6 +39,18 @@ async function fetchPlaceDetails(placeId: string, apiKey: string): Promise<unkno
   }
 }
 
+function checkRateLimitGuard(ip: string, limit: number): Response | null {
+  const rate = checkRateLimit(ip, { limit });
+  if (rate.allowed) return null;
+  return NextResponse.json(
+    { ok: false, error: 'Rate limit exceeded' },
+    {
+      status: STATUS_TOO_MANY_REQUESTS,
+      headers: { 'Retry-After': String(rate.retryAfterSeconds) },
+    },
+  );
+}
+
 /**
  * Handles GET /api/vendors/details?placeId=... for lazy retrieval of vendor contact fields.
  *
@@ -45,40 +58,23 @@ async function fetchPlaceDetails(placeId: string, apiKey: string): Promise<unkno
  * @returns JSON response with normalized contact details
  */
 export async function GET(req: Request): Promise<Response> {
-  const ip = getClientIp(req);
-  const rate = checkRateLimit(ip, { limit: 60 });
-  if (!rate.allowed) {
-    return NextResponse.json(
-      { ok: false, error: 'Rate limit exceeded' },
-      {
-        status: STATUS_TOO_MANY_REQUESTS,
-        headers: { 'Retry-After': String(rate.retryAfterSeconds) },
-      },
-    );
-  }
+  const settings = getServerSettings();
+  const rateBlocked = checkRateLimitGuard(getClientIp(req), settings.rateLimitPerMin);
+  if (rateBlocked) return rateBlocked;
 
   const placeId = parsePlaceId(req);
   if (!placeId) {
-    return NextResponse.json(
-      { ok: false, error: 'Valid placeId is required' },
-      { status: STATUS_BAD_REQUEST },
-    );
+    return NextResponse.json({ ok: false, error: 'Valid placeId is required' }, { status: STATUS_BAD_REQUEST });
   }
 
-  const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+  const apiKey = settings.googlePlacesApiKey;
   if (!apiKey) {
-    return NextResponse.json(
-      { ok: false, error: 'GOOGLE_PLACES_API_KEY not configured' },
-      { status: STATUS_SERVICE_UNAVAILABLE },
-    );
+    return NextResponse.json({ ok: false, error: 'GOOGLE_PLACES_API_KEY not configured' }, { status: STATUS_SERVICE_UNAVAILABLE });
   }
 
   const raw = await fetchPlaceDetails(placeId, apiKey);
   if (!raw) {
-    return NextResponse.json(
-      { ok: false, error: 'Places details upstream failed' },
-      { status: STATUS_BAD_GATEWAY },
-    );
+    return NextResponse.json({ ok: false, error: 'Places details upstream failed' }, { status: STATUS_BAD_GATEWAY });
   }
 
   const details = normaliseDetails(raw);

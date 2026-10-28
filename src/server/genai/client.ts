@@ -1,17 +1,17 @@
 import { GoogleGenAI } from '@google/genai';
-
-const DEFAULT_MODEL = 'gemini-2.5-flash';
+import { getServerSettings } from '../../lib/config/settings';
 
 let cachedClient: GoogleGenAI | null = null;
+let lastApiKey = '';
 
 /** Returns the configured Gemini model identifier. */
 export function getGeminiModel(): string {
-  return process.env.GEMINI_MODEL || DEFAULT_MODEL;
+  return getServerSettings().geminiModel;
 }
 
 /** Checks whether GEMINI_API_KEY is available in server environment. */
 export function isGeminiConfigured(): boolean {
-  return Boolean(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim());
+  return getServerSettings().isGeminiConfigured;
 }
 
 /**
@@ -19,12 +19,13 @@ export function isGeminiConfigured(): boolean {
  * or null if GEMINI_API_KEY is not configured.
  */
 export function getGeminiClient(): GoogleGenAI | null {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || !apiKey.trim()) {
+  const settings = getServerSettings();
+  if (!settings.isGeminiConfigured) {
     return null;
   }
-  if (!cachedClient) {
-    cachedClient = new GoogleGenAI({ apiKey });
+  if (!cachedClient || lastApiKey !== settings.geminiApiKey) {
+    cachedClient = new GoogleGenAI({ apiKey: settings.geminiApiKey });
+    lastApiKey = settings.geminiApiKey;
   }
   return cachedClient;
 }

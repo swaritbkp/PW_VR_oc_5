@@ -112,21 +112,38 @@ function buildScaledLines(budgetInr: number, guests: number, styleSnippet?: stri
   const decor = Math.round(remainingNet * (20 / 70));
   const media = remainingNet - venue - decor;
 
-  const foodLine: BudgetLine = {
-    id: 'b_food', category: 'food', name: 'Curated Feast & Beverages',
-    unit: 'per_head', rateInr: perHeadRate, quantity: safeGuests, drivers: ['guests'],
+  const categoryLines = buildCategoryLines(venue, decor, media, styleSnippet);
+  const venueLine = categoryLines[0] ?? {
+    id: 'b_venue',
+    category: 'venue',
+    name: 'Celebration Venue & Grounds',
+    unit: 'fixed',
+    rateInr: venue,
+    drivers: ['budget'],
   };
-  return [buildCategoryLines(venue, decor, media, styleSnippet)[0], foodLine, ...buildCategoryLines(venue, decor, media, styleSnippet).slice(1)];
+  const foodLine: BudgetLine = {
+    id: 'b_food',
+    category: 'food',
+    name: 'Curated Feast & Beverages',
+    unit: 'per_head',
+    rateInr: perHeadRate,
+    quantity: safeGuests,
+    drivers: ['guests'],
+  };
+  return [venueLine, foodLine, ...categoryLines.slice(1)];
 }
 
 function resolveTemplate(intake: IntakeInput) {
   if (intake.templateId) {
-    const t = getTemplate(intake.templateId);
-    if (t) return t;
+    const matched = getTemplate(intake.templateId);
+    if (matched) return matched;
   }
   const byType = templatesFor(intake.eventType)[0];
   if (byType) return byType;
-  return getTemplate('wedding-phulkari-courtyard')!;
+  const fallback = getTemplate('wedding-phulkari-courtyard');
+  if (fallback) return fallback;
+  const allTemplates = templatesFor('wedding');
+  return allTemplates[0];
 }
 
 function resolvePrompt(intake: IntakeInput): string {

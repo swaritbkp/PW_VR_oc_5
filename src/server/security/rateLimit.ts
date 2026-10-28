@@ -1,6 +1,7 @@
 const DEFAULT_LIMIT = 10;
 const DEFAULT_WINDOW_MS = 60_000;
-const DEFAULT_MAX_ENTRIES = 1000;
+export const MAX_CACHE_ENTRIES = 256;
+const DEFAULT_MAX_ENTRIES = MAX_CACHE_ENTRIES;
 const MS_PER_SECOND = 1000;
 
 export interface RateLimitOptions {
@@ -22,7 +23,16 @@ interface ClientRecord {
 
 const store = new Map<string, ClientRecord>();
 
-function evictOldestIfNeeded(maxEntries: number): void {
+/**
+ * Prunes expired records and evicts oldest entries to enforce strict LRU memory bounds.
+ * Prevents memory leaks and unbounded heap growth under high request concurrency.
+ */
+function evictOldestIfNeeded(maxEntries: number, now: number): void {
+  for (const [key, record] of store.entries()) {
+    if (now > record.resetTime) {
+      store.delete(key);
+    }
+  }
   if (store.size < maxEntries) return;
   const firstKey = store.keys().next().value;
   if (firstKey !== undefined) {
@@ -37,7 +47,14 @@ function updateRecord(rec: ClientRecord, now: number, windowMs: number): ClientR
   return { count: rec.count + 1, resetTime: rec.resetTime };
 }
 
-/** Checks and updates rate limit for a client IP using an in-memory LRU store. */
+/**
+ * Checks and updates rate limit for a client IP using a bounded in-memory LRU store.
+ * Automatically evicts stale TTL keys and caps maximum entries at MAX_CACHE_ENTRIES (256).
+ *
+ * @param ip - Client identifier string
+ * @param options - Optional configuration overriding limit, window, and capacity
+ * @returns RateLimitResult with authorization decision and remaining quota
+ */
 export function checkRateLimit(ip: string, options: RateLimitOptions = {}): RateLimitResult {
   const limit = options.limit ?? DEFAULT_LIMIT;
   const windowMs = options.windowMs ?? DEFAULT_WINDOW_MS;
@@ -50,7 +67,7 @@ export function checkRateLimit(ip: string, options: RateLimitOptions = {}): Rate
     : { count: 1, resetTime: now + windowMs };
 
   store.delete(ip);
-  evictOldestIfNeeded(maxEntries);
+  evictOldestIfNeeded(maxEntries, now);
   store.set(ip, updated);
 
   const allowed = updated.count <= limit;
@@ -62,7 +79,9 @@ export function checkRateLimit(ip: string, options: RateLimitOptions = {}): Rate
   return { allowed, remaining, retryAfterSeconds };
 }
 
-/** Clears all rate limits in memory (useful for test isolation). */
+/**
+ * Clears all rate limits in memory (useful for test isolation).
+ */
 export function clearRateLimits(): void {
   store.clear();
 }

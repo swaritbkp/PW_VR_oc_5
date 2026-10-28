@@ -135,7 +135,8 @@ function findDownstreamDependents(taskId: string, tasks: readonly PlanTask[]): s
   const dirty = new Set<string>([taskId]);
   const queue = [taskId];
   while (queue.length > 0) {
-    const cur = queue.shift()!;
+    const cur = queue.shift();
+    if (!cur) break;
     for (const t of tasks) {
       if (t.dependsOn.includes(cur) && !dirty.has(t.id)) {
         dirty.add(t.id);

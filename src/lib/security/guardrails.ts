@@ -160,6 +160,31 @@ export function clampDomainBounds(bounds: DomainBounds): DomainBounds {
   };
 }
 
+export const CANARY_TOKEN = 'JASHN_SYSTEM_CANARY_9F2A';
+
+/**
+ * Deterministically checks whether text contains internal system canary tokens.
+ *
+ * @param text - String to scan for canary token leakage
+ * @returns boolean True if the canary token was leaked
+ */
+export function containsCanaryLeak(text: string): boolean {
+  return text.includes(CANARY_TOKEN);
+}
+
+/**
+ * Sanitizes model or system output text, stripping any leaked canary tokens.
+ *
+ * @param text - Untrusted model output string
+ * @returns Sanitized string with leaked canary tokens redacted
+ */
+export function sanitizeModelOutput(text: string): string {
+  if (!containsCanaryLeak(text)) {
+    return text;
+  }
+  return text.replaceAll(CANARY_TOKEN, '[REDACTED_CANARY_TOKEN]');
+}
+
 /** Sanitizes and truncates input text to safe character limits. */
 export function sanitizeInputText(text: string, maxLength = BOUNDS_LIMITS.maxInputLength): string {
   const stripped = text.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
@@ -169,6 +194,17 @@ export function sanitizeInputText(text: string, maxLength = BOUNDS_LIMITS.maxInp
 /** Unified pipeline evaluating prompt injection, harmful intent, and scrubbing PII. */
 export function runGuardrailPipeline(input: string): GuardrailValidation {
   const sanitized = sanitizeInputText(input);
+  if (containsCanaryLeak(sanitized)) {
+    return {
+      ok: false,
+      sanitizedText: sanitizeModelOutput(sanitized),
+      error: 'Security alert: canary token leakage detected',
+      isInjection: true,
+      isUnsafe: true,
+      hasPii: false,
+      piiTypes: [],
+    };
+  }
   const injection = detectPromptInjection(sanitized);
   if (injection.isInjection) {
     return {

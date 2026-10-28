@@ -7,8 +7,8 @@ import type { PlanState } from './propagate';
  * @returns Baseline PlanState ready for living planning
  */
 export function getInitialPlan(): PlanState {
-  const tmpl = getTemplate('wedding-phulkari-courtyard')!;
-  const tasks = buildTemplateTasks(tmpl);
+  const tmpl = getTemplate('wedding-phulkari-courtyard');
+  const tasks = tmpl ? buildTemplateTasks(tmpl) : [];
   return {
     id: 'plan_phulkari_01',
     intake: {

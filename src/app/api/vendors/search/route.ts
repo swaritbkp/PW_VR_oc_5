@@ -12,9 +12,10 @@ import { rankVendors } from '@/lib/vendors/rank';
 import { VendorSearchRequestSchema, type VendorSearchRequest } from '@/lib/vendors/schemas';
 import type { LatLng } from '@/lib/vendors/types';
 import { checkRateLimit } from '@/server/security/rateLimit';
+import { getServerSettings } from '@/lib/config/settings';
 
 const CACHE_TTL_MS = 600_000;
-const MAX_CACHE_ENTRIES = 200;
+const MAX_CACHE_ENTRIES = 256;
 const MAX_BODY_BYTES = 8192;
 const STATUS_OK = 200;
 const STATUS_BAD_REQUEST = 400;
@@ -38,12 +39,20 @@ function getCached(key: string): unknown | undefined {
   return hit.data;
 }
 
+/**
+ * Bounded cache insertion with deterministic TTL pruning and LRU eviction.
+ * Prevents memory growth beyond MAX_CACHE_ENTRIES (256 items).
+ */
 function setCached(key: string, data: unknown): void {
+  const now = Date.now();
+  for (const [k, v] of cacheStore.entries()) {
+    if (now - v.timestamp > CACHE_TTL_MS) cacheStore.delete(k);
+  }
   if (cacheStore.size >= MAX_CACHE_ENTRIES) {
     const oldestKey = cacheStore.keys().next().value;
     if (oldestKey) cacheStore.delete(oldestKey);
   }
-  cacheStore.set(key, { timestamp: Date.now(), data });
+  cacheStore.set(key, { timestamp: now, data });
 }
 
 function getClientIp(req: Request): string {
@@ -95,7 +104,8 @@ async function fetchFromPlaces(params: FetchParams): Promise<unknown | null> {
 }
 
 async function executeSearch(input: VendorSearchRequest, query: string, center: LatLng) {
-  const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+  const { googlePlacesApiKey } = getServerSettings();
+  const apiKey = googlePlacesApiKey;
   if (!apiKey) return buildFallbackResponse('NO_KEY', query);
 
   const rawPlaces = await fetchFromPlaces({
@@ -179,7 +189,8 @@ async function cacheIfSuccess(key: string, res: NextResponse): Promise<void> {
  */
 export async function POST(req: Request): Promise<Response> {
   const ip = getClientIp(req);
-  const rate = checkRateLimit(ip, { limit: 30 });
+  const settings = getServerSettings();
+  const rate = checkRateLimit(ip, { limit: Math.min(30, settings.rateLimitPerMin) });
   if (!rate.allowed) {
     return NextResponse.json(
       { ok: false, error: 'Rate limit exceeded' },

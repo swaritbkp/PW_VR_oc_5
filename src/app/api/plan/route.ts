@@ -3,6 +3,7 @@ import { IntakeSchema, type IntakeInput } from '../../../lib/plan/schemas';
 import { checkRateLimit } from '../../../server/security/rateLimit';
 import { generatePlan } from '../../../server/genai/generate';
 import { detectPromptInjection, redactPii } from '../../../lib/security/guardrails';
+import { getServerSettings } from '../../../lib/config/settings';
 
 const MAX_BODY_BYTES = 8192;
 const STATUS_OK = 200;
@@ -85,7 +86,8 @@ function validateRawBody(rawText: string): BodyValidationResult {
 /** Handles living plan generation requests with rate limiting and intake validation. */
 export async function POST(req: Request): Promise<Response> {
   const ip = getClientIp(req);
-  const rate = checkRateLimit(ip);
+  const settings = getServerSettings();
+  const rate = checkRateLimit(ip, { limit: Math.min(10, settings.rateLimitPerMin) });
   if (!rate.allowed) {
     return NextResponse.json(
       { ok: false, code: 'RATE_LIMITED', error: 'Too Many Requests' },

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { checkRateLimit } from '@/server/security/rateLimit';
 import { detectOffTopicOrUnsafe, detectPromptInjection, redactPii } from '@/lib/security/guardrails';
 import { parseAgentCommand } from '@/lib/concierge/agentActions';
+import { getServerSettings } from '@/lib/config/settings';
 
 const MAX_BODY_BYTES = 8192;
 const MAX_MESSAGE_CHARS = 1500;
@@ -101,7 +102,8 @@ function parseJsonPayload(rawText: string): ParsedPayload {
 /** Handles conversational AI copilot and app navigation queries with security guardrails. */
 export async function POST(req: Request): Promise<Response> {
   const ip = getClientIp(req);
-  const rate = checkRateLimit(ip);
+  const settings = getServerSettings();
+  const rate = checkRateLimit(ip, { limit: Math.min(10, settings.rateLimitPerMin) });
   if (!rate.allowed) {
     return NextResponse.json(
       { ok: false, error: 'Too Many Requests' },

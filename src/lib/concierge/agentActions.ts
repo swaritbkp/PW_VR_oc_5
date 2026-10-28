@@ -3,8 +3,7 @@ import { runGuardrailPipeline, BOUNDS_LIMITS } from '../security/guardrails';
 import type { AgentAction, ParsedAgentCommand } from './types';
 import { parseNewAgeNuances, sanitizeTaskDependencies } from './nuanceActions';
 
-export type { AgentAction, ParsedAgentCommand };
-export { sanitizeTaskDependencies };
+export { type AgentAction, type ParsedAgentCommand, sanitizeTaskDependencies };
 
 interface ParsedNumberResult<T> {
   readonly action?: T;
@@ -26,22 +25,24 @@ function parseGuestsAction(input: string): ParsedNumberResult<AgentAction> | nul
   return { action: { type: 'mutate_guests', guests: count }, log: `✓ Updated Guests -> ${count}` };
 }
 
-function parseBudgetAction(input: string): ParsedNumberResult<AgentAction> | null {
-  const lakhMatch = /(?:set|scale|update|change|increase)?\s*(?:the\s+)?budget\s*(?:to|=|\s:?)\s*(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d+)?)\s*(?:lakh?s?|lacs?|l\b)/i.exec(input);
-  if (lakhMatch) {
-    const amount = Math.round(parseFloat(lakhMatch[1]) * 100_000);
-    if (amount < BOUNDS_LIMITS.minBudgetInr || amount > BOUNDS_LIMITS.maxBudgetInr) {
-      return { outOfBounds: true, val: amount };
-    }
-    return { action: { type: 'mutate_budget', budgetInr: amount }, log: `✓ Updated Budget -> ₹${amount.toLocaleString('en-IN')}` };
-  }
-  const match = /(?:set|scale|update|change|increase)?\s*(?:the\s+)?budget\s*(?:to|=|\s:?)\s*(?:₹|rs\.?|inr)?\s*(-?\d[\d,]*)/i.exec(input);
-  if (!match) return null;
-  const amount = parseInt(match[1].replace(/,/g, ''), 10);
+function createBudgetMutation(amount: number): ParsedNumberResult<AgentAction> {
   if (amount < BOUNDS_LIMITS.minBudgetInr || amount > BOUNDS_LIMITS.maxBudgetInr) {
     return { outOfBounds: true, val: amount };
   }
-  return { action: { type: 'mutate_budget', budgetInr: amount }, log: `✓ Updated Budget -> ₹${amount.toLocaleString('en-IN')}` };
+  return {
+    action: { type: 'mutate_budget', budgetInr: amount },
+    log: `✓ Updated Budget -> ₹${amount.toLocaleString('en-IN')}`,
+  };
+}
+
+function parseBudgetAction(input: string): ParsedNumberResult<AgentAction> | null {
+  const lakhMatch = /(?:set|scale|update|change|increase)?\s*(?:the\s+)?budget\s*(?:to|=|\s:?)\s*(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d+)?)\s*(?:lakh?s?|lacs?|l\b)/i.exec(input);
+  if (lakhMatch) {
+    return createBudgetMutation(Math.round(parseFloat(lakhMatch[1]) * 100_000));
+  }
+  const match = /(?:set|scale|update|change|increase)?\s*(?:the\s+)?budget\s*(?:to|=|\s:?)\s*(?:₹|rs\.?|inr)?\s*(-?\d[\d,]*)/i.exec(input);
+  if (!match) return null;
+  return createBudgetMutation(parseInt(match[1].replace(/,/g, ''), 10));
 }
 
 function parseTaskAction(input: string): { action: AgentAction; log: string } | null {

@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CANARY_TOKEN,
   clampDomainBounds,
+  containsCanaryLeak,
   detectOffTopicOrUnsafe,
   detectPromptInjection,
   redactPii,
   runGuardrailPipeline,
+  sanitizeModelOutput,
   validateDomainBounds,
 } from './guardrails';
 
@@ -73,5 +76,20 @@ describe('AI Safety & Privacy Guardrail Engine', () => {
     expect(piiRes.ok).toBe(true);
     expect(piiRes.hasPii).toBe(true);
     expect(piiRes.sanitizedText).toContain('[REDACTED_PII]');
+  });
+
+  it('detects and sanitizes system canary token leaks deterministically', () => {
+    expect(containsCanaryLeak('Normal celebration response without leakage')).toBe(false);
+    const leakedText = `Internal prompt debug info: ${CANARY_TOKEN}`;
+    expect(containsCanaryLeak(leakedText)).toBe(true);
+
+    const sanitized = sanitizeModelOutput(leakedText);
+    expect(sanitized).not.toContain(CANARY_TOKEN);
+    expect(sanitized).toContain('[REDACTED_CANARY_TOKEN]');
+
+    const pipelineRes = runGuardrailPipeline(`Attempting leak: ${CANARY_TOKEN}`);
+    expect(pipelineRes.ok).toBe(false);
+    expect(pipelineRes.isInjection).toBe(true);
+    expect(pipelineRes.error).toContain('canary token');
   });
 });

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { checkRateLimit } from '@/server/security/rateLimit';
+import { getServerSettings } from '@/lib/config/settings';
 
 const STATUS_TOO_MANY_REQUESTS = 429;
 
@@ -18,7 +19,8 @@ function getClientIp(req: Request): string {
  */
 export async function GET(req: Request): Promise<Response> {
   const ip = getClientIp(req);
-  const rateResult = checkRateLimit(ip, { limit: 60 });
+  const settings = getServerSettings();
+  const rateResult = checkRateLimit(ip, { limit: settings.rateLimitPerMin });
   if (!rateResult.allowed) {
     return NextResponse.json(
       { ok: false, error: 'Rate limit exceeded' },
@@ -29,9 +31,9 @@ export async function GET(req: Request): Promise<Response> {
     );
   }
 
-  const gemini = Boolean(process.env.GEMINI_API_KEY?.trim());
-  const places = Boolean(process.env.GOOGLE_PLACES_API_KEY?.trim());
-  const mapsBrowser = Boolean(process.env.NEXT_PUBLIC_MAPS_BROWSER_KEY?.trim());
+  const gemini = settings.isGeminiConfigured;
+  const places = settings.isPlacesConfigured;
+  const mapsBrowser = settings.isMapsBrowserConfigured;
 
   return NextResponse.json({
     ok: true,
