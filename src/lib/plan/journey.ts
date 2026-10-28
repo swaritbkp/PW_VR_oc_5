@@ -2,10 +2,20 @@ import type { PlanState } from './propagate';
 import type { VendorSelection } from '../vendors/types';
 
 export type GuidedStageId =
-  'vision_intake' | 'critical_path' | 'vet_vendors' | 'resilience_plan_b' | 'export_package';
+  | 'vision_intake'
+  | 'critical_path'
+  | 'vet_vendors'
+  | 'resilience_plan_b'
+  | 'export_package';
 
 export type GuidedActionId =
-  'templates' | 'graph' | 'vendors' | 'chaos' | 'export_jashn' | 'dossier' | 'whatif';
+  | 'templates'
+  | 'graph'
+  | 'vendors'
+  | 'chaos'
+  | 'export_jashn'
+  | 'dossier'
+  | 'whatif';
 
 export interface GuidedStep {
   readonly id: GuidedStageId;
@@ -37,10 +47,22 @@ export interface JourneyContext {
   readonly exportedPackage?: boolean;
 }
 
+interface StepTemplate {
+  readonly id: GuidedStageId;
+  readonly title: string;
+  readonly shortTitle: string;
+  readonly description: string;
+  readonly actionId: GuidedActionId;
+  readonly actionLabel: string;
+}
+
 const TOTAL_STEPS = 5;
 const PERCENT_PER_STEP = 20;
 
-function evaluateStepCompletions(plan: PlanState, ctx?: JourneyContext) {
+function evaluateStepCompletions(
+  plan: PlanState,
+  ctx?: JourneyContext,
+): readonly [boolean, boolean, boolean, boolean, boolean] {
   const s1Complete = Boolean(plan.intake.eventType && plan.tasks.length > 0);
   const s2Complete = s1Complete && plan.tasks.some((t) => t.done);
   const hasVendors = Boolean(
@@ -53,7 +75,7 @@ function evaluateStepCompletions(plan: PlanState, ctx?: JourneyContext) {
   const s4Complete = s3Complete && hasBackupOrSim;
   const s5Complete = s4Complete && Boolean(ctx?.exportedPackage);
 
-  return [s1Complete, s2Complete, s3Complete, s4Complete, s5Complete] as const;
+  return [s1Complete, s2Complete, s3Complete, s4Complete, s5Complete];
 }
 
 function findActiveIndex(completions: readonly boolean[]): number {
@@ -61,45 +83,45 @@ function findActiveIndex(completions: readonly boolean[]): number {
   return firstIncomplete === -1 ? TOTAL_STEPS - 1 : firstIncomplete;
 }
 
-const STEP_TEMPLATES = [
+const STEP_TEMPLATES: readonly StepTemplate[] = [
   {
-    id: 'vision_intake' as const,
+    id: 'vision_intake',
     title: 'Choose Vision & Intake',
     shortTitle: '1. Vision',
     description: 'Select an authentic template and set celebration parameters.',
-    actionId: 'templates' as const,
+    actionId: 'templates',
     actionLabel: 'Browse Templates',
   },
   {
-    id: 'critical_path' as const,
+    id: 'critical_path',
     title: 'Calibrate Critical Path',
     shortTitle: '2. Critical Path',
     description: 'Inspect CPM timeline, float, and initial milestone deliverables.',
-    actionId: 'graph' as const,
+    actionId: 'graph',
     actionLabel: 'View Event Graph',
   },
   {
-    id: 'vet_vendors' as const,
+    id: 'vet_vendors',
     title: 'Scout, Negotiate & Vet Vendors',
     shortTitle: '3. Vendors',
     description: 'Discover nearby verified vendors and apply negotiation strategies.',
-    actionId: 'vendors' as const,
+    actionId: 'vendors',
     actionLabel: 'Scout Vendors',
   },
   {
-    id: 'resilience_plan_b' as const,
+    id: 'resilience_plan_b',
     title: 'Fortify Plan B & Run Chaos Monkey',
     shortTitle: '4. Resilience',
     description: 'Hold backup vendors and stress-test schedule against compound incidents.',
-    actionId: 'chaos' as const,
+    actionId: 'chaos',
     actionLabel: 'Trigger Chaos Monkey',
   },
   {
-    id: 'export_package' as const,
+    id: 'export_package',
     title: 'Share & Export Portable .jashn',
     shortTitle: '5. Export & Share',
     description: 'Export verifiable .jashn event file, iCal, or Executive Dossier.',
-    actionId: 'export_jashn' as const,
+    actionId: 'export_jashn',
     actionLabel: 'Export .jashn File',
   },
 ];
@@ -137,6 +159,10 @@ function getCoachPrompt(step: GuidedStep, allDone: boolean): string {
 /**
  * Pure deterministic state evaluator that computes 5-step guided journey progress,
  * active step, and proactive coach guidance.
+ *
+ * @param plan - Current PlanState
+ * @param context - Optional JourneyContext with vendor selections and flags
+ * @returns JourneyEvaluation object with progress metrics and current step
  */
 export function evaluateJourney(plan: PlanState, context?: JourneyContext): JourneyEvaluation {
   const completions = evaluateStepCompletions(plan, context);

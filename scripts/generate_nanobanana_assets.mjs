@@ -135,12 +135,21 @@ function promptHash(text, aspect, kind) {
   return crypto.createHash('sha256').update(`${kind}|${aspect}|${text}`).digest('hex').slice(0, 16);
 }
 
-async function tryGeminiGeneration(prompt, outPath) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return false;
+async function resolveGeminiApiKey() {
+  try {
+    const { getServerSettings } = await import('../src/lib/config/settings.js');
+    return getServerSettings().geminiApiKey;
+  } catch {
+    return '';
+  }
+}
+
+async function tryGeminiGeneration(prompt, outPath, apiKey = '') {
+  const resolvedKey = apiKey || (await resolveGeminiApiKey());
+  if (!resolvedKey) return false;
   try {
     const { GoogleGenAI } = await import('@google/genai');
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = new GoogleGenAI({ apiKey: resolvedKey });
     const response = await ai.models.generateImages({
       model: 'imagen-3.0-generate-002',
       prompt,

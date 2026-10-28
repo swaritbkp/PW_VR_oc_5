@@ -70,7 +70,7 @@ export function syncVendorQuoteToBudget(
   }
 
   const newLine: BudgetLine = {
-    id: `vendor_${Date.now()}`,
+    id: `vendor_${targetCat}_${quote.vendorName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
     category: targetCat,
     name: `${quote.vendorName} (${quote.category})`,
     unit: 'fixed',

@@ -5,7 +5,9 @@ const PERT_DIVISOR = 6;
 
 /** Abramowitz and Stegun 7.1.26 coefficients for the error function (max error ~1.5e-7). */
 const ERF_P = 0.3275911;
-const ERF_A = [0.254829592, -0.284496736, 1.421413741, -1.453152027, 1.061405429] as const;
+const ERF_A: readonly [number, number, number, number, number] = [
+  0.254829592, -0.284496736, 1.421413741, -1.453152027, 1.061405429,
+];
 
 /** PERT expected duration and standard deviation from three-point estimates. */
 export function pertEstimate(

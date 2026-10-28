@@ -82,7 +82,8 @@ const CHANDIGARH_CATALOG: CityCatalogData = {
   ],
 };
 
-function selectCategoryPool(cat: CityCatalogData, need: VendorNeedId) {
+function selectCategoryPool(cat: CityCatalogData | null, need: VendorNeedId) {
+  if (!cat) return null;
   if (need === 'venue') return cat.venues;
   if (need === 'caterer') return cat.caterers;
   if (need === 'decorator') return cat.decorators;
@@ -91,10 +92,13 @@ function selectCategoryPool(cat: CityCatalogData, need: VendorNeedId) {
   return cat.makeup;
 }
 
-function resolveCityCatalog(city: string): CityCatalogData {
+function resolveCityCatalog(city: string): CityCatalogData | null {
   const norm = city.toLowerCase();
   if (norm.includes('amritsar')) return AMRITSAR_CATALOG;
-  return CHANDIGARH_CATALOG;
+  if (norm.includes('chandigarh') || norm.includes('mohali') || norm.includes('panchkula')) {
+    return CHANDIGARH_CATALOG;
+  }
+  return null;
 }
 
 function buildSyntheticVendor(city: string, need: VendorNeedId, idx: number): Vendor {

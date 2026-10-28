@@ -122,9 +122,8 @@ export function EventGraphCanvas({
 }: EventGraphCanvasProps): React.JSX.Element {
   return (
     <svg
-      role="region"
-      aria-roledescription="interactive event dependency graph"
-      aria-label="Interactive celebration event timeline graph showing task dependencies and critical path"
+      role="img"
+      aria-label="Interactive CPM Event Graph Canvas"
       width={layout.width * zoom}
       height={layout.height * zoom}
       viewBox={`0 0 ${layout.width} ${layout.height}`}

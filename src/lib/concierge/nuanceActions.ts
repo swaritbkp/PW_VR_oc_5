@@ -44,7 +44,7 @@ function parseStarNightNuance(input: string, actions: AgentAction[], logs: strin
   actions.push({
     type: 'add_budget_line',
     line: {
-      id: `nuance_star_${Date.now()}`,
+      id: 'nuance_star_rider',
       category: 'entertainment',
       name: 'Star Night & Artist Rider',
       unit: 'fixed',
@@ -74,7 +74,7 @@ function parseShowstopperNuance(input: string, actions: AgentAction[], logs: str
   actions.push({
     type: 'add_budget_line',
     line: {
-      id: `nuance_pyro_${Date.now()}`,
+      id: 'nuance_pyro_showstopper',
       category: 'entertainment',
       name: 'Showstopper: Cold Pyro Entry & Aerial Fireworks',
       unit: 'fixed',
@@ -103,7 +103,7 @@ function parseMultiCatererNuance(input: string, actions: AgentAction[], logs: st
   actions.push({
     type: 'add_budget_line',
     line: {
-      id: `nuance_cater_${Date.now()}`,
+      id: 'nuance_cater_specialty',
       category: 'food',
       name: 'Specialty 2nd Caterer / Live Chaat Counter',
       unit: 'per_head',
@@ -132,7 +132,7 @@ function parseCraftBarNuance(input: string, actions: AgentAction[], logs: string
   actions.push({
     type: 'add_budget_line',
     line: {
-      id: `nuance_bar_${Date.now()}`,
+      id: 'nuance_bar_excise',
       category: 'food',
       name: 'Craft Bar, Mixology & Excise Permit',
       unit: 'per_head',
@@ -161,7 +161,7 @@ function parseWeatherProofingNuance(input: string, actions: AgentAction[], logs:
   actions.push({
     type: 'add_budget_line',
     line: {
-      id: `nuance_weather_${Date.now()}`,
+      id: 'nuance_weather_shamiana',
       category: 'venue',
       name: 'Weather Proofing & Shamiana Reserve',
       unit: 'fixed',

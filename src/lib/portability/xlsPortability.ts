@@ -179,7 +179,7 @@ function validateAndMapRow(row: string[], idx: number): RowValidationResult {
 
   return {
     line: {
-      id: `xls_item_${Date.now()}_${idx}`,
+      id: `xls_item_${category}_${idx}`,
       category,
       name: piiRes.text,
       unit,

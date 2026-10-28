@@ -35,7 +35,7 @@ function getNextVersionId(store: VersionStore): string {
   const last = store.versions[store.versions.length - 1];
   if (!last) return 'v_1';
   const num = parseInt(last.id.replace(/\D/g, ''), 10);
-  return Number.isFinite(num) ? `v_${num + 1}` : `v_${Date.now()}`;
+  return Number.isFinite(num) ? `v_${num + 1}` : `v_${store.versions.length + 1}`;
 }
 
 /** Pushes a new plan version, capping total history at MAX_VERSIONS per AC3. */

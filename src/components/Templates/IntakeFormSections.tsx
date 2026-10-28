@@ -3,12 +3,18 @@
 import React from 'react';
 import { formatInr } from '@/lib/format';
 import type { EventType } from '@/lib/plan/types';
+import type { Language } from '@/lib/plan/schemas';
+
+export interface LangOption {
+  readonly code: Language;
+  readonly label: string;
+}
 
 export const EVENT_TYPES: readonly EventType[] = ['wedding', 'birthday', 'community'];
-export const LANGS = [
-  { code: 'en' as const, label: 'English' },
-  { code: 'hi' as const, label: 'हिंदी' },
-  { code: 'pa' as const, label: 'ਪੰਜਾਬੀ' },
+export const LANGS: readonly LangOption[] = [
+  { code: 'en', label: 'English' },
+  { code: 'hi', label: 'हिंदी' },
+  { code: 'pa', label: 'ਪੰਜਾਬੀ' },
 ];
 
 /**

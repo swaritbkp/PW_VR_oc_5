@@ -12,7 +12,7 @@ function createCustomTask(intake: IntakeInput, parentTaskId: string): PlanTask |
   const piiCleaned = redactPii(rawPrompt).text;
   const snippet = piiCleaned.length > 36 ? `${piiCleaned.slice(0, 36)}...` : piiCleaned;
   return {
-    id: `custom_${Date.now().toString(36)}`,
+    id: 'custom_decor_style',
     name: `Custom Style: ${snippet}`,
     optimistic: 3,
     mostLikely: 5,
@@ -29,7 +29,7 @@ function getStarNightNuance(rawPrompt: string, rootId: string): { task?: PlanTas
   if (!/(?:star\s*night|sufi\s*night|artist|celebrity|live\s*band)/i.test(rawPrompt)) return {};
   return {
     task: {
-      id: `nuance_star_${Date.now()}`,
+      id: 'nuance_star_rider',
       name: 'Star Night: Artist Tech Rider & Sound NOC',
       optimistic: 5, mostLikely: 8, pessimistic: 14,
       dependsOn: [rootId], category: 'entertainment', drivers: ['budget'],
@@ -47,7 +47,7 @@ function getCatererNuance(rawPrompt: string, rootId: string): { task?: PlanTask;
   if (!/(?:multiple\s*caterer|second\s*caterer|2nd\s*caterer|chaat|live\s*counter|halwai)/i.test(rawPrompt)) return {};
   return {
     task: {
-      id: `nuance_cater_${Date.now()}`,
+      id: 'nuance_cater_specialty',
       name: 'Multi-Caterer Split: Tasting & Kitchen Zoning',
       optimistic: 3, mostLikely: 5, pessimistic: 9,
       dependsOn: [rootId], category: 'food', drivers: ['guests'],
@@ -65,7 +65,7 @@ function getBarNuance(rawPrompt: string, rootId: string): { task?: PlanTask; lin
   if (!/(?:craft\s*bar|cocktail|drinks|liquor|excise|mixology|l-?12a)/i.test(rawPrompt)) return {};
   return {
     task: {
-      id: `nuance_bar_${Date.now()}`,
+      id: 'nuance_bar_excise',
       name: 'Excise Liquor Permit (L-12A) & Craft Bar',
       optimistic: 4, mostLikely: 7, pessimistic: 12,
       dependsOn: [rootId], category: 'permits', drivers: ['date'],
@@ -173,7 +173,7 @@ export function buildAdaptedPlanFromIntake(intake: IntakeInput, currentPlan: Pla
   const targetDays = diffDays !== null ? diffDays : currentPlan.targetDays;
 
   return {
-    id: `plan_${Date.now()}`,
+    id: `plan_${intake.eventType}_${intake.city.toLowerCase().replace(/[^a-z0-9]/g, '')}`,
     intake,
     tasks,
     budgetLines,

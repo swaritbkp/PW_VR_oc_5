@@ -209,10 +209,7 @@ export interface AgentTaskOptions {
 let agentTaskSeq = 0;
 
 function generateAgentTaskId(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return `agent_${crypto.randomUUID().slice(0, 8)}`;
-  }
-  return `agent_${Date.now().toString(36)}_${(++agentTaskSeq).toString(36)}`;
+  return `agent_task_${++agentTaskSeq}`;
 }
 
 function normalizeTaskOpts(o?: AgentTaskOptions | string): AgentTaskOptions {
