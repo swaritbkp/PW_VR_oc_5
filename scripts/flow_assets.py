@@ -23,6 +23,7 @@ import re
 import shutil
 import subprocess
 import sys
+sys.dont_write_bytecode = True
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path

@@ -1,5 +1,6 @@
 import subprocess
 import sys
+sys.dont_write_bytecode = True
 import tempfile
 import unittest
 from argparse import Namespace

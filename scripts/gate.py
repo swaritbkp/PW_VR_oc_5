@@ -14,6 +14,7 @@ import json
 import re
 import subprocess
 import sys
+sys.dont_write_bytecode = True
 from datetime import datetime, timezone
 from pathlib import Path
 

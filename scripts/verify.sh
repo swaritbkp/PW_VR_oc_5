@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+export PYTHONDONTWRITEBYTECODE=1
 step() { printf '\n== %s\n' "$1"; }
 step "install";          [ -d node_modules ] || npm ci
 step "format";           npx prettier --check .
@@ -25,4 +26,5 @@ bad=$(grep -RInE "NEXT_PUBLIC_[A-Z_]*(KEY|SECRET|TOKEN)" src .env.example | grep
 if [ -n "$bad" ]; then echo "$bad"; echo "FAIL: public secret var (only NEXT_PUBLIC_MAPS_BROWSER_KEY is allowed)"; exit 1; fi
 if grep -RIn "GOOGLE_PLACES_API_KEY\|GEMINI_API_KEY" src/components src/app --include="*.tsx" 2>/dev/null | grep -v "api/" ; then
   echo "FAIL: server key referenced in client code"; exit 1; fi
+find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 echo; echo "ALL GREEN"
