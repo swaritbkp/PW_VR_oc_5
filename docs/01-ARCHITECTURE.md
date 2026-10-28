@@ -7,17 +7,27 @@ Google GenAI SDK with JSON-schema output (model id from GEMINI_MODEL; verify the
 Places API (New) for vendors, Maps JavaScript API for the map. zod at every boundary. vitest (+ coverage-v8,
 jsdom, testing-library, vitest-axe). eslint (typescript-eslint strict), prettier, knip, madge. Deploy: Cloud Run.
 Charts and the graph are hand-rolled SVG (no chart library) for bundle size and accessibility control.
+Centralized runtime settings are governed by `src/lib/config/settings.ts` with Zod validation and safe offline fallbacks.
 
 ## Layers (madge enforces direction)
 
-lib/ (pure: no React, fetch or env) <- server/ (SDK, Places, env, rate limit) <- app/ + components/
+lib/ (pure: no React, fetch or env) <- server/ (SDK, Places, settings, rate limit) <- app/ + components/
 UI never imports server/. lib/ imports only lib/.
+Centralized configuration model in `lib/config/settings.ts` isolates `process.env` access from application routes.
 
 ## Keys and secrets
 
 GEMINI_API_KEY and GOOGLE_PLACES_API_KEY are server-only (Secret Manager on Cloud Run).
+All environment configuration is mediated through `src/lib/config/settings.ts`, eliminating scattered `process.env` reads.
 NEXT_PUBLIC_MAPS_BROWSER_KEY is the one public key, by design: restrict it to your HTTP referrers AND to the
 Maps JavaScript API only, and cap quota. verify.sh allows only that exact name. No other NEXT_PUBLIC key.
+
+## Reliability, Caching & Resilience
+
+- **Bounded LRU Eviction**: In-memory server caches (`src/server/security/rateLimit.ts`, `src/app/api/vendors/search/route.ts`) enforce `MAX_CACHE_ENTRIES = 256` with deterministic TTL sweeps and oldest-key eviction.
+- **Canary Leak Detection**: Post-LLM output sanitizer (`src/lib/security/guardrails.ts`) scans for `JASHN_SYSTEM_CANARY_9F2A` to prevent system prompt extraction.
+- **App Router Error Boundaries**: `src/app/error.tsx` and `src/app/global-error.tsx` provide accessible alert semantics (`role="alert"`) and state recovery.
+- **Accessibility & Contrast**: `src/app/globals.css` provides `@media (prefers-contrast: more)`, `@media (prefers-reduced-motion: reduce)`, and keyboard `.skip-link`.
 
 ## LLM proposes, code decides
 

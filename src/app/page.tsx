@@ -3,9 +3,13 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 import { AppHeader } from '@/components/UI/AppHeader';
-import { AppModals } from '@/components/UI/AppModals';
 import { useHomePageState, type HomePageState } from './useHomePageState';
 import { CelebrationWorkspaceSection, NodeInspectorOverlay } from './HomePageSections';
+
+const AppModals = dynamic(
+  () => import('@/components/UI/AppModals').then((m) => m.AppModals),
+  { ssr: false },
+);
 
 const AgentCopilot = dynamic(
   () => import('@/components/Concierge/AgentCopilot').then((m) => m.AgentCopilot),

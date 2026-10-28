@@ -105,3 +105,12 @@ export function getServerSettings(): ServerSettings {
   lastFingerprint = fingerprint;
   return settings;
 }
+
+/**
+ * Returns the client-safe public Google Maps browser key.
+ *
+ * @returns Public Maps browser API key string
+ */
+export function getClientMapsKey(): string {
+  return getServerSettings().mapsBrowserKey;
+}
