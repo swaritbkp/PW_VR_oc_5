@@ -15,3 +15,7 @@ tsconfig.tsbuildinfo
 *.mov
 recordings/
 jashn-demo-submission.*
+# Temporary root screenshots and test captures
+pic*.jpg
+pic*.png
+AUDIT_FINDINGS_REPORT.md

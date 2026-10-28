@@ -176,8 +176,9 @@ async function cacheIfSuccess(key: string, res: NextResponse): Promise<void> {
   try {
     const body = await res.clone().json();
     if (!body.fallback) setCached(key, body);
-  } catch {
-    // ignore caching clone failures
+  } catch (err) {
+    // Intentionally non-blocking: cache write optimization failure is safely ignored.
+    console.debug('Vendor search cache write skipped:', err);
   }
 }
 
