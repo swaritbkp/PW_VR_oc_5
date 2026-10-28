@@ -7,6 +7,11 @@ assets/generated/
 *.log
 .DS_Store
 __pycache__/
+**/__pycache__/
+scripts/__pycache__/
+*.pyc
+*.pyo
+*.pyd
 *.py[cod]
 tsconfig.tsbuildinfo
 # Video recordings and outputs

@@ -177,16 +177,18 @@ function buildPlanArtifact(
   const budgetReconciliation = reconcile(budgetSummary);
   const todayIso = new Date().toISOString().slice(0, 10);
   const days = daysBetween(todayIso, intake.date) ?? DEFAULT_HORIZON_DAYS;
+  const meta = buildPlanMeta(repaired);
   const prob = probabilityOnTime(schedule, days);
+  const elapsedDays = Math.max(0, Math.floor((Date.now() - new Date(meta.createdAt).getTime()) / 86_400_000));
   const alerts = evaluateSentinels({
     schedule,
-    today: 0,
+    today: elapsedDays,
     availableDays: days,
     probabilityOnTime: prob,
   });
 
   return {
-    meta: buildPlanMeta(repaired),
+    meta,
     intake,
     tasks,
     budgetLines: core.budgetLines,
