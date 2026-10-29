@@ -67,8 +67,14 @@ export function pushVersion(
   };
 }
 
-/** Alias for pushVersion to record plan revisions. */
-export const recordVersion = pushVersion;
+/** Records a new plan revision (alias for pushVersion). */
+export function recordVersion(
+  store: VersionStore,
+  plan: PlanState,
+  description: string,
+): VersionStore {
+  return pushVersion(store, plan, description);
+}
 
 /** Checks whether the version store can be undone to a parent snapshot. */
 export function canUndo(store: VersionStore): boolean {

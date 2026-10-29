@@ -101,3 +101,79 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* ---- Modern design system additions (glassmorphism, glows, immersive type) ---- */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --glass-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.08);
+  --glow-brand: rgba(154, 52, 18, 0.3);
+  --glow-critical: rgba(220, 38, 38, 0.25);
+  --glow-buffer: rgba(37, 99, 235, 0.25);
+  --glow-backup: rgba(124, 58, 237, 0.25);
+  --glow-countdown: rgba(245, 158, 11, 0.35);
+  --font-display: 'Rozha One', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --glass-bg: rgba(255, 255, 255, 0.9);
+    --glass-border: rgba(0, 0, 0, 0.4);
+    --glass-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.25);
+  }
+}
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: var(--glass-shadow);
+}
+
+.text-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.glow-brand {
+  box-shadow: 0 0 24px var(--glow-brand);
+}
+.glow-critical {
+  box-shadow: 0 0 24px var(--glow-critical);
+}
+.glow-buffer {
+  box-shadow: 0 0 24px var(--glow-buffer);
+}
+.glow-backup {
+  box-shadow: 0 0 24px var(--glow-backup);
+}
+
+/* Gentle celebratory pulse for countdowns and hero accents (reduced-motion safe). */
+@keyframes jashn-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.06);
+  }
+}
+
+.pulse-countdown {
+  animation: jashn-pulse 3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-countdown {
+    animation: none !important;
+  }
+}
